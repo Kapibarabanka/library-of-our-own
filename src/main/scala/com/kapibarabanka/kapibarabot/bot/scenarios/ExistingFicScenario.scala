@@ -12,6 +12,7 @@ import telegramium.bots.high.Api
 import telegramium.bots.high.Methods.answerCallbackQuery
 import telegramium.bots.high.implicits.*
 import zio.*
+import scalaz.Scalaz.ToIdOps
 
 case class ExistingFicScenario(record: MyFicRecord)(implicit
     bot: Api[Task],
@@ -19,12 +20,12 @@ case class ExistingFicScenario(record: MyFicRecord)(implicit
     ao3: Ao3
 ) extends Scenario:
 
-  protected override def startupAction: Task[Unit] =
+  protected override def startupAction: UIO[Unit] =
     sendMessageData(MessageData(MessageText.existingFic(record), getButtonsForExisting(record.stats))).unit
 
-  override def onMessage(msg: Message): Task[Scenario] = StartScenario().onMessage(msg)
+  override def onMessage(msg: Message): UIO[Scenario] = StartScenario().onMessage(msg)
 
-  override def onCallbackQuery(query: CallbackQuery): Task[Scenario] = {
+  override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] = {
     def patch(stats: MyFicStats) = airtable.patchFicStats(_: String, stats)
 
     def markAsReadToday = airtable.markAsReadToday(_: String)
@@ -43,12 +44,16 @@ case class ExistingFicScenario(record: MyFicRecord)(implicit
       case Buttons.rateBrilliant.callbackData => onPatchStats(patch(MyFicStats(qualityOption = Some(Quality.Brilliant))), query)
 
       case Buttons.addComment.callbackData =>
-        answerCallbackQuery(callbackQueryId = query.id).exec.unit.flatMap(_ => CommentScenario(record).withStartup)
+        answerCallbackQuery(callbackQueryId = query.id).exec.unit.flatMap(_ =>
+          CommentScenario(record).withStartup
+        ) |> tryAndSendOnError()
 
       case Buttons.sendToKindle.callbackData =>
         record.fic match
           case w: Work =>
-            answerCallbackQuery(callbackQueryId = query.id).exec.unit.flatMap(_ => SendToKindleScenario(record).withStartup)
+            answerCallbackQuery(callbackQueryId = query.id).exec.unit.flatMap(_ =>
+              SendToKindleScenario(record).withStartup
+            ) |> tryAndSendOnError()
           case _ =>
             onPatchStats(
               patch(MyFicStats(kindleToDoOption = Some(true))),
@@ -62,12 +67,12 @@ case class ExistingFicScenario(record: MyFicRecord)(implicit
   private def onPatchStats(patchStats: String => Task[MyFicRecord], query: CallbackQuery, response: Option[String] = None) = {
     query.message
       .collect { case msg: Message =>
-        for {
+        (for {
           patchedRecord <- patchStats(record.id.get)
           msgData <- ZIO.succeed(MessageData(MessageText.existingFic(patchedRecord), getButtonsForExisting(patchedRecord.stats)))
           _       <- answerCallbackQuery(callbackQueryId = query.id, text = response).exec
           _       <- editMessage(msg, msgData)
-        } yield this
+        } yield this) |> tryAndSendOnError()
       }
       .getOrElse(ZIO.succeed(this))
   }

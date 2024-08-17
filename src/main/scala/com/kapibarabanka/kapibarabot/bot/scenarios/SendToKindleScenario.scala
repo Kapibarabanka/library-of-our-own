@@ -1,6 +1,7 @@
 package com.kapibarabanka.kapibarabot.bot.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3
+import com.kapibarabanka.ao3scrapper.exceptions.Ao3ClientError
 import com.kapibarabanka.kapibarabot.MailClient
 import com.kapibarabanka.kapibarabot.bot.Constants.{myChatId, tempDir, tgFileUrl}
 import com.kapibarabanka.kapibarabot.domain.{MyFicRecord, MyFicStats}
@@ -10,6 +11,7 @@ import telegramium.bots.high.Methods.{getFile, sendDocument}
 import telegramium.bots.high.implicits.*
 import telegramium.bots.{CallbackQuery, Document, InputPartFile, Message}
 import zio.*
+import scalaz.Scalaz.ToIdOps
 
 import java.io.File
 import java.net.URL
@@ -23,19 +25,28 @@ case class SendToKindleScenario(record: MyFicRecord)(implicit
 ) extends Scenario:
   private val sourceFormat = ".mobi"
   private val targetFormat = ".epub"
-  protected override def startupAction: Task[Unit] = for {
-    logLink <- sendText("Getting link from AO3...")
-    url     <- ao3.getDownloadLink(record.fic.id)
-    logFile <- editLogText(logLink, s"Downloading and sending $sourceFormat file...")
-    _       <- useTempFile(url, sourceFormat)(sendFileFromBot)
-    _       <- editLogText(logFile, s"Send file below to @ebook_converter_bot and send me the converted $targetFormat file:")
-  } yield ()
+  protected override def startupAction: UIO[Unit] = {
+    val upload = for {
+      logLink <- sendText("Getting link from AO3...")
+      url     <- ao3.getDownloadLink(record.fic.id)
+      logFile <- editLogText(logLink, s"Uploading $sourceFormat file...")
+      _       <- useTempFile(url, sourceFormat)(sendFileFromBot)
+      _       <- editLogText(logFile, s"Send file below to @ebook_converter_bot and send me the converted $targetFormat file:")
+    } yield ()
+    upload.foldZIO(
+      error => sendText(error match
+        case ao3Error: Ao3ClientError => s"Couldn't get download link from AO3: ${ao3Error.getMessage}"
+        case fileError => s"Error while getting or uploading file: ${fileError.getMessage}" 
+      ).map(_ => StartScenario()), 
+      scenario => ZIO.succeed(scenario)
+    )
+  }
 
-  override def onMessage(msg: Message): Task[Scenario] = msg.document match
+  override def onMessage(msg: Message): UIO[Scenario] = msg.document match
     case None => sendText("Not a valid file").flatMap(_ => ExistingFicScenario(record).withStartup)
-    case Some(document) => tryAndSendOnError(sendToKindle(document))
+    case Some(document) => sendToKindle(document) |> tryAndSendOnError()
 
-  override def onCallbackQuery(query: CallbackQuery): Task[Scenario] = StartScenario().onCallbackQuery(query)
+  override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] = StartScenario().onCallbackQuery(query)
   
   private def sendToKindle(document: Document) = for {
     logLink    <- sendText("Getting file link from TG...")

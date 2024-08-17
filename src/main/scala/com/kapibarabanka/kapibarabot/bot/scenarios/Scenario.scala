@@ -8,19 +8,18 @@ import telegramium.bots.high.Api
 import telegramium.bots.high.Methods.{answerCallbackQuery, sendMessage}
 import telegramium.bots.high.implicits.*
 import telegramium.bots.{CallbackQuery, Message}
-import zio.{Task, UIO, ZIO}
+import zio.*
 
 trait Scenario(implicit bot: Api[Task], airtable: AirtableClient, ao3: Ao3):
-  protected def startupAction: Task[Unit]
-  def onMessage(msg: Message): Task[Scenario]
-  def onCallbackQuery(query: CallbackQuery): Task[Scenario]
+  protected def startupAction: UIO[Unit]
+  def onMessage(msg: Message): UIO[Scenario]
+  def onCallbackQuery(query: CallbackQuery): UIO[Scenario]
 
-  def withStartup: Task[Scenario] = startupAction.map(_ => this)
+  def withStartup: UIO[Scenario] = startupAction.map(_ => this)
 
   protected def tryAndSendOnError(
-      toTry: ZIO[Any, Throwable, Scenario],
       errorToMessage: PartialFunction[Throwable, String] = { case e => defaultErrorMessage(e) }
-  ): UIO[Scenario] =
+  )(toTry: ZIO[Any, Throwable, Scenario]): UIO[Scenario] =
     toTry.foldZIO(
       error => sendText(errorToMessage.applyOrElse(error, defaultErrorMessage)).map(_ => StartScenario()),
       scenario => ZIO.succeed(scenario)

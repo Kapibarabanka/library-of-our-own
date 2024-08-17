@@ -1,5 +1,6 @@
 package com.kapibarabanka.kapibarabot.bot.scenarios
 
+import com.kapibarabanka.airtable.AirtableError
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
 import com.kapibarabanka.kapibarabot.bot.Constants.myChatId
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
@@ -8,25 +9,29 @@ import telegramium.bots.high.Methods.sendMessage
 import telegramium.bots.high.implicits.*
 import telegramium.bots.{CallbackQuery, ChatIntId, Message}
 import zio.*
+import scalaz.Scalaz.ToIdOps
 
 case class StartScenario()(implicit bot: Api[Task], airtable: AirtableClient, ao3: Ao3) extends Scenario:
-  protected override def startupAction: Task[Unit] = ZIO.unit
+  protected override def startupAction: UIO[Unit] = ZIO.unit
 
-  override def onMessage(msg: Message): Task[Scenario] = {
+  override def onMessage(msg: Message): UIO[Scenario] = {
     if (myChatId != ChatIntId(msg.chat.id))
-      sendMessage(chatId = ChatIntId(msg.chat.id), text = "Only this bot's creator can use it").exec.unit.map(_ => this)
+      sendMessage(chatId = ChatIntId(msg.chat.id), text = "Only this bot's creator can use it").exec.unit.foldZIO(
+        e => ZIO.logError("CRITICAL ERROR WHILE SENDING MESSAGE" + e.getMessage).map(_ => ()),
+        s => ZIO.unit
+      ).map(_ => this)
     else
-      for {
+      (for {
         scenarioOption <- tryParseFicLink(msg.text.getOrElse("NO_TEXT"))
         nextScenario <- scenarioOption match
           case Some(value) => ZIO.succeed(value)
           case None        => sendText("Not AO3 link, don't know what to do :c").map(_ => this)
-      } yield nextScenario
+      } yield nextScenario) |> tryAndSendOnError({case e: AirtableError => s"Error while getting fic from Airtable: ${e.getMessage}"})
   }
 
-  override def onCallbackQuery(query: CallbackQuery): Task[Scenario] = unknownCallbackQuery(query).map(_ => this)
+  override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] = unknownCallbackQuery(query).map(_ => this)
 
-  private def tryParseFicLink(text: String): Task[Option[Scenario]] = Ao3Url.tryParseFicId(text) match
+  private def tryParseFicLink(text: String): IO[AirtableError, Option[Scenario]] = Ao3Url.tryParseFicId(text) match
     case None => ZIO.succeed(None)
     case Some((_, id)) =>
       for {

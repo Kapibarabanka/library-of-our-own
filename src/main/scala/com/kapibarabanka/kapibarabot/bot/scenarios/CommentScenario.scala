@@ -5,7 +5,9 @@ import com.kapibarabanka.kapibarabot.domain.{MyFicRecord, MyFicStats}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import telegramium.bots.high.Api
 import telegramium.bots.{CallbackQuery, Message}
-import zio.{Task, ZIO}
+import zio.*
+import scalaz.Scalaz.ToIdOps
+
 import java.time.LocalDate
 
 case class CommentScenario(record: MyFicRecord)(implicit
@@ -13,9 +15,9 @@ case class CommentScenario(record: MyFicRecord)(implicit
     airtable: AirtableClient,
     ao3: Ao3
 ) extends Scenario:
-  protected override def startupAction: Task[Unit] = sendText("Send me your thoughts:").unit
+  protected override def startupAction: UIO[Unit] = sendText("Send me your thoughts:").unit
 
-  override def onMessage(msg: Message): Task[Scenario] = for {
+  override def onMessage(msg: Message): UIO[Scenario] = (for {
     newComment <- ZIO.succeed(
       record.stats.commentOption.getOrElse("") + s"${LocalDate.now()}:\n${msg.text.getOrElse("NO_TEXT")}\n"
     )
@@ -23,6 +25,6 @@ case class CommentScenario(record: MyFicRecord)(implicit
     patchedRecord <- airtable.patchFicStats(record.id.get, MyFicStats(commentOption = Some(newComment)))
     _             <- editLogText(logPatching, "Successfully patched record! Here it is:")
     nextScenario  <- ExistingFicScenario(patchedRecord).withStartup
-  } yield nextScenario
+  } yield nextScenario) |> tryAndSendOnError()
 
-  override def onCallbackQuery(query: CallbackQuery): Task[Scenario] = StartScenario().onCallbackQuery(query)
+  override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] = StartScenario().onCallbackQuery(query)

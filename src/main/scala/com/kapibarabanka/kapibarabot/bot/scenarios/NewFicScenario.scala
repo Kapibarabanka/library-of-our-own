@@ -13,14 +13,15 @@ import telegramium.bots.high.Api
 import telegramium.bots.high.Methods.answerCallbackQuery
 import telegramium.bots.high.implicits.*
 import zio.*
+import scalaz.Scalaz.ToIdOps
 
 case class NewFicScenario(link: String)(implicit bot: Api[Task], airtable: AirtableClient, ao3: Ao3) extends Scenario:
 
-  protected override def startupAction: Task[Unit] = sendMessageData(MessageData(MessageText.newFic(link), replyMarkup = getButtonsForNew)).unit
+  protected override def startupAction: UIO[Unit] = sendMessageData(MessageData(MessageText.newFic(link), replyMarkup = getButtonsForNew)).unit
 
-  override def onMessage(msg: Message): Task[Scenario] = StartScenario().onMessage(msg)
+  override def onMessage(msg: Message): UIO[Scenario] = StartScenario().onMessage(msg)
 
-  override def onCallbackQuery(query: CallbackQuery): Task[Scenario] = {
+  override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] = {
     query.data match
       case Buttons.addToAirtable.callbackData => onSave(query)
       case _                                  => unknownCallbackQuery(query).map(_ => this)
@@ -29,7 +30,7 @@ case class NewFicScenario(link: String)(implicit bot: Api[Task], airtable: Airta
   private def onSave(query: CallbackQuery) = {
     query.message
       .collect { case startMsg: Message =>
-        val parseAndSave = for {
+        (for {
           _          <- answerCallbackQuery(callbackQueryId = query.id, text = Some("Working on it...")).exec
           logParsing <- editLogText(startMsg, "Parsing AO3...")
           ficLink <- startMsg.entities.collectFirst { case OpenEnum.Known(TextLinkMessageEntity(_, _, url)) => url } match
@@ -40,9 +41,7 @@ case class NewFicScenario(link: String)(implicit bot: Api[Task], airtable: Airta
           record       <- airtable.addFic(fic)
           _            <- editLogText(savingMsg, "Enjoy:")
           nextScenario <- ExistingFicScenario(record).withStartup
-        } yield nextScenario
-        
-        tryAndSendOnError(parseAndSave, {
+        } yield nextScenario) |> tryAndSendOnError({
           case ao3Error: Ao3Error => s"\nOh no, couldn't get fic from Ao3: ${ao3Error.getMessage}"
           case airtableError: AirtableError => s"\nOh no, couldn't save to Airtable: ${airtableError.getMessage}"
         })
