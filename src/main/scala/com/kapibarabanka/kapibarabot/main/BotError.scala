@@ -1,4 +1,4 @@
-package com.kapibarabanka.kapibarabot.bot
+package com.kapibarabanka.kapibarabot.main
 
 enum BotError(msg: String) extends Exception(msg):
   case InvalidFicLink(link: String) extends BotError(s"$link is not a valid work or series link")

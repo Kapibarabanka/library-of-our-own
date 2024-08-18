@@ -33,11 +33,6 @@ class AirtableClient(http: Client[Task], authToken: String) {
     myRecord <- getMyRecord(record)
   } yield myRecord
 
-  def markAsReadToday(airtableId: String): IO[AirtableError, MyFicRecord] = for {
-    record  <- stats.find(airtableId)
-    patched <- patchFicStats(airtableId, Mapper.toMyStats(record.fields).withReadToday)
-  } yield patched
-
   def getFicByLink(link: String): IO[AirtableError, Option[MyFicRecord]] = for {
     recordOption <- getFicRecordByLink(link)
     myRecord <- recordOption match

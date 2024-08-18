@@ -9,8 +9,8 @@ package object tables {
     useDefaults = true
   )
 
-  implicit val tagDecoder  : Decoder[TagDocument]          = ConfiguredDecoder.derived[TagDocument]
-  implicit val statsDecoder: Decoder[StatsDocument]        = ConfiguredDecoder.derived[StatsDocument]
-  implicit val ficDecoder  : Decoder[FicDocument]          = ConfiguredDecoder.derived[FicDocument]
-  implicit val shipDecoder : Decoder[RelationshipDocument] = ConfiguredDecoder.derived[RelationshipDocument]
+  implicit val tagDecoder: Decoder[TagDocument]           = ConfiguredDecoder.derived[TagDocument]
+  implicit val statsDecoder: Decoder[StatsDocument]       = ConfiguredDecoder.derived[StatsDocument]
+  implicit val ficDecoder: Decoder[FicDocument]           = ConfiguredDecoder.derived[FicDocument]
+  implicit val shipDecoder: Decoder[RelationshipDocument] = ConfiguredDecoder.derived[RelationshipDocument]
 }

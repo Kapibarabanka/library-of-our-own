@@ -1,4 +1,4 @@
-package com.kapibarabanka.kapibarabot.bot
+package com.kapibarabanka.kapibarabot.main
 
 import com.kapibarabanka.kapibarabot.domain.MyFicStats
 import telegramium.bots.{InlineKeyboardButton, InlineKeyboardMarkup}

@@ -150,6 +150,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
       ZIO.succeed(FreeformTag(nameInWork, None))
     else
       for {
+        _   <- ZIO.log(s"Getting canonical name for tag '$nameInWork'")
         doc <- getTagDoc(nameInWork)
       } yield FreeformTag(doc.canonicalName.getOrElse(nameInWork), Some(doc.isFilterable))
 

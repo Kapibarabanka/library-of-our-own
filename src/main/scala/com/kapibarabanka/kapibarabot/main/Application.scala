@@ -1,7 +1,6 @@
 package com.kapibarabanka.kapibarabot.main
 
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3HttpClientImpl, Ao3Impl}
-import com.kapibarabanka.kapibarabot.bot.Kapibarabot
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.Client

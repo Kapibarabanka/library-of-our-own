@@ -1,4 +1,4 @@
-package com.kapibarabanka.kapibarabot.bot
+package com.kapibarabanka.kapibarabot.main
 
 object Emoji {
   val cross     = "❌"

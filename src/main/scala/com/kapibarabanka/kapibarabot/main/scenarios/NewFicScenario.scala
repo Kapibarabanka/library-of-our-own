@@ -1,23 +1,23 @@
-package com.kapibarabanka.kapibarabot.bot.scenarios
+package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.airtable.AirtableError
 import com.kapibarabanka.ao3scrapper.models.{Fic, FicType}
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
-import com.kapibarabanka.kapibarabot.bot.*
-import com.kapibarabanka.kapibarabot.bot.BotError.*
-import com.kapibarabanka.kapibarabot.bot.Buttons.getButtonsForNew
+import com.kapibarabanka.kapibarabot.main.BotError.*
+import com.kapibarabanka.kapibarabot.main.Buttons.getButtonsForNew
+import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, Buttons, MessageData, MessageText, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import iozhik.OpenEnum
-import telegramium.bots.*
-import telegramium.bots.high.Api
-import telegramium.bots.high.Methods.answerCallbackQuery
-import telegramium.bots.high.implicits.*
-import zio.*
 import scalaz.Scalaz.ToIdOps
+import telegramium.bots.*
+import zio.*
 
-case class NewFicScenario(link: String)(implicit bot: Api[Task], airtable: AirtableClient, ao3: Ao3) extends Scenario:
+case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3)
+    extends Scenario,
+      WithErrorHandling(bot):
 
-  protected override def startupAction: UIO[Unit] = sendMessageData(MessageData(MessageText.newFic(link), replyMarkup = getButtonsForNew)).unit
+  protected override def startupAction: UIO[Unit] =
+    bot.sendMessage(MessageData(MessageText.newFic(link), replyMarkup = getButtonsForNew)).unit
 
   override def onMessage(msg: Message): UIO[Scenario] = StartScenario().onMessage(msg)
 
@@ -31,19 +31,19 @@ case class NewFicScenario(link: String)(implicit bot: Api[Task], airtable: Airta
     query.message
       .collect { case startMsg: Message =>
         (for {
-          _          <- answerCallbackQuery(callbackQueryId = query.id, text = Some("Working on it...")).exec
-          logParsing <- editLogText(startMsg, "Parsing AO3...")
+          _          <- bot.answerCallbackQuery(query, text = Some("Working on it..."))
+          logParsing <- bot.editLogText(startMsg, "Parsing AO3...")
           ficLink <- startMsg.entities.collectFirst { case OpenEnum.Known(TextLinkMessageEntity(_, _, url)) => url } match
             case Some(value) => ZIO.succeed(value)
             case None        => ZIO.fail(NoLinkInMessage())
           fic          <- getFicByLink(ficLink)
-          savingMsg    <- editLogText(logParsing, "Saving to Airtable...")
+          savingMsg    <- bot.editLogText(logParsing, "Saving to Airtable...")
           record       <- airtable.addFic(fic)
-          _            <- editLogText(savingMsg, "Enjoy:")
+          _            <- bot.editLogText(savingMsg, "Enjoy:")
           nextScenario <- ExistingFicScenario(record).withStartup
-        } yield nextScenario) |> tryAndSendOnError({
-          case ao3Error: Ao3Error => s"\nOh no, couldn't get fic from Ao3: ${ao3Error.getMessage}"
-          case airtableError: AirtableError => s"\nOh no, couldn't save to Airtable: ${airtableError.getMessage}"
+        } yield nextScenario) |> sendOnErrors({
+          case ao3Error: Ao3Error           => s"getting fic from Ao3"
+          case airtableError: AirtableError => s"adding fic to Airtable"
         })
       }
       .getOrElse(ZIO.succeed(this))

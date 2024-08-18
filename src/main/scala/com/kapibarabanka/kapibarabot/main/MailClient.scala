@@ -1,10 +1,10 @@
-package com.kapibarabanka.kapibarabot
+package com.kapibarabanka.kapibarabot.main
 
 import java.io.File
 import java.util.Properties
 import javax.activation.DataHandler
-import javax.mail.internet.*
 import javax.mail.*
+import javax.mail.internet.*
 import javax.mail.util.ByteArrayDataSource
 import scala.util.Try
 

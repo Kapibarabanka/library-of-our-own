@@ -1,4 +1,4 @@
-package com.kapibarabanka.kapibarabot.bot
+package com.kapibarabanka.kapibarabot.main
 
 import com.kapibarabanka.ao3scrapper.models.{Fic, Relationship}
 import com.kapibarabanka.kapibarabot.domain.*
@@ -30,13 +30,13 @@ object MessageText {
        |""".stripMargin
 
   private def displayStats(stats: MyFicStats) =
-    s"""${if (stats.backlogOption.getOrElse(false)) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}
-       |${if (stats.isOnKindleOption.getOrElse(false)) s"${Emoji.kindle} Is on Kindle" else s"${Emoji.cross} Not on Kindle"}
-       |${if (stats.readOption.getOrElse(false)) s"${Emoji.read} Already read" else s"${Emoji.cross} Not read"}${readDates(stats)}
+    s"""${if (stats.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}
+       |${if (stats.isOnKindle) s"${Emoji.kindle} Is on Kindle" else s"${Emoji.cross} Not on Kindle"}
+       |${if (stats.read) s"${Emoji.read} Already read" else s"${Emoji.cross} Not read"}${readDates(stats)}
        |""".stripMargin
 
   private def displayMyRating(stats: MyFicStats) =
-    stats.qualityOption.fold("")(q => s"<u>You rated it</u> ${formatQuality(q)}\n") + stats.commentOption.fold("")(c =>
+    stats.quality.fold("")(q => s"<u>You rated it</u> ${formatQuality(q)}\n") + stats.comment.fold("")(c =>
       s"<u>\nYour thoughts on it:\n</u><i>$c</i>"
     )
 

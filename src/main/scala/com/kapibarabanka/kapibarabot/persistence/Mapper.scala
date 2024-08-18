@@ -132,13 +132,13 @@ object Mapper:
       fic,
       airtable.id,
       MyFicStats(
-        readOption = ficDoc.Read,
-        backlogOption = ficDoc.Backlog,
-        isOnKindleOption = ficDoc.IsOnKindle,
-        readDatesOption = ficDoc.ReadDates,
-        kindleToDoOption = ficDoc.KindleToDo,
-        qualityOption = ficDoc.Quality.map(Quality.withName),
-        commentOption = ficDoc.Comment,
+        read = ficDoc.Read.getOrElse(false),
+        backlog = ficDoc.Backlog.getOrElse(false),
+        isOnKindle = ficDoc.IsOnKindle.getOrElse(false),
+        readDates = ficDoc.ReadDates,
+        kindleToDo = ficDoc.KindleToDo.getOrElse(false),
+        quality = ficDoc.Quality.map(Quality.withName),
+        comment = ficDoc.Comment
       )
     )
   }
@@ -151,21 +151,21 @@ object Mapper:
     case _   => Rating.None
 
   def toMyStats(doc: StatsDocument): MyFicStats = MyFicStats(
-    readOption = doc.Read,
-    backlogOption = doc.Backlog,
-    isOnKindleOption = doc.IsOnKindle,
-    readDatesOption = doc.ReadDates,
-    kindleToDoOption = doc.KindleToDo,
-    qualityOption = doc.Quality.map(Quality.withName),
-    commentOption = doc.Comment,
+    read = doc.Read.getOrElse(false),
+    backlog = doc.Backlog.getOrElse(false),
+    isOnKindle = doc.IsOnKindle.getOrElse(false),
+    readDates = doc.ReadDates,
+    kindleToDo = doc.KindleToDo.getOrElse(false),
+    quality = doc.Quality.map(Quality.withName),
+    comment = doc.Comment
   )
 
   def toStatsDoc(myFicStats: MyFicStats): StatsDocument = StatsDocument(
-    Read = myFicStats.readOption,
-    Backlog = myFicStats.backlogOption,
-    IsOnKindle = myFicStats.isOnKindleOption,
-    ReadDates = myFicStats.readDatesOption,
-    KindleToDo = myFicStats.kindleToDoOption,
-    Quality = myFicStats.qualityOption.map(q => q.toString),
-    Comment = myFicStats.commentOption
+    Read = Some(myFicStats.read),
+    Backlog = Some(myFicStats.backlog),
+    IsOnKindle = Some(myFicStats.isOnKindle),
+    ReadDates = myFicStats.readDates,
+    KindleToDo = Some(myFicStats.kindleToDo),
+    Quality = myFicStats.quality.map(q => q.toString),
+    Comment = myFicStats.comment
   )

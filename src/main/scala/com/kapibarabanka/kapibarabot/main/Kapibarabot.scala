@@ -1,9 +1,9 @@
-package com.kapibarabanka.kapibarabot.bot
+package com.kapibarabanka.kapibarabot.main
 
 import cats.Parallel
 import cats.effect.Async
 import com.kapibarabanka.ao3scrapper.Ao3
-import com.kapibarabanka.kapibarabot.bot.scenarios.{Scenario, StartScenario}
+import com.kapibarabanka.kapibarabot.main.scenarios.{Scenario, StartScenario}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import telegramium.bots.*
 import telegramium.bots.high.{Api, LongPollBot}
@@ -16,8 +16,8 @@ class Kapibarabot()(implicit
     airtable: AirtableClient,
     ao3: Ao3
 ) extends LongPollBot[Task](bot):
-
-  var scenario: Scenario = StartScenario()
+  implicit val botApiWrapper: BotApiWrapper = new BotApiWrapper()
+  var scenario: Scenario                    = StartScenario()
 
   override def onMessage(msg: Message): Task[Unit] =
     for {
