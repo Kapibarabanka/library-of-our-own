@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
-import com.kapibarabanka.kapibarabot.main.Constants.myChatId
+import com.kapibarabanka.kapibarabot.utils.Constants.myChatId
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import scalaz.Scalaz.ToIdOps

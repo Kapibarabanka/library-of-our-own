@@ -3,10 +3,11 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.ao3scrapper.models.Work
 import com.kapibarabanka.kapibarabot.main.BotError.*
-import com.kapibarabanka.kapibarabot.main.Buttons.*
+import com.kapibarabanka.kapibarabot.utils.Buttons.*
 import com.kapibarabanka.kapibarabot.domain.{MyFicRecord, MyFicStats, Quality}
-import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, Buttons, MessageData, MessageText, WithErrorHandling}
+import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.utils.{Buttons, MessageText}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
 import zio.*
@@ -36,6 +37,9 @@ case class ExistingFicScenario(record: MyFicRecord)(implicit
       case Buttons.rateOk.callbackData        => patchStats(record.stats.copy(quality = Some(Quality.Ok)), query)
       case Buttons.rateNice.callbackData      => patchStats(record.stats.copy(quality = Some(Quality.Nice)), query)
       case Buttons.rateBrilliant.callbackData => patchStats(record.stats.copy(quality = Some(Quality.Brilliant)), query)
+
+      case Buttons.rateFire.callbackData    => patchStats(record.stats.copy(fire = true), query)
+      case Buttons.rateNotFire.callbackData => patchStats(record.stats.copy(fire = false), query)
 
       case Buttons.addComment.callbackData => bot.answerCallbackQuery(query).flatMap(_ => CommentScenario(record).withStartup)
 

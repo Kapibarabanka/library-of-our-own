@@ -138,7 +138,8 @@ object Mapper:
         readDates = ficDoc.ReadDates,
         kindleToDo = ficDoc.KindleToDo.getOrElse(false),
         quality = ficDoc.Quality.map(Quality.withName),
-        comment = ficDoc.Comment
+        comment = ficDoc.Comment,
+        fire = ficDoc.Fire.getOrElse(false)
       )
     )
   }
@@ -157,7 +158,8 @@ object Mapper:
     readDates = doc.ReadDates,
     kindleToDo = doc.KindleToDo.getOrElse(false),
     quality = doc.Quality.map(Quality.withName),
-    comment = doc.Comment
+    comment = doc.Comment,
+    fire = doc.Fire.getOrElse(false)
   )
 
   def toStatsDoc(myFicStats: MyFicStats): StatsDocument = StatsDocument(
@@ -167,5 +169,6 @@ object Mapper:
     ReadDates = myFicStats.readDates,
     KindleToDo = Some(myFicStats.kindleToDo),
     Quality = myFicStats.quality.map(q => q.toString),
-    Comment = myFicStats.comment
+    Comment = myFicStats.comment,
+    Fire = Some(myFicStats.fire)
   )

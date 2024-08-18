@@ -1,26 +1,28 @@
 package com.kapibarabanka.kapibarabot.utils
 
 import com.kapibarabanka.kapibarabot.domain.MyFicStats
-import com.kapibarabanka.kapibarabot.main.Emoji
 import telegramium.bots.{InlineKeyboardButton, InlineKeyboardMarkup}
 
 object Buttons:
-  def getButtonsForExisting(stats: MyFicStats) = Some(
+  def getButtonsForExisting(stats: MyFicStats): Option[InlineKeyboardMarkup] = Some(
     InlineKeyboardMarkup(inlineKeyboard =
       List(
-        if (stats.backlog) List() else List(addToBacklog),
-        if (stats.isOnKindle || stats.kindleToDo) List() else List(sendToKindle),
-        if (stats.isReadToday) List() else List(markAsReadToday),
-        (if (stats.fire) rateNotFire else rateFire) :: (if (stats.read)
-                                                          List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant)
-                                                        else List()),
-        if (stats.read || stats.backlog) List() else List(markAsRead),
+        List(
+          if (stats.backlog) None else Some(addToBacklog),
+          if (stats.isOnKindle || stats.kindleToDo) None else Some(sendToKindle)
+        ).flatten,
+        List(
+          if (stats.isReadToday) None else Some(markAsReadToday),
+          if (stats.read || stats.backlog) None else Some(markAsRead),
+          if (stats.fire) Some(rateNotFire) else Some(rateFire)
+        ).flatten,
+        if (stats.read) List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant) else List(),
         List(addComment)
       )
     )
   )
 
-  def getButtonsForNew = Some(
+  def getButtonsForNew: Option[InlineKeyboardMarkup] = Some(
     InlineKeyboardMarkup(inlineKeyboard =
       List(
         List(addToAirtable)

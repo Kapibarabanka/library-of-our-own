@@ -4,9 +4,10 @@ import com.kapibarabanka.airtable.AirtableError
 import com.kapibarabanka.ao3scrapper.models.{Fic, FicType}
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
 import com.kapibarabanka.kapibarabot.main.BotError.*
-import com.kapibarabanka.kapibarabot.main.Buttons.getButtonsForNew
-import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, Buttons, MessageData, MessageText, WithErrorHandling}
+import com.kapibarabanka.kapibarabot.utils.Buttons.getButtonsForNew
+import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.utils.{Buttons, MessageText}
 import iozhik.OpenEnum
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*

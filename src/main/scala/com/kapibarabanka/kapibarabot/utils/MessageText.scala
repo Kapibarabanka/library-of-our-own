@@ -2,11 +2,9 @@ package com.kapibarabanka.kapibarabot.utils
 
 import com.kapibarabanka.ao3scrapper.models.{Fic, Relationship}
 import com.kapibarabanka.kapibarabot.domain.*
-import com.kapibarabanka.kapibarabot.main.{Constants, Emoji}
 import scalaz.Scalaz.ToIdOps
 
 object MessageText {
-
   def existingFic(record: MyFicRecord): String =
     s"""
        |${info(record.fic)}
@@ -27,7 +25,7 @@ object MessageText {
        |
        |${fic.relationships.map(formatShip).mkString("\n")}
        |
-       |${fic.words} words
+       |${f"${fic.words}%,d"} words
        |""".stripMargin
 
   private def displayStats(stats: MyFicStats) =
@@ -37,7 +35,7 @@ object MessageText {
        |""".stripMargin
 
   private def displayMyRating(stats: MyFicStats) =
-    (if (stats.fire) s"${Emoji.fire}<b>It has fire!</b>${Emoji.fire}\n\n" else "")
+    (if (stats.fire) s"${Emoji.fire}<b>It has fire!</b>${Emoji.fire}\n" else "")
       + stats.quality.fold("")(q => s"You rated it ${formatQuality(q)}\n")
       + stats.comment.fold("")(c => s"\nYour thoughts on it:\n<i>$c</i>")
 

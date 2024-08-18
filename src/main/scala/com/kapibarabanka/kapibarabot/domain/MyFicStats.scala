@@ -9,6 +9,7 @@ case class MyFicStats(
     readDates: Option[String],
     kindleToDo: Boolean,
     quality: Option[Quality.Value],
+    fire: Boolean,
     comment: Option[String]
 ):
   val readDatesList: List[LocalDate] = readDates

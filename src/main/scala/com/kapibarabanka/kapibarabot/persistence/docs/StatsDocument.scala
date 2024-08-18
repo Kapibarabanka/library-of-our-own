@@ -9,5 +9,6 @@ final case class StatsDocument(
     ReadDates: Option[String] = None,
     KindleToDo: Option[Boolean] = None,
     Quality: Option[String] = None,
-    Comment: Option[String] = None
+    Comment: Option[String] = None,
+    Fire: Option[Boolean] = None
 ) extends EntityDocument

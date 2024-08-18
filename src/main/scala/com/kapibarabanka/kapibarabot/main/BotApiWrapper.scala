@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.main
 
-import com.kapibarabanka.kapibarabot.main.Constants.myChatId
+import com.kapibarabanka.kapibarabot.utils.Constants.myChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
 import telegramium.bots.high.Api
