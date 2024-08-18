@@ -1,4 +1,4 @@
-package com.kapibarabanka.kapibarabot.main
+package com.kapibarabanka.kapibarabot.utils
 
 import telegramium.bots.ChatIntId
 

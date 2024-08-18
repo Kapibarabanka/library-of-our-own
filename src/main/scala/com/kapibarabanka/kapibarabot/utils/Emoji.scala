@@ -1,4 +1,4 @@
-package com.kapibarabanka.kapibarabot.main
+package com.kapibarabanka.kapibarabot.utils
 
 object Emoji {
   val cross     = "❌"
@@ -14,5 +14,7 @@ object Emoji {
   val meh       = "\uD83E\uDEE4"
   val ok        = "\uD83C\uDF7A"
   val nice      = "\uD83D\uDC9C"
-  val brilliant = "\uD83E\uDD84 "
+  val brilliant = "\uD83E\uDD84"
+  val fire      = "\uD83D\uDD25"
+  val notFire   = "\uD83E\uDD76"
 }

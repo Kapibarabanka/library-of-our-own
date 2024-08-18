@@ -1,7 +1,8 @@
-package com.kapibarabanka.kapibarabot.main
+package com.kapibarabanka.kapibarabot.utils
 
 import com.kapibarabanka.ao3scrapper.models.{Fic, Relationship}
 import com.kapibarabanka.kapibarabot.domain.*
+import com.kapibarabanka.kapibarabot.main.{Constants, Emoji}
 import scalaz.Scalaz.ToIdOps
 
 object MessageText {
@@ -36,16 +37,16 @@ object MessageText {
        |""".stripMargin
 
   private def displayMyRating(stats: MyFicStats) =
-    stats.quality.fold("")(q => s"<u>You rated it</u> ${formatQuality(q)}\n") + stats.comment.fold("")(c =>
-      s"<u>\nYour thoughts on it:\n</u><i>$c</i>"
-    )
+    (if (stats.fire) s"${Emoji.fire}<b>It has fire!</b>${Emoji.fire}\n\n" else "")
+      + stats.quality.fold("")(q => s"You rated it ${formatQuality(q)}\n")
+      + stats.comment.fold("")(c => s"\nYour thoughts on it:\n<i>$c</i>")
 
   private def formatQuality(quality: Quality.Value) = quality match
-    case Quality.Brilliant => s"Brilliant ${Emoji.brilliant}"
-    case Quality.Nice      => s"Nice ${Emoji.nice}"
-    case Quality.Ok        => s"Ok ${Emoji.ok}"
-    case Quality.Meh       => s"Meeeh ${Emoji.meh}"
-    case Quality.Never     => s"Never Again ${Emoji.never}"
+    case Quality.Brilliant => s"<b>Brilliant</b> ${Emoji.brilliant}"
+    case Quality.Nice      => s"<b>Nice</b> ${Emoji.nice}"
+    case Quality.Ok        => s"<b>Ok</b> ${Emoji.ok}"
+    case Quality.Meh       => s"<b>Meeeh</b> ${Emoji.meh}"
+    case Quality.Never     => s"<b>Never</b> Again ${Emoji.never}"
 
   private def readDates(stats: MyFicStats) = stats.readDatesList match
     case List() => ""

@@ -1,6 +1,7 @@
-package com.kapibarabanka.kapibarabot.main
+package com.kapibarabanka.kapibarabot.utils
 
 import com.kapibarabanka.kapibarabot.domain.MyFicStats
+import com.kapibarabanka.kapibarabot.main.Emoji
 import telegramium.bots.{InlineKeyboardButton, InlineKeyboardMarkup}
 
 object Buttons:
@@ -10,7 +11,9 @@ object Buttons:
         if (stats.backlog) List() else List(addToBacklog),
         if (stats.isOnKindle || stats.kindleToDo) List() else List(sendToKindle),
         if (stats.isReadToday) List() else List(markAsReadToday),
-        if (stats.read) List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant) else List(),
+        (if (stats.fire) rateNotFire else rateFire) :: (if (stats.read)
+                                                          List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant)
+                                                        else List()),
         if (stats.read || stats.backlog) List() else List(markAsRead),
         List(addComment)
       )
@@ -41,6 +44,8 @@ object Buttons:
   val rateOk        = InlineKeyboardButton(s"${Emoji.ok}", callbackData = Some("rateOk"))
   val rateNice      = InlineKeyboardButton(s"${Emoji.nice}", callbackData = Some("rateNice"))
   val rateBrilliant = InlineKeyboardButton(s"${Emoji.brilliant}", callbackData = Some("rateBrilliant"))
+  val rateFire      = InlineKeyboardButton(s"${Emoji.fire}", callbackData = Some("rateFire"))
+  val rateNotFire   = InlineKeyboardButton(s"${Emoji.notFire}", callbackData = Some("rateNotFire"))
 
   // for new
   val addToAirtable = InlineKeyboardButton(s"${Emoji.airtable} Save", callbackData = Some("addToAirtable"))

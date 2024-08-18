@@ -1,4 +1,4 @@
-package com.kapibarabanka.kapibarabot.main
+package com.kapibarabanka.kapibarabot.utils
 
 import java.io.File
 import java.util.Properties
