@@ -36,6 +36,7 @@ abstract class TableBase[A <: EntityDocument: io.circe.Decoder: io.circe.Encoder
         case Successful(resp) => resp.as[TResp]
         case resp             => resp.as[String].flatMap(msg => ZIO.fail(UnclassifiedError(msg, request.uri.renderString)))
       }
+      .logError
       .mapError(e => ParsingError(e.getMessage, request.uri.renderString))
   }
 

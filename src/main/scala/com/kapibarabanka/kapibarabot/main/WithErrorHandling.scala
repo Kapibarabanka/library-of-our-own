@@ -14,7 +14,7 @@ trait WithErrorHandling(bot: BotApiWrapper):
     )
 
   def sendOnError[T](defaultValue: T)(actionName: String)(action: ZIO[Any, Throwable, T]): UIO[T] =
-    sendOnErrors(defaultValue)({ case e => errorMessage(e, actionName) })(action)
+    sendOnErrors(defaultValue)({ case e => actionName })(action)
 
   private def errorMessage(e: Throwable, actionName: String) =
     s"\nError happened while $actionName: ${e.getMessage}"

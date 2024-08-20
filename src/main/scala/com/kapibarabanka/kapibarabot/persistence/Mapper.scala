@@ -22,7 +22,7 @@ object Mapper:
       case series: Series => (series.workIds.size, true)
     FicDocument(
       Name = fic.title,
-      Author = fic.authors.mkString(", "),
+      Authors = Some(fic.authors.mkString(", ")),
       Rating = (fic.rating.toString.substring(0, 1)),
       Warnings = fic.warnings.map(_.name).mkString(", "),
       Categories = fic.categories.map(_.toString).toList,
@@ -59,7 +59,7 @@ object Mapper:
 
     val id         = ficDoc.ao3Id
     val title      = ficDoc.Name
-    val authors    = ficDoc.Author.split(", ").toList
+    val authors    = ficDoc.Authors.fold(List())(_.split(", ").toList)
     val rating     = ficDoc.Rating |> toRating
     val warnings   = ficDoc.Warnings.split(", ").toSet.map(ArchiveWarning(_))
     val categories = ficDoc.Categories.map(Category.withName).toSet

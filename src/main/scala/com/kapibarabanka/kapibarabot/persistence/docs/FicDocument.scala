@@ -4,7 +4,7 @@ import com.kapibarabanka.airtable.EntityDocument
 
 final case class FicDocument(
     Name: String,
-    Author: String,
+    Authors: Option[String],
     Rating: String,
     Warnings: String,
     Categories: List[String] = List(),
