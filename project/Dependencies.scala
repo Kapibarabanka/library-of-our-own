@@ -44,8 +44,15 @@ object Dependencies {
   val scalaScraper = "net.ruippeixotog" %% "scala-scraper"   % V.scalaScraper
   val javaMail     = "javax.mail"        % "mail"            % "1.4.7"
 
+  val sqlite = Seq(
+    "com.typesafe.slick" %% "slick"          % "3.5.1",
+    "org.slf4j"           % "slf4j-nop"      % "1.7.26",
+    "com.typesafe.slick" %% "slick-hikaricp" % "3.5.1",
+    "org.xerial"          % "sqlite-jdbc"    % "3.34.0"
+  )
+
   val ao3: Seq[ModuleID]         = Seq(zio, scalaParallel, scalatest, scalaScraper, uri, zioHttp)
   val airtable: Seq[ModuleID]    = Seq(catsEffect, circeCore, circeGeneric, http4sCirce, http4sBlaze, zio, zioToCats)
-  val kapibarabot: Seq[ModuleID] = Seq(scalaParallel, logback, scalaz, javaMail) ++ telegramium
+  val kapibarabot: Seq[ModuleID] = Seq(scalaParallel, logback, scalaz, javaMail) ++ telegramium ++ sqlite
 
 }
