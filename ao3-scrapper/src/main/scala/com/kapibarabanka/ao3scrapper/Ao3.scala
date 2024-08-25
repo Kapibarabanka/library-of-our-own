@@ -6,7 +6,10 @@ import com.kapibarabanka.ao3scrapper.exceptions.Ao3ClientError.*
 import com.kapibarabanka.ao3scrapper.models.*
 import com.kapibarabanka.ao3scrapper.models.RelationshipType.*
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
+import org.jsoup.HttpStatusException
 import zio.{IO, ZIO, ZLayer}
+
+import scala.util.{Failure, Success, Try}
 
 trait Ao3:
   def work(id: String): IO[Ao3ClientError, Work]
@@ -25,8 +28,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
   private val canonizeFandoms            = true
   private val getTagsFromClient          = true
 
-  private val fandomPattern = """^(.*)\s(\(.*\))$""".r
-  private val jsoupBrowser  = JsoupBrowser()
+  private val jsoupBrowser = JsoupBrowser()
 
   override def work(id: String): IO[Ao3ClientError, Work] = for {
     _             <- ZIO.log(s"Parsing work with id '$id'")
@@ -108,42 +110,44 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
 
   override def character(nameInWork: String): IO[Ao3ClientError, Character] =
     if (!canonizeShipsAndCharacters)
-      ZIO.succeed(Character(nameInWork))
+      ZIO.succeed(Character.fromNameInWork(nameInWork))
     else
       for {
         canonicalName <- getCanonicalTagName(nameInWork)
-      } yield Character(canonicalName.getOrElse(nameInWork))
+      } yield Character.fromNameInWork(canonicalName.getOrElse(nameInWork))
 
   override def relationship(nameInWork: String): IO[Ao3ClientError, Relationship] = {
     val isRomantic = nameInWork.contains("/")
     val separator  = if (isRomantic) "/" else " & "
     val shipType   = if (isRomantic) Romantic else Platonic
     if (!canonizeShipsAndCharacters)
-      ZIO.succeed(Relationship(nameInWork.split(separator).map(Character(_)).toSet, shipType, None))
+      ZIO.succeed(Relationship(nameInWork.split(separator).map(Character.fromNameInWork).toSet, shipType, None))
     else
       for {
-        name <- getCanonicalTagName(nameInWork).map(n => n.getOrElse(nameInWork))
-        characterNames <- ZIO.succeed(name match
-          // todo if tag "character (fandom)" doesnt exist try to canonize just "character"
-          case fandomPattern(shipWithoutFandom, fandom) => shipWithoutFandom.split(separator).map(c => s"$c $fandom")
-          case shipWithoutFandom                        => shipWithoutFandom.split(separator)
-        )
-        characters <- ZIO.collectAll(characterNames.map(character))
+        canonicalShipName <- getCanonicalTagName(nameInWork).map(n => n.getOrElse(nameInWork))
+        (ship, label)     <- ZIO.succeed(StringUtils.trySeparateLabel(canonicalShipName))
+        characterNames    <- ZIO.succeed(ship.split(separator))
+        characters        <- ZIO.collectAll(characterNames.map(name => characterWithLabel(name, label)))
       } yield Relationship(
         characters.toSet,
         shipType,
         // e.g Alphonse Elric/Cats is a synonym of Alphonse Elric/Other(s) and it's not very informative
-        if (characters.contains(Character("Other(s)"))) Some(nameInWork) else None
+        if (characters.contains(Character("Other(s)", None))) Some(nameInWork) else None
       )
   }
 
+  private def characterWithLabel(name: String, label: Option[String]): IO[Ao3ClientError, Character] =
+    val nameWithLabel = StringUtils.combineWithLabel(name, label)
+    tagExists(nameWithLabel).map(exists => if (exists) nameWithLabel else name).flatMap(character)
+
   override def fandom(nameInWork: String): IO[Ao3ClientError, Fandom] =
     if (!canonizeFandoms)
-      ZIO.succeed(Fandom(nameInWork))
+      ZIO.succeed(Fandom(nameInWork, None))
     else
       for {
         canonicalName <- getCanonicalTagName(nameInWork)
-      } yield Fandom(canonicalName.getOrElse(nameInWork))
+        (name, label) <- ZIO.succeed(StringUtils.trySeparateLabel(canonicalName.getOrElse(nameInWork)))
+      } yield Fandom(name, label)
 
   override def freeformTag(nameInWork: String): IO[Ao3ClientError, FreeformTag] =
     if (!canonizeFreeformTags)
@@ -176,6 +180,12 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
     case Seq("No Archive Warnings Apply") => Set()
     case otherWarnings                    => otherWarnings.map(ArchiveWarning(_)).toSet
   }
+
+  private def tagExists(tag: String) = Try(jsoupBrowser.get(Ao3Url.tag(tag))) match
+    case Failure(exception: HttpStatusException) =>
+      if (exception.getStatusCode == 404) ZIO.succeed(false) else ZIO.fail(HttpError(exception.getMessage))
+    case Failure(exception) => ZIO.fail(HttpError(exception.getMessage))
+    case Success(_)         => ZIO.succeed(true)
 
 object Ao3Impl:
   val layer: ZLayer[Ao3HttpClient, Nothing, Ao3Impl] = ZLayer {

@@ -12,9 +12,9 @@ object TestZio extends ZIOAppDefault {
 
   val program =
     for {
-//      body <- Ao3HttpClient.getAuthed("https://archiveofourown.org/works/5094806/chapters/11716460")
-      work <- Ao3.work("19391422")
-      _    <- Console.printLine(work)
+      work <- Ao3.work("53682058")
+      _    <- Console.printLine(work.relationships.map(r => r.name))
+      _    <- Console.printLine(work.characters)
     } yield ()
 
   override val run = program.provide(
@@ -24,6 +24,6 @@ object TestZio extends ZIOAppDefault {
     ZLayer.succeed(config),
     Client.live,
     ZLayer.succeed(NettyConfig.default),
-    DnsResolver.default,
+    DnsResolver.default
   )
 }

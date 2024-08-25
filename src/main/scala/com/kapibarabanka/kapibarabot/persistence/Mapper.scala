@@ -54,8 +54,8 @@ object Mapper:
       fandomRecords: List[Record[TagDocument]],
       characterRecords: List[Record[TagDocument]]
   ): MyFicRecord = {
-    val ficDoc            = airtable.fields
-    val characterNameToId = characterRecords.map(r => r.id.get -> r.fields.Name).toMap
+    val ficDoc        = airtable.fields
+    val characterById = characterRecords.map(r => r.id.get -> Character(r.fields.Name, r.fields.Label)).toMap
 
     val id         = ficDoc.ao3Id
     val title      = ficDoc.Name
@@ -63,14 +63,14 @@ object Mapper:
     val rating     = ficDoc.Rating |> toRating
     val warnings   = ficDoc.Warnings.split(", ").toSet.map(ArchiveWarning(_))
     val categories = ficDoc.Categories.map(Category.withName).toSet
-    val fandoms    = fandomRecords.map(r => Fandom(r.fields.Name)).toSet
+    val fandoms    = fandomRecords.map(r => Fandom(r.fields.Name, r.fields.Label)).toSet
     val relationships = shipRecords.map(r =>
       Relationship(
-        r.fields.Characters.map(id => Character(characterNameToId(id))).toSet,
+        r.fields.Characters.map(characterById).toSet,
         RelationshipType.withName(r.fields.Type)
       )
     )
-    val characters = characterRecords.map(r => Character(r.fields.Name)).toSet
+    val characters = characterRecords.map(r => Character(r.fields.Name, r.fields.Label)).toSet
     val freeformTags = ficDoc.AllTags match
       // TODO: pass tags from airtable, if tag is there it's filterable
       case Some(tags) => tags.split(", ").toList.map(FreeformTag(_, None))

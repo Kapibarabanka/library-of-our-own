@@ -84,18 +84,18 @@ class AirtableClient(http: Client[Task], authToken: String) {
 
   private def convert(fic: Fic): IO[AirtableError, FicDocument] = {
     for {
-      fandomRecords <- fandoms.upsert(fic.fandoms.map(f => TagDocument(f.name)).toList)
+      fandomRecords <- fandoms.upsert(fic.fandoms.map(f => TagDocument(f.name, f.label)).toList)
       characterRecords <- characters.upsert(
         fic.characters
           .union(fic.relationships.flatMap(s => s.characters).toSet)
-          .map(c => TagDocument(c.name))
+          .map(c => TagDocument(c.name, c.label))
           .toList
       )
       freeformTagRecords <-
         tags.upsert(
           fic.freeformTags
             .filter(t => t.isFilterable.getOrElse(false))
-            .map(t => TagDocument(t.name))
+            .map(t => TagDocument(t.name, None))
         )
       relationsRecords <- upsertShips(fic.relationships, characterRecords)
     } yield toAirtable(
