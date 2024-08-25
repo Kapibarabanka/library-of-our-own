@@ -5,7 +5,7 @@
 
 # playgrounds
 *.sc
-Playground.scala
+*Playground.scala
 
 # sbt specific
 dist/*

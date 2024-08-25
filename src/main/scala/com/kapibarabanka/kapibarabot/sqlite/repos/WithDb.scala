@@ -1,5 +1,6 @@
-package com.kapibarabanka.kapibarabot.sqlite
+package com.kapibarabanka.kapibarabot.sqlite.repos
 
+import com.kapibarabanka.kapibarabot.sqlite.Sqlite
 import zio.Task
 
 trait WithDb(userId: String):
