@@ -46,6 +46,20 @@ abstract class TableBase[A <: EntityDocument: io.circe.Decoder: io.circe.Encoder
     runRequest[RecordsResponse[A]](request).map(r => r.records.last)
   }
 
+  override def patch(records: List[Record[A]]): IO[AirtableError, List[Record[A]]] = {
+    val chunks = records.sliding(10, 10).toList
+
+    def patchChunk(chunk: List[Record[A]]) = {
+      // TODO: research asJson.deepDropNullValues.dropEmptyValues maybe write custom encoder-decoder
+      val json    = PatchRequest(chunk).asJson.deepDropNullValues.dropEmptyValues
+      val request = constructRequest(PATCH, url, json)
+      runRequest[RecordsResponse[A]](request)
+    }
+
+    chunks.parTraverse(patchChunk).map(_.flatMap(response => response.records))
+
+  }
+
   override def upsert(records: List[A]): IO[AirtableError, List[Record[A]]] = {
     val chunks = records.distinct.sliding(10, 10).toList
 

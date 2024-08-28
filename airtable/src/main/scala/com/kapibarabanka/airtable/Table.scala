@@ -11,6 +11,8 @@ trait Table[A <: EntityDocument] {
 
   def patch(record: Record[A]): IO[AirtableError, Record[A]]
 
+  def patch(record: List[Record[A]]): IO[AirtableError, List[Record[A]]]
+
   def findOption(id: String): IO[AirtableError, Option[Record[A]]]
 
   def find(id: String): IO[AirtableError, Record[A]]

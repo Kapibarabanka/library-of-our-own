@@ -55,6 +55,11 @@ class AirtableClient(http: Client[Task], authToken: String) {
     _          <- tags.delete(lonelyTags.map(r => r.id.get))
   } yield ()
 
+  def updateCharacters = for {
+    allcahrs <- characters.getAll
+    _          <- characters.patch(allcahrs.map(r => r.copy(fields = r.fields.withFullName)))
+  } yield ()
+
   def collectFilterable(): IO[AirtableError, Unit] = for {
     allTags <- tags.getAll
     tagMap  <- ZIO.succeed(allTags.map(r => r.id.get -> r.fields.Name).toMap)
@@ -84,18 +89,18 @@ class AirtableClient(http: Client[Task], authToken: String) {
 
   private def convert(fic: Fic): IO[AirtableError, FicDocument] = {
     for {
-      fandomRecords <- fandoms.upsert(fic.fandoms.map(f => TagDocument(f.name, f.label)).toList)
+      fandomRecords <- fandoms.upsert(fic.fandoms.map(f => TagDocument.fromFandom(f)).toList)
       characterRecords <- characters.upsert(
         fic.characters
           .union(fic.relationships.flatMap(s => s.characters).toSet)
-          .map(c => TagDocument(c.name, c.label))
+          .map(c => TagDocument.fromCharacter(c))
           .toList
       )
       freeformTagRecords <-
         tags.upsert(
           fic.freeformTags
             .filter(t => t.isFilterable.getOrElse(false))
-            .map(t => TagDocument(t.name, None))
+            .map(t => TagDocument.fromTag(t))
         )
       relationsRecords <- upsertShips(fic.relationships, characterRecords)
     } yield toAirtable(
