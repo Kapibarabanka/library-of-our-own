@@ -1,34 +1,36 @@
 package com.kapibarabanka.kapibarabot.sqlite
 
-import com.kapibarabanka.ao3scrapper.models.Character
-import com.kapibarabanka.kapibarabot.domain.MyFicModel
 import com.kapibarabanka.kapibarabot.sqlite.repos.*
-import com.kapibarabanka.kapibarabot.sqlite.docs.*
+import com.kapibarabanka.kapibarabot.sqlite.tables.*
 import slick.jdbc.PostgresProfile.api.*
 
-class Ao3Db(userId: String):
-  val tags       = TagsRepo(userId)
+class Ao3Db(userId: String) extends WithDb(userId):
   val fics       = FicsRepo(userId)
   val characters = CharactersRepo(userId)
 
-  private def db[T] = Sqlite.run[T](userId)
+  val allTables: List[MyTable] = List(
+    FicsTable,
+    FandomsTable,
+    FicsToFandomsTable,
+    CharactersTable,
+    FicsToCharactersTable,
+    RelationshipsTable,
+    ShipsToCharactersTable,
+    FicsToShipsTable,
+    TagsTable,
+    FicsToTagsTable
+  )
 
   def init = for {
-    _ <- tags.initIfNotExists
-    _ <- fics.initIfNotExists
-    _ <- characters.initIfNotExists
+    _ <- db(DBIO.sequence(allTables.map(_.createIfNotExists)))
   } yield ()
 
   def beginWithTestData = {
     for {
-      _ <- db(sqlu"DROP TABLE IF EXISTS Tags")
-      _ <- db(sqlu"DROP TABLE IF EXISTS Fics")
-      _ <- db(sqlu"DROP TABLE IF EXISTS FicsToTags")
-      _ <- db(sqlu"DROP TABLE IF EXISTS Characters")
+      _ <- db(DBIO.sequence(allTables.map(_.dropIfExists)))
       _ <- init
-      _ <- fics.add(
-        MyFicModel("1", "fluffy au", List("Fluff", "AU"), List(Character("Zoro", None), Character("Sanji", Some("One Piece"))))
-      )
-      _ <- fics.add(MyFicModel("2", "angsty au", List("Angst", "AU"), List(Character("Sanji", Some("One Piece")))))
+      _ <- fics.add(TestData.angstyZoSan)
+      _ <- fics.add(TestData.friendly)
+      _ <- fics.add(TestData.ratiorine)
     } yield ()
   }

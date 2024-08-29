@@ -1,15 +1,18 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
+import com.kapibarabanka.ao3scrapper.models.{Fandom, Character, Relationship}
 import com.kapibarabanka.kapibarabot.domain.MyFicModel
-import slick.jdbc.PostgresProfile.api.*
 
-case class FicDoc(id: String, title: String)
+case class FicDoc(id: String, title: String):
+  def toModel(fandoms: Seq[Fandom], characters: Seq[Character], relationships: Seq[Relationship], tags: Seq[String]): MyFicModel =
+    MyFicModel(
+      id = id,
+      title = title,
+      fandoms = fandoms.toList,
+      tags = tags.toList,
+      characters = characters.toList,
+      relationships = relationships.toList
+    )
 
 object FicDoc:
   def fromModel(fic: MyFicModel): FicDoc = FicDoc(id = fic.id, title = fic.title)
-
-class FicsTable(tag: Tag) extends Table[FicDoc](tag, "Fics"):
-  def id    = column[String]("id", O.PrimaryKey, O.Unique)
-  def title = column[String]("title")
-
-  def * = (id, title).mapTo[FicDoc]

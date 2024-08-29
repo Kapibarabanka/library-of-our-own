@@ -1,6 +1,12 @@
 package com.kapibarabanka.kapibarabot.domain
 
-import com.kapibarabanka.ao3scrapper.models.Character
+import com.kapibarabanka.ao3scrapper.models.{Character, Fandom, Relationship}
 
-case class MyFicModel(id: String, title: String, tags: List[String], characters: List[Character])
-
+case class MyFicModel(
+    id: String,
+    title: String,
+    fandoms: List[Fandom],
+    characters: List[Character],
+    relationships: List[Relationship],
+    tags: List[String]
+)
