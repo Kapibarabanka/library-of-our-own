@@ -14,8 +14,9 @@ case class Relationship(
     val separator = shipType match
       case Platonic => " & "
       case _        => "/"
-    val label = characters.head.label
-    if (characters.forall(_.label == label))
-      StringUtils.combineWithLabel(characters.map(_.name).mkString(separator), label)
+    val label            = characters.head.label
+    val sortedCharacters = characters.toList.sortBy(c => c.name)
+    if (sortedCharacters.forall(_.label == label))
+      StringUtils.combineWithLabel(sortedCharacters.map(_.name).mkString(separator), label)
     else
-      characters.map(c => StringUtils.combineWithLabel(c.name, c.label)).mkString(separator)
+      sortedCharacters.map(c => StringUtils.combineWithLabel(c.name, c.label)).mkString(separator)

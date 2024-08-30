@@ -30,8 +30,8 @@ object TestData:
   val angstyZoSan = MyFicModel(
     id = "1",
     title = "Angsty ZoSan",
-    fandoms = List(onePiece),
-    characters = List(zoro, sanji, luffy),
+    fandoms = Set(onePiece),
+    characters = Set(zoro, sanji, luffy),
     relationships = List(romanticZoSan),
     tags = List(angst, slowBurn)
   )
@@ -39,8 +39,8 @@ object TestData:
   val friendly = MyFicModel(
     id = "2",
     title = "Friendly",
-    fandoms = List(onePiece),
-    characters = List(zoro, sanji, luffy),
+    fandoms = Set(onePiece),
+    characters = Set(zoro, sanji, luffy),
     relationships = List(mugivaras),
     tags = List(fluff, modernAu)
   )
@@ -48,8 +48,8 @@ object TestData:
   val ratiorine = MyFicModel(
     id = "3",
     title = "Ratiorine",
-    fandoms = List(honkai),
-    characters = List(drRatio, aventurine),
+    fandoms = Set(honkai),
+    characters = Set(drRatio, aventurine),
     relationships = List(romaricRatiorine),
     tags = List(fluff, slowBurn)
   )

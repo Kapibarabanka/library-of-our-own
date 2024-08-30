@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
-import com.kapibarabanka.ao3scrapper.models.{Fandom, Character, Relationship}
+import com.kapibarabanka.ao3scrapper.models.{Character, Fandom, Relationship}
 import com.kapibarabanka.kapibarabot.domain.MyFicModel
 
 case class FicDoc(id: String, title: String):
@@ -8,9 +8,9 @@ case class FicDoc(id: String, title: String):
     MyFicModel(
       id = id,
       title = title,
-      fandoms = fandoms.toList,
+      fandoms = fandoms.toSet,
       tags = tags.toList,
-      characters = characters.toList,
+      characters = characters.toSet,
       relationships = relationships.toList
     )
 

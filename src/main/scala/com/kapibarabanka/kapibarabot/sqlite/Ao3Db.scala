@@ -1,12 +1,10 @@
 package com.kapibarabanka.kapibarabot.sqlite
 
-import com.kapibarabanka.kapibarabot.sqlite.repos.*
 import com.kapibarabanka.kapibarabot.sqlite.tables.*
 import slick.jdbc.PostgresProfile.api.*
 
 class Ao3Db(userId: String) extends WithDb(userId):
-  val fics       = FicsRepo(userId)
-  val characters = CharactersRepo(userId)
+  val fics = FicsRepo(userId)
 
   val allTables: List[MyTable] = List(
     FicsTable,
@@ -29,8 +27,8 @@ class Ao3Db(userId: String) extends WithDb(userId):
     for {
       _ <- db(DBIO.sequence(allTables.map(_.dropIfExists)))
       _ <- init
-      _ <- fics.add(TestData.angstyZoSan)
-      _ <- fics.add(TestData.friendly)
-      _ <- fics.add(TestData.ratiorine)
+//      _ <- fics.addFic(TestData.angstyZoSan)
+//      _ <- fics.addFic(TestData.friendly)
+//      _ <- fics.addFic(TestData.ratiorine)
     } yield ()
   }

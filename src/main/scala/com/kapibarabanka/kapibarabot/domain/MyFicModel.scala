@@ -5,8 +5,8 @@ import com.kapibarabanka.ao3scrapper.models.{Character, Fandom, Relationship}
 case class MyFicModel(
     id: String,
     title: String,
-    fandoms: List[Fandom],
-    characters: List[Character],
+    fandoms: Set[Fandom],
+    characters: Set[Character],
     relationships: List[Relationship],
     tags: List[String]
 )
