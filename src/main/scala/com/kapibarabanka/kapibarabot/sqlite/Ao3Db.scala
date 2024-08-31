@@ -16,7 +16,8 @@ class Ao3Db(userId: String) extends WithDb(userId):
     ShipsToCharactersTable,
     FicsToShipsTable,
     TagsTable,
-    FicsToTagsTable
+    FicsToTagsTable,
+    CommentsTable
   )
 
   def init = for {
@@ -27,8 +28,10 @@ class Ao3Db(userId: String) extends WithDb(userId):
     for {
       _ <- db(DBIO.sequence(allTables.map(_.dropIfExists)))
       _ <- init
-//      _ <- fics.addFic(TestData.angstyZoSan)
-//      _ <- fics.addFic(TestData.friendly)
-//      _ <- fics.addFic(TestData.ratiorine)
+      _ <- fics.addFic(TestData.angstyZoSan)
+      _ <- fics.addComment(TestData.angstyZoSan.id, TestData.comment)
+      _ <- fics.addFic(TestData.friendly)
+      _ <- fics.addFic(TestData.ratiorine)
+      _ <- fics.patchStats(TestData.ratiorine.id, TestData.readStats)
     } yield ()
   }
