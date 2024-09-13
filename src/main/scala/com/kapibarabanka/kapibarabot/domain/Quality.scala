@@ -6,5 +6,5 @@ object Quality extends Enumeration {
   val Nice      = Value("Nice")
   val Ok        = Value("Ok")
   val Meh       = Value("Meh")
-  val Never     = Value("NeverAgain")
+  val Never     = Value("Never again")
 }
