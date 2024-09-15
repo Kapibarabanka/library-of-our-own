@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3
-import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, MyFicRecord}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel}
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDb
@@ -23,7 +23,7 @@ case class CommentScenario(fic: FicDisplayModel)(implicit
   override def onMessage(msg: Message): UIO[Scenario] =
     (for {
       logPatching    <- bot.sendText("Adding comment...")
-      ficWithComment <- db.fics.addComment(fic.id, FicComment(LocalDate.now().toString, msg.text.getOrElse("")))
+      ficWithComment <- addComment(fic.id, FicComment(LocalDate.now().toString, msg.text.getOrElse("")))
       _              <- bot.editLogText(logPatching, "Successfully added comment!")
       nextScenario   <- ExistingFicScenario(ficWithComment).withStartup
     } yield nextScenario) |> sendOnError(s"adding comment to fic ${fic.id}")

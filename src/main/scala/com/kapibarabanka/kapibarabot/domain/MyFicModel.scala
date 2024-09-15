@@ -62,5 +62,5 @@ object MyFicModel:
     updated = series.updated,
     words = series.words,
     complete = series.complete,
-    partsWritten = series.partsWritten
+    partsWritten = series.workIds.length
   )

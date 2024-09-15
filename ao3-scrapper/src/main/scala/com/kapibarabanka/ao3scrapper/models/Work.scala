@@ -23,9 +23,7 @@ case class Work(
     kudos: Option[Int],
     hits: Option[Int],
     bookmarks: Option[Int]
-) extends Fic:
-  override val ficType: FicType = FicType.Work
-
+):
   val complete: Boolean = chaptersPlanned match
     case Some(planned) => partsWritten >= planned
     case None          => false

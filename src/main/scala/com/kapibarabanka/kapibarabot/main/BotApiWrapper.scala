@@ -7,7 +7,7 @@ import telegramium.bots.high.Methods.*
 import telegramium.bots.high.implicits.*
 import zio.*
 
-class BotApiWrapper(chatId: ChatIntId)(implicit bot: Api[Task]):
+class BotApiWrapper(val chatId: ChatIntId)(implicit bot: Api[Task]):
   def sendText(text: String): UIO[Option[Message]] = sendMessage(MessageData(text))
 
   def sendMessage(msg: MessageData): UIO[Option[Message]] =

@@ -1,13 +1,12 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3
-import com.kapibarabanka.ao3scrapper.models.Work
+import com.kapibarabanka.kapibarabot.domain.{FicDisplayModel, MyFicStats, Quality}
 import com.kapibarabanka.kapibarabot.main.BotError.*
-import com.kapibarabanka.kapibarabot.utils.Buttons.*
-import com.kapibarabanka.kapibarabot.domain.{FicDisplayModel, MyFicRecord, MyFicStats, Quality}
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDb
+import com.kapibarabanka.kapibarabot.utils.Buttons.*
 import com.kapibarabanka.kapibarabot.utils.{Buttons, MessageText}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
@@ -46,6 +45,22 @@ case class ExistingFicScenario(fic: FicDisplayModel)(implicit
       case Buttons.addComment.callbackData => bot.answerCallbackQuery(query).flatMap(_ => CommentScenario(fic).withStartup)
 
       case Buttons.sendToKindle.callbackData =>
+        patchStats(
+          fic.stats.copy(isOnKindle = true),
+          query
+        )
+
+//      case Buttons.sendToKindle.callbackData =>
+//        if (fic.isSeries)
+//          patchStats(
+//            fic.stats.copy(kindleToDo = true),
+//            query,
+//            Some("Can't convert series to EPUB, marked as Kindle TODO")
+//          )
+//        else
+//          bot.answerCallbackQuery(query).flatMap(_ => SendToKindleScenario(fic).withStartup)
+
+      case Buttons.sendToKindle.callbackData =>
         if (fic.isSeries)
           patchStats(
             fic.stats.copy(kindleToDo = true),
@@ -62,7 +77,7 @@ case class ExistingFicScenario(fic: FicDisplayModel)(implicit
     query.message
       .collect { case msg: Message =>
         (for {
-          patchedFic <- db.fics.patchStats(fic.id, newStats)
+          patchedFic <- patchFicStats(fic.id, newStats)
           msgData <- ZIO.succeed(
             MessageData(MessageText.existingFic(patchedFic), getButtonsForExisting(patchedFic.stats))
           )

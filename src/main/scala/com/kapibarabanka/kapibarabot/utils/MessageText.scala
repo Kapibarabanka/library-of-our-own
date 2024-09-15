@@ -1,6 +1,5 @@
 package com.kapibarabanka.kapibarabot.utils
 
-import com.kapibarabanka.ao3scrapper.models.{Fic, Relationship}
 import com.kapibarabanka.kapibarabot.domain.*
 import scalaz.Scalaz.ToIdOps
 

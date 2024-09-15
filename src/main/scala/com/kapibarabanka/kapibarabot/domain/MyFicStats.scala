@@ -6,8 +6,8 @@ case class MyFicStats(
     read: Boolean,
     backlog: Boolean,
     isOnKindle: Boolean,
-    readDates: Option[String],
     kindleToDo: Boolean,
+    readDates: Option[String],
     quality: Option[Quality.Value],
     fire: Boolean,
     comment: Option[String]

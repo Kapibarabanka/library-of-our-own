@@ -66,14 +66,17 @@ case class FicDoc(
     FicDisplayModel(
       id = id,
       isSeries = isSeries,
+      link = link,
       title = title,
       authors = authors.split(", ").toList,
+      rating = Rating.withName(rating),
       fandoms = fandoms.toSet,
       characters = characters.toSet,
       relationships = relationships.toList,
       tags = tags.toList,
       comments = comments.toList,
       words = words,
+      complete = complete,
       stats = MyFicStats(
         read = read,
         backlog = backlog,

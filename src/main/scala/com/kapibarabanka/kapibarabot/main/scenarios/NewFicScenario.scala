@@ -43,7 +43,7 @@ case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: A
             case None        => ZIO.fail(NoLinkInMessage())
           fic          <- getFicByLink(ficLink)
           savingMsg    <- bot.editLogText(logParsing, "Saving to database...")
-          fic          <- db.fics.addFic(fic)
+          fic          <- addFic(fic)
           _            <- bot.editLogText(savingMsg, "Enjoy:")
           nextScenario <- ExistingFicScenario(fic).withStartup
         } yield nextScenario) |> sendOnErrors({
