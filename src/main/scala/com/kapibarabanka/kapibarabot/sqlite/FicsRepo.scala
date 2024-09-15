@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite
 
 import com.kapibarabanka.ao3scrapper.models.Fandom
-import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, MyFicModel, MyFicStats}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, Fic, MyFicStats}
 import com.kapibarabanka.kapibarabot.sqlite.docs.*
 import com.kapibarabanka.kapibarabot.sqlite.tables.*
 import scalaz.Scalaz.ToIdOps
@@ -23,7 +23,7 @@ class FicsRepo(userId: String) extends WithDb(userId):
   private val ficsToShips       = TableQuery[FicsToShipsTable]
   private val comments          = TableQuery[CommentsTable]
 
-  def addFic(fic: MyFicModel): IO[Throwable, FicDisplayModel] = {
+  def addFic(fic: Fic): IO[Throwable, FicDisplayModel] = {
     val fandomDocs          = fic.fandoms.map(FandomDoc.fromModel)
     val tagDocs             = fic.tags.map(TagDoc.fromModel)
     val shipsWithCharacters = fic.relationships.map(r => (RelationshipDoc.fromModel(r), r.characters.map(CharacterDoc.fromModel)))

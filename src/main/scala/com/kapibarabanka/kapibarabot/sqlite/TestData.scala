@@ -11,7 +11,7 @@ import com.kapibarabanka.ao3scrapper.models.{
   Relationship,
   RelationshipType
 }
-import com.kapibarabanka.kapibarabot.domain.{FicComment, MyFicModel, MyFicStats, Quality}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, Fic, MyFicStats, Quality}
 
 import java.time.LocalDate
 
@@ -39,7 +39,7 @@ object TestData:
   val slowBurn = FreeformTag("Slow Burn", Some(true))
 
   // Fics
-  val angstyZoSan = MyFicModel(
+  val angstyZoSan = Fic(
     id = "1",
     isSeries = true,
     title = "Angsty Zosan",
@@ -59,7 +59,7 @@ object TestData:
     partsWritten = 3
   )
 
-  val friendly = MyFicModel(
+  val friendly = Fic(
     id = "2",
     isSeries = false,
     title = "Friendly",
@@ -78,7 +78,7 @@ object TestData:
     complete = true,
     partsWritten = 1
   )
-  val ratiorine = MyFicModel(
+  val ratiorine = Fic(
     id = "3",
     isSeries = false,
     title = "Angsty Zosan",

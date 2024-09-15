@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
 import com.kapibarabanka.ao3scrapper.models.{ArchiveWarning, Category, Character, Fandom, FreeformTag, Rating, Relationship}
-import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, MyFicModel, MyFicStats, Quality}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, Fic, MyFicStats, Quality}
 
 import java.time.LocalDate
 
@@ -35,8 +35,8 @@ case class FicDoc(
       characters: Iterable[Character],
       relationships: Iterable[Relationship],
       tags: Iterable[FreeformTag]
-  ): MyFicModel =
-    MyFicModel(
+  ): Fic =
+    Fic(
       id = id,
       isSeries = isSeries,
       title = title,
@@ -90,7 +90,7 @@ case class FicDoc(
     )
 
 object FicDoc:
-  def fromModel(fic: MyFicModel): FicDoc = FicDoc(
+  def fromModel(fic: Fic): FicDoc = FicDoc(
     id = fic.id,
     isSeries = fic.isSeries,
     title = fic.title,

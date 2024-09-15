@@ -3,7 +3,7 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 import com.kapibarabanka.airtable.AirtableError
 import com.kapibarabanka.ao3scrapper.models.FicType
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
-import com.kapibarabanka.kapibarabot.domain.MyFicModel
+import com.kapibarabanka.kapibarabot.domain.Fic
 import com.kapibarabanka.kapibarabot.main.BotError.*
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
@@ -54,8 +54,8 @@ case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: A
       .getOrElse(ZIO.succeed(this))
   }
 
-  private def getFicByLink(link: String): ZIO[Any, InvalidFicLink | Ao3Error, MyFicModel] = Ao3Url.tryParseFicId(link) match
-    case Some((FicType.Work, id)) => ao3.work(id).map(work => MyFicModel.fromWork(work)).mapError(e => Ao3Error(e.getMessage))
+  private def getFicByLink(link: String): ZIO[Any, InvalidFicLink | Ao3Error, Fic] = Ao3Url.tryParseFicId(link) match
+    case Some((FicType.Work, id)) => ao3.work(id).map(work => Fic.fromWork(work)).mapError(e => Ao3Error(e.getMessage))
     case Some((FicType.Series, id)) =>
-      ao3.series(id).map(series => MyFicModel.fromSeries(series)).mapError(e => Ao3Error(e.getMessage))
+      ao3.series(id).map(series => Fic.fromSeries(series)).mapError(e => Ao3Error(e.getMessage))
     case None => ZIO.fail(InvalidFicLink(link))

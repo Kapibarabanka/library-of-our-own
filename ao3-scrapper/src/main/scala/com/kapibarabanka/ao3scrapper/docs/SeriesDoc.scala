@@ -1,13 +1,10 @@
 package com.kapibarabanka.ao3scrapper.docs
 
 import com.kapibarabanka.ao3scrapper.StringUtils.{commaStyleToInt, parseDate}
-import com.kapibarabanka.ao3scrapper.models.{Category, Rating}
-import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Document
 
-import java.time.LocalDate
 import scala.language.postfixOps
 case class SeriesDoc(doc: Document):
   val title                   = doc >> text("h2.heading")

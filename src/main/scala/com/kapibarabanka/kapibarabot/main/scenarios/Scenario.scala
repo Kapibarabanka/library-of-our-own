@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3
-import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, MyFicModel, MyFicStats}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, Fic, MyFicStats}
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDb
@@ -28,7 +28,7 @@ trait Scenario(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, 
       text = Some(s"You chose ${query.data} and I don't know what to do with it")
     )
 
-  protected def addFic(fic: MyFicModel): IO[Throwable, FicDisplayModel] = for {
+  protected def addFic(fic: Fic): IO[Throwable, FicDisplayModel] = for {
     fic <- db.fics.addFic(fic)
     _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic) else ZIO.unit
   } yield fic

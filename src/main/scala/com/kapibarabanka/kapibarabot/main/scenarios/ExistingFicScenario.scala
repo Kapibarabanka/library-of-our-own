@@ -45,22 +45,6 @@ case class ExistingFicScenario(fic: FicDisplayModel)(implicit
       case Buttons.addComment.callbackData => bot.answerCallbackQuery(query).flatMap(_ => CommentScenario(fic).withStartup)
 
       case Buttons.sendToKindle.callbackData =>
-        patchStats(
-          fic.stats.copy(isOnKindle = true),
-          query
-        )
-
-//      case Buttons.sendToKindle.callbackData =>
-//        if (fic.isSeries)
-//          patchStats(
-//            fic.stats.copy(kindleToDo = true),
-//            query,
-//            Some("Can't convert series to EPUB, marked as Kindle TODO")
-//          )
-//        else
-//          bot.answerCallbackQuery(query).flatMap(_ => SendToKindleScenario(fic).withStartup)
-
-      case Buttons.sendToKindle.callbackData =>
         if (fic.isSeries)
           patchStats(
             fic.stats.copy(kindleToDo = true),

@@ -1,7 +1,6 @@
 package com.kapibarabanka.ao3scrapper
 
-import com.kapibarabanka.ao3scrapper.exceptions.Ao3ClientError
-import com.kapibarabanka.ao3scrapper.exceptions.Ao3ClientError.*
+import Ao3ClientError.*
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*

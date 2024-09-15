@@ -1,10 +1,9 @@
 package com.kapibarabanka.kapibarabot.domain
 
 import com.kapibarabanka.ao3scrapper.models.*
-
 import java.time.LocalDate
 
-case class MyFicModel(
+case class Fic(
     id: String,
     isSeries: Boolean,
     title: String,
@@ -24,8 +23,8 @@ case class MyFicModel(
     partsWritten: Int
 )
 
-object MyFicModel:
-  def fromWork(work: Work) = MyFicModel(
+object Fic:
+  def fromWork(work: Work) = Fic(
     id = work.id,
     isSeries = false,
     title = work.title,
@@ -45,7 +44,7 @@ object MyFicModel:
     partsWritten = work.partsWritten
   )
 
-  def fromSeries(series: Series) = MyFicModel(
+  def fromSeries(series: Series) = Fic(
     id = series.id,
     isSeries = true,
     title = series.title,

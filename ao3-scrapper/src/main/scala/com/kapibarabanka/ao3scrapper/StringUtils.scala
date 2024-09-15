@@ -1,7 +1,6 @@
 package com.kapibarabanka.ao3scrapper
 
 import java.time.LocalDate
-import java.util.Date
 import scala.language.postfixOps
 import scala.util.matching.Regex
 
