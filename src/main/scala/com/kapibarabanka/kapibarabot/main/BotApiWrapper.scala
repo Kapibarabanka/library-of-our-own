@@ -1,6 +1,5 @@
 package com.kapibarabanka.kapibarabot.main
 
-import com.kapibarabanka.kapibarabot.utils.Constants.myChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
 import telegramium.bots.high.Api
@@ -8,13 +7,13 @@ import telegramium.bots.high.Methods.*
 import telegramium.bots.high.implicits.*
 import zio.*
 
-class BotApiWrapper(implicit bot: Api[Task]):
+class BotApiWrapper(chatId: ChatIntId)(implicit bot: Api[Task]):
   def sendText(text: String): UIO[Option[Message]] = sendMessage(MessageData(text))
 
   def sendMessage(msg: MessageData): UIO[Option[Message]] =
     telegramium.bots.high.Methods
       .sendMessage(
-        myChatId,
+        chatId,
         msg.text,
         msg.businessConnectionId,
         msg.messageThreadId,
@@ -29,10 +28,6 @@ class BotApiWrapper(implicit bot: Api[Task]):
       )
       .exec |> logCritical("SENDING MESSAGE")
 
-  def wrongChatError(msg: Message): UIO[Unit] = telegramium.bots.high.Methods
-    .sendMessage(chatId = ChatIntId(msg.chat.id), text = "Only this bot's creator can use it")
-    .exec |> logCritical("SENDING MESSAGE") map (_ => ())
-
   def editLogText(startMsg: Option[Message], text: String): UIO[Option[Message]] = startMsg match
     case Some(msg) => editMessage(msg, MessageData(text))
     case None      => sendText(text)
@@ -44,7 +39,7 @@ class BotApiWrapper(implicit bot: Api[Task]):
       .editMessageText(
         msg.text,
         msg.businessConnectionId,
-        Some(myChatId),
+        Some(chatId),
         Some(startMsg.messageId),
         msg.inlineMessageId,
         msg.parseMode,
@@ -66,7 +61,7 @@ class BotApiWrapper(implicit bot: Api[Task]):
     telegramium.bots.high.Methods.getFile(id).exec |> logCritical(s"GETTING FILE WITH ID $id")
 
   def sendDocument(file: IFile) =
-    telegramium.bots.high.Methods.sendDocument(myChatId, file).exec
+    telegramium.bots.high.Methods.sendDocument(chatId, file).exec
 
   private def logCritical[T](actionName: String)(action: Task[T]): UIO[Option[T]] =
     action.foldZIO(

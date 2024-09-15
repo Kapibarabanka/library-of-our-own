@@ -24,10 +24,10 @@ case class FicDoc(
     read: Boolean,
     backlog: Boolean,
     isOnKindle: Boolean,
+    kindleToDo: Boolean,
     readDates: Option[String],
     quality: Option[String],
     fire: Boolean,
-    
     docCreated: String
 ):
   def toModel(
@@ -65,6 +65,7 @@ case class FicDoc(
   ): FicDisplayModel =
     FicDisplayModel(
       id = id,
+      isSeries = isSeries,
       title = title,
       authors = authors.split(", ").toList,
       fandoms = fandoms.toSet,
@@ -78,7 +79,7 @@ case class FicDoc(
         backlog = backlog,
         isOnKindle = isOnKindle,
         readDates = readDates,
-        kindleToDo = false,
+        kindleToDo = kindleToDo,
         quality = quality.map(Quality.withName),
         fire = fire,
         comment = None
@@ -107,6 +108,7 @@ object FicDoc:
     read = false,
     backlog = false,
     isOnKindle = false,
+    kindleToDo = false,
     readDates = None,
     quality = None,
     fire = false,

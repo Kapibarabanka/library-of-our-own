@@ -22,7 +22,7 @@ class FicsRepo(userId: String) extends WithDb(userId):
   private val ficsToShips       = TableQuery[FicsToShipsTable]
   private val comments          = TableQuery[CommentsTable]
 
-  def addFic(fic: MyFicModel): IO[Throwable, Unit] = {
+  def addFic(fic: MyFicModel): IO[Throwable, FicDisplayModel] = {
     val fandomDocs          = fic.fandoms.map(FandomDoc.fromModel)
     val tagDocs             = fic.tags.map(TagDoc.fromModel)
     val shipsWithCharacters = fic.relationships.map(r => (RelationshipDoc.fromModel(r), r.characters.map(CharacterDoc.fromModel)))
@@ -43,7 +43,7 @@ class FicsRepo(userId: String) extends WithDb(userId):
         ),
         ficsToShips ++= relationshipDocs.map(r => FicsToShipsDoc(None, fic.id, r.name))
       )
-    )
+    ).flatMap(_ => getFic(fic.id).map(_.get))
   }
 
   def getFic(ficId: String): IO[Throwable, Option[FicDisplayModel]] = for {
@@ -63,9 +63,10 @@ class FicsRepo(userId: String) extends WithDb(userId):
     } yield fic
   }
 
-  def addComment(ficId: String, comment: FicComment): IO[Throwable, Unit] = db(
-    comments += CommentDoc(None, ficId, comment.commentDate, comment.comment)
-  ).unit
+  def addComment(ficId: String, comment: FicComment): IO[Throwable, FicDisplayModel] = for {
+    _   <- db(comments += CommentDoc(None, ficId, comment.commentDate, comment.comment))
+    fic <- getFic(ficId).map(_.get)
+  } yield fic
 
   private def docToFlatModel(doc: FicDoc) = {
     for {

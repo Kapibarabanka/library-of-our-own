@@ -3,7 +3,7 @@ package com.kapibarabanka.kapibarabot.sqlite
 import com.kapibarabanka.kapibarabot.sqlite.tables.*
 import slick.jdbc.PostgresProfile.api.*
 
-class Ao3Db(userId: String) extends WithDb(userId):
+class FanficDb(userId: String) extends WithDb(userId):
   val fics = FicsRepo(userId)
 
   val allTables: List[MyTable] = List(

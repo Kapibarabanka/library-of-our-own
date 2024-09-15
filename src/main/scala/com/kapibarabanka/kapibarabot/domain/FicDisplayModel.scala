@@ -2,6 +2,7 @@ package com.kapibarabanka.kapibarabot.domain
 
 case class FicDisplayModel(
     id: String,
+    isSeries: Boolean,
     title: String,
     authors: List[String],
     fandoms: Set[String],

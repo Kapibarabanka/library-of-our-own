@@ -1,6 +1,6 @@
 package com.kapibarabanka.ao3scrapper.models
 
-import java.util.Date
+import java.time.LocalDate
 
 trait Fic:
   val id: String
@@ -14,10 +14,10 @@ trait Fic:
   val characters: Set[Character]
   val freeformTags: List[FreeformTag]
   val link: String
-  val started: Date
-  val updated: Option[Date]
-  val words: Long
+  val started: LocalDate
+  val updated: Option[LocalDate]
+  val words: Int
   val complete: Boolean
-  val bookmarks: Option[Long]
-  val ficType     : FicType
+  val bookmarks: Option[Int]
+  val ficType: FicType
   val partsWritten: Int

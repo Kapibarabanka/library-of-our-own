@@ -3,10 +3,11 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.sqlite.FanficDb
 import telegramium.bots.{CallbackQuery, Message}
 import zio.*
 
-trait Scenario(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3) extends WithErrorHandling:
+trait Scenario(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, db: FanficDb) extends WithErrorHandling:
   protected def startupAction: UIO[Unit]
   def onMessage(msg: Message): UIO[Scenario]
   def onCallbackQuery(query: CallbackQuery): UIO[Scenario]

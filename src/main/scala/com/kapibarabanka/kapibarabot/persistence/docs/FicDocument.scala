@@ -17,7 +17,7 @@ final case class FicDocument(
     FilterableTags: Option[String],
     Published: String,
     Updated: Option[String],
-    Words: Long,
+    Words: Int,
     ChaptersWritten: Int,
     Completed: Boolean = false,
     Link: String,
