@@ -14,20 +14,21 @@ object Ao3Url {
       encodeCharAs('.', "*d*") +
       encodeCharAs('/', "*s*")
   )
-  val base = "https://archiveofourown.org"
-  private val baseUrl   = Url(base)
-  private val tags   = baseUrl.addPathPart("tags")
-  private val works  = baseUrl.addPathPart("works").addParam("view_adult", true)
-  private val series = baseUrl.addPathPart("series")
+  private val baseUrl = Url(scheme = "https", host = "archiveofourown.org")
+  private val tags    = baseUrl.addPathPart("tags")
+  private val works   = baseUrl.addPathPart("works").addParam("view_adult", true)
+  private val series  = baseUrl.addPathPart("series")
 
   private val seriesIdRegex: Regex = """^https://archiveofourown\.org:?/series/(\d+)(?:/.*)?$""".r
-  private val workIdRegex: Regex   = """^https://archiveofourown\.org:?/works/(\d+)(?:[/?].*)?$""".r
+  private val workIdRegex: Regex   = """^https://archiveofourown\.org:?/works/(\d+)(?:[/?#].*)?$""".r
 
   def work(id: String): String = works.addPathPart(id).toString
 
   def series(id: String): String = series.addPathPart(id).toString
 
   def tag(name: String): String = tags.addPathPart(name).toString
+  
+  def download(link: String): String = baseUrl.addPathPart(link).toString
 
   def tryParseFicId(url: String): Option[(FicType, String)] = url match
     case workIdRegex(id)   => Some((FicType.Work, id))

@@ -95,7 +95,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
         relationships = relationships,
         characters = characters,
         freeformTags = freeformTags,
-        link = Ao3Url.work(id),
+        link = Ao3Url.series(id),
         started = doc.begun.get,
         updated = doc.updated,
         words = doc.words.get,
@@ -167,7 +167,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
   override def getDownloadLink(workId: String): IO[Ao3ClientError, String] = for {
     doc  <- getWorkDoc(workId)
     link <- doc.mobiLink.fold[IO[Ao3ClientError, String]](ZIO.fail(LinkNotFound(workId)))(s => ZIO.succeed(s))
-  } yield Ao3Url.base + link
+  } yield Ao3Url.download(link)
 
   private def getWorkDoc(id: String)   = http.getAuthed(Ao3Url.work(id)).map(html => WorkDoc(jsoupBrowser.parseString(html)))
   private def getSeriesDoc(id: String) = http.getAuthed(Ao3Url.series(id)).map(html => SeriesDoc(jsoupBrowser.parseString(html)))
