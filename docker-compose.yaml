@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     build: .
     volumes:
-      - db-data:${SQLITE_DB}
+      - ao3-db:${SQLITE_DB}
     environment:
       - AIRTABLE_TOKEN=${AIRTABLE_TOKEN}
       - TG_TOKEN=${TG_TOKEN}
@@ -17,4 +17,4 @@ services:
       - EMAIL_PASSWORD=${EMAIL_PASSWORD}
       - FICS_TEMP_PATH=${FICS_TEMP_PATH}
 volumes:
-    db-data:
+  ao3-db:
