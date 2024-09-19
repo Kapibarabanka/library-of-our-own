@@ -1,25 +1,23 @@
 package com.kapibarabanka.kapibarabot.utils
 
-import com.kapibarabanka.ao3scrapper.models.{Fic, Relationship}
 import com.kapibarabanka.kapibarabot.domain.*
 import scalaz.Scalaz.ToIdOps
 
 object MessageText {
-  def existingFic(record: MyFicRecord): String =
+  def existingFic(model: FicDisplayModel): String =
     s"""
-       |${info(record.fic)}
-       |${record.stats |> displayMyRating}
-       |${record.stats |> displayStats}
-       |<a href="${Constants.entityBaseUrl}${record.id.get}">View on Airtable</a>
+       |${info(model)}
+       |${model.stats |> displayMyRating}
+       |${model.stats |> displayStats}
        |""".stripMargin
 
   def newFic(link: String): String =
     s"""
        |<a href="$link">That's a new one!</a>
-       |It's not in the Airtable yet, but it could be.
+       |It's not in the database yet, but it could be.
        |""".stripMargin
 
-  private def info(fic: Fic) =
+  private def info(fic: FicDisplayModel) =
     s"""<b>${fic.title}</b>
        |<i>${fic.authors.mkString(", ")}</i>
        |
@@ -50,5 +48,5 @@ object MessageText {
     case List() => ""
     case dates  => " on: " + dates.mkString(", ")
 
-  private def formatShip(ship: Relationship) = ship.name.replace("/", "  /  ").replace(" & ", "  &  ")
+  private def formatShip(shipName: String) = shipName.replace("/", "  /  ").replace(" & ", "  &  ")
 }

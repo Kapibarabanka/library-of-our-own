@@ -1,19 +1,23 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.airtable.AirtableError
-import com.kapibarabanka.ao3scrapper.models.{Fic, FicType}
+import com.kapibarabanka.ao3scrapper.models.FicType
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
+import com.kapibarabanka.kapibarabot.domain.Fic
 import com.kapibarabanka.kapibarabot.main.BotError.*
-import com.kapibarabanka.kapibarabot.utils.Buttons.getButtonsForNew
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.sqlite.FanficDb
+import com.kapibarabanka.kapibarabot.utils.Buttons.getButtonsForNew
 import com.kapibarabanka.kapibarabot.utils.{Buttons, MessageText}
 import iozhik.OpenEnum
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
 import zio.*
 
-case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3)
+import scala.language.postfixOps
+
+case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, db: FanficDb)
     extends Scenario,
       WithErrorHandling(bot):
 
@@ -38,19 +42,20 @@ case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: A
             case Some(value) => ZIO.succeed(value)
             case None        => ZIO.fail(NoLinkInMessage())
           fic          <- getFicByLink(ficLink)
-          savingMsg    <- bot.editLogText(logParsing, "Saving to Airtable...")
-          record       <- airtable.addFic(fic)
+          savingMsg    <- bot.editLogText(logParsing, "Saving to database...")
+          fic          <- addFic(fic)
           _            <- bot.editLogText(savingMsg, "Enjoy:")
-          nextScenario <- ExistingFicScenario(record).withStartup
+          nextScenario <- ExistingFicScenario(fic).withStartup
         } yield nextScenario) |> sendOnErrors({
           case ao3Error: Ao3Error           => s"getting fic from Ao3"
-          case airtableError: AirtableError => s"adding fic to Airtable"
+          case airtableError: AirtableError => s"adding fic to db"
         })
       }
       .getOrElse(ZIO.succeed(this))
   }
 
   private def getFicByLink(link: String): ZIO[Any, InvalidFicLink | Ao3Error, Fic] = Ao3Url.tryParseFicId(link) match
-    case Some((FicType.Work, id))   => ao3.work(id).mapError(e => Ao3Error(e.getMessage))
-    case Some((FicType.Series, id)) => ao3.series(id).mapError(e => Ao3Error(e.getMessage))
-    case None                       => ZIO.fail(InvalidFicLink(link))
+    case Some((FicType.Work, id)) => ao3.work(id).map(work => Fic.fromWork(work)).mapError(e => Ao3Error(e.getMessage))
+    case Some((FicType.Series, id)) =>
+      ao3.series(id).map(series => Fic.fromSeries(series)).mapError(e => Ao3Error(e.getMessage))
+    case None => ZIO.fail(InvalidFicLink(link))

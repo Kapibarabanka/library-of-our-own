@@ -1,32 +1,27 @@
 package com.kapibarabanka.ao3scrapper.models
 
-import java.util.Date
+import java.time.LocalDate
 
 case class Series(
-  id: String,
-  title: String,
-  authors: List[String],
-  rating: Rating.Value,
-  warnings: Set[ArchiveWarning],
-  categories: Set[Category.Value],
-  fandoms: Set[Fandom],
-  relationships: List[Relationship],
-  characters: Set[Character],
-  freeformTags: List[FreeformTag],
-  link: String,
-  started: Date,
-  updated: Option[Date],
-  words: Long,
-  complete: Boolean,
-  bookmarks: Option[Long],
-  workIds: List[String],
-  description: Option[String],
-) extends Fic:
-  override val ficType     : FicType = FicType.Series
-  override val partsWritten: Int     = workIds.size
-
-
-
+    id: String,
+    title: String,
+    authors: List[String],
+    rating: Rating.Value,
+    warnings: Set[ArchiveWarning],
+    categories: Set[Category.Value],
+    fandoms: Set[Fandom],
+    relationships: List[Relationship],
+    characters: Set[Character],
+    freeformTags: List[FreeformTag],
+    link: String,
+    started: LocalDate,
+    updated: Option[LocalDate],
+    words: Int,
+    complete: Boolean,
+    bookmarks: Option[Int],
+    workIds: List[String],
+    description: Option[String]
+)
 
 //  val warnings: Set[ArchiveWarning] = works.flatMap(w => w.warnings).toSet
 //  val rating: Rating = works.map(w => w.rating).maxBy(r => r.ordinal)

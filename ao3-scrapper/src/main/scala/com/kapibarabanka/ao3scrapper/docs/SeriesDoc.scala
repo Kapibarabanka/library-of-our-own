@@ -1,8 +1,6 @@
 package com.kapibarabanka.ao3scrapper.docs
 
-import com.kapibarabanka.ao3scrapper.StringUtils.{commaStyleToLong, parseDate}
-import com.kapibarabanka.ao3scrapper.models.{Category, Rating}
-import net.ruippeixotog.scalascraper.browser.JsoupBrowser
+import com.kapibarabanka.ao3scrapper.StringUtils.{commaStyleToInt, parseDate}
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Document
@@ -18,9 +16,9 @@ case class SeriesDoc(doc: Document):
   val begun                   = metadata.get("Series Begun").map(parseDate)
   val updated                 = metadata.get("Series Updated").map(parseDate)
   val description             = metadata.get("Description")
-  val words                   = metadata.get("Words").map(commaStyleToLong)
+  val words                   = metadata.get("Words").map(commaStyleToInt)
   val complete                = metadata.get("Complete").map(_ == "Yes")
-  val bookmarks               = metadata.get("Bookmarks").map(commaStyleToLong)
+  val bookmarks               = metadata.get("Bookmarks").map(commaStyleToInt)
   val workElements            = doc >> elementList("li.work")
   val squareTags              = workElements >> element("ul.required-tags") >> texts("li")
 

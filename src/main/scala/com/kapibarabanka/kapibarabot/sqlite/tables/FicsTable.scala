@@ -22,6 +22,7 @@ class FicsTable(tag: Tag) extends Table[FicDoc](tag, FicsTable.name):
   def read       = column[Boolean]("read")
   def backlog    = column[Boolean]("backlog")
   def isOnKindle = column[Boolean]("isOnKindle")
+  def kindleToDo = column[Boolean]("kindleToDo")
   def readDates  = column[Option[String]]("readDates")
   def quality    = column[Option[String]]("quality")
   def fire       = column[Boolean]("fire")
@@ -47,6 +48,7 @@ class FicsTable(tag: Tag) extends Table[FicDoc](tag, FicsTable.name):
     read,
     backlog,
     isOnKindle,
+    kindleToDo,
     readDates,
     quality,
     fire,

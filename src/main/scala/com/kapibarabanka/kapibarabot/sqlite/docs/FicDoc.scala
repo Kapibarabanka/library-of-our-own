@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
 import com.kapibarabanka.ao3scrapper.models.{ArchiveWarning, Category, Character, Fandom, FreeformTag, Rating, Relationship}
-import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, MyFicModel, MyFicStats, Quality}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, Fic, MyFicStats, Quality}
 
 import java.time.LocalDate
 
@@ -24,10 +24,10 @@ case class FicDoc(
     read: Boolean,
     backlog: Boolean,
     isOnKindle: Boolean,
+    kindleToDo: Boolean,
     readDates: Option[String],
     quality: Option[String],
     fire: Boolean,
-    
     docCreated: String
 ):
   def toModel(
@@ -35,8 +35,8 @@ case class FicDoc(
       characters: Iterable[Character],
       relationships: Iterable[Relationship],
       tags: Iterable[FreeformTag]
-  ): MyFicModel =
-    MyFicModel(
+  ): Fic =
+    Fic(
       id = id,
       isSeries = isSeries,
       title = title,
@@ -65,20 +65,24 @@ case class FicDoc(
   ): FicDisplayModel =
     FicDisplayModel(
       id = id,
+      isSeries = isSeries,
+      link = link,
       title = title,
       authors = authors.split(", ").toList,
+      rating = Rating.withName(rating),
       fandoms = fandoms.toSet,
       characters = characters.toSet,
       relationships = relationships.toList,
       tags = tags.toList,
       comments = comments.toList,
       words = words,
+      complete = complete,
       stats = MyFicStats(
         read = read,
         backlog = backlog,
         isOnKindle = isOnKindle,
         readDates = readDates,
-        kindleToDo = false,
+        kindleToDo = kindleToDo,
         quality = quality.map(Quality.withName),
         fire = fire,
         comment = None
@@ -86,7 +90,7 @@ case class FicDoc(
     )
 
 object FicDoc:
-  def fromModel(fic: MyFicModel): FicDoc = FicDoc(
+  def fromModel(fic: Fic): FicDoc = FicDoc(
     id = fic.id,
     isSeries = fic.isSeries,
     title = fic.title,
@@ -107,6 +111,7 @@ object FicDoc:
     read = false,
     backlog = false,
     isOnKindle = false,
+    kindleToDo = false,
     readDates = None,
     quality = None,
     fire = false,

@@ -1,6 +1,6 @@
 package com.kapibarabanka.ao3scrapper.docs
 
-import com.kapibarabanka.ao3scrapper.StringUtils.{commaStyleToLong, parseDate}
+import com.kapibarabanka.ao3scrapper.StringUtils.{commaStyleToInt, parseDate}
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Document
@@ -29,13 +29,13 @@ case class WorkDoc(doc: Document):
 
     val published = getStat("published").map(parseDate).get
     val updated   = getStat("status").map(parseDate)
-    val words     = getStat("words").map(commaStyleToLong).get
+    val words     = getStat("words").map(commaStyleToInt).get
     val (chaptersWritten, chaptersPlanned) = getStat("chapters") match {
       case Some(s"$written/$planned") => (written.toIntOption, planned.toIntOption)
       case _                          => (None, None)
     }
-    val comments  = getStat("comments").map(commaStyleToLong)
-    val kudos     = getStat("kudos").map(commaStyleToLong)
-    val bookmarks = getStat("bookmarks").map(commaStyleToLong)
-    val hits      = getStat("hits").map(commaStyleToLong)
+    val comments  = getStat("comments").map(commaStyleToInt)
+    val kudos     = getStat("kudos").map(commaStyleToInt)
+    val bookmarks = getStat("bookmarks").map(commaStyleToInt)
+    val hits      = getStat("hits").map(commaStyleToInt)
   }
