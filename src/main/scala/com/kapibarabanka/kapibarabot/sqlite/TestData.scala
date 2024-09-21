@@ -7,11 +7,16 @@ import com.kapibarabanka.ao3scrapper.models.{
   Character,
   Fandom,
   FreeformTag,
+  Published,
+  PublishedAndUpdated,
   Rating,
   Relationship,
-  RelationshipType
+  RelationshipType,
+  Series,
+  SingleDate,
+  Work
 }
-import com.kapibarabanka.kapibarabot.domain.{FicComment, Fic, MyFicStats, Quality}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, MyFicStats, Quality}
 
 import java.time.LocalDate
 
@@ -38,64 +43,84 @@ object TestData:
   val modernAu = FreeformTag("Modern AU", Some(true))
   val slowBurn = FreeformTag("Slow Burn", Some(true))
 
-  // Fics
-  val angstyZoSan = Fic(
+  // Works
+  val angstyZoSan = Work(
     id = "1",
-    isSeries = true,
     title = "Angsty Zosan",
-    authors = List("author1"),
+    authors = List("author1", "author2"),
     rating = Rating.Explicit,
     warnings = Set(ArchiveWarning("Warning")),
     categories = Set(Category.MM),
     fandoms = Set(onePiece),
     characters = Set(zoro, sanji, luffy),
     relationships = List(romanticZoSan),
-    tags = List(angst, slowBurn),
-    link = Ao3Url.series("1"),
-    started = LocalDate.of(2022, 11, 12),
-    updated = Some(LocalDate.of(2023, 2, 4)),
+    freeformTags = List(angst, slowBurn),
+    link = Ao3Url.work("1"),
+    date = PublishedAndUpdated(LocalDate.of(2022, 11, 12), LocalDate.of(2023, 2, 4)),
     words = 100000,
-    complete = false,
-    partsWritten = 3
+    chaptersWritten = 3,
+    chaptersPlanned = None,
+    comments = None,
+    kudos = None,
+    hits = None,
+    bookmarks = None
   )
 
-  val friendly = Fic(
+  val friendly = Work(
     id = "2",
-    isSeries = false,
     title = "Friendly",
-    authors = List(),
+    authors = List("author1"),
     rating = Rating.Teen,
     warnings = Set(),
     categories = Set(Category.Gen),
     fandoms = Set(onePiece),
     characters = Set(zoro, sanji, luffy),
     relationships = List(mugivaras),
-    tags = List(fluff, modernAu),
+    freeformTags = List(fluff, modernAu),
     link = Ao3Url.work("2"),
-    started = LocalDate.of(2023, 11, 12),
-    updated = None,
+    date = Published(LocalDate.of(2023, 11, 12)),
     words = 4000,
-    complete = true,
-    partsWritten = 1
+    chaptersWritten = 1,
+    chaptersPlanned = Some(1),
+    comments = None,
+    kudos = None,
+    hits = None,
+    bookmarks = None
   )
-  val ratiorine = Fic(
+  val ratiorine = Work(
     id = "3",
-    isSeries = false,
-    title = "Angsty Zosan",
-    authors = List("author3"),
+    title = "Ratiorine",
+    authors = List(),
     rating = Rating.Explicit,
     warnings = Set(),
     categories = Set(Category.MM),
     fandoms = Set(honkai),
     characters = Set(drRatio, aventurine),
     relationships = List(romaricRatiorine),
-    tags = List(fluff, slowBurn),
+    freeformTags = List(fluff, slowBurn),
     link = Ao3Url.work("3"),
-    started = LocalDate.of(2024, 1, 3),
-    updated = Some(LocalDate.of(2024, 2, 4)),
+    date = PublishedAndUpdated(LocalDate.of(2024, 1, 3), LocalDate.of(2024, 2, 4)),
     words = 35000,
+    chaptersWritten = 5,
+    chaptersPlanned = Some(10),
+    comments = None,
+    kudos = None,
+    hits = None,
+    bookmarks = None
+  )
+
+  val opSeries = Series(
+    id = "1",
+    link = Ao3Url.series("1"),
+    title = "OP series",
+    authors = List("author1", "author2"),
+    started = LocalDate.of(2022, 11, 12),
+    updated = Some(LocalDate.of(2023, 11, 12)),
+    words = 104000,
     complete = false,
-    partsWritten = 5
+    bookmarks = None,
+    description = None,
+    works = List(friendly, angstyZoSan)
   )
 
   val comment = FicComment(commentDate = "2024-08-30", comment = "Some comment")
@@ -104,8 +129,6 @@ object TestData:
     backlog = false,
     isOnKindle = true,
     readDates = Some("2024-08-31"),
-    kindleToDo = false,
     quality = Some(Quality.Nice),
-    fire = true,
-    comment = None
+    fire = true
   )

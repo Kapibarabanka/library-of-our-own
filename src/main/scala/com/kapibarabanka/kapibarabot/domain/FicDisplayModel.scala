@@ -1,11 +1,11 @@
 package com.kapibarabanka.kapibarabot.domain
 
-import com.kapibarabanka.ao3scrapper.models.Rating
+import com.kapibarabanka.ao3scrapper.models.{FicType, Rating}
 
 case class FicDisplayModel(
     id: String,
     link: String,
-    isSeries: Boolean,
+    ficType: FicType,
     title: String,
     authors: List[String],
     rating: Rating.Value,

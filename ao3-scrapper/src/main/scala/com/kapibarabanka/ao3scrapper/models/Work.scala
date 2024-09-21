@@ -1,7 +1,5 @@
 package com.kapibarabanka.ao3scrapper.models
 
-import java.time.LocalDate
-
 case class Work(
     id: String,
     title: String,
@@ -14,10 +12,9 @@ case class Work(
     characters: Set[Character],
     freeformTags: List[FreeformTag],
     link: String,
-    started: LocalDate,
-    updated: Option[LocalDate],
+    date: WorkDate,
     words: Int,
-    partsWritten: Int,
+    chaptersWritten: Int,
     chaptersPlanned: Option[Int],
     comments: Option[Int],
     kudos: Option[Int],
@@ -25,5 +22,5 @@ case class Work(
     bookmarks: Option[Int]
 ):
   val complete: Boolean = chaptersPlanned match
-    case Some(planned) => partsWritten >= planned
+    case Some(planned) => chaptersWritten >= planned
     case None          => false

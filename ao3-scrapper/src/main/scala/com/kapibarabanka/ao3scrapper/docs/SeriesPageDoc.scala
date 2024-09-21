@@ -6,7 +6,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Document
 
 import scala.language.postfixOps
-case class SeriesDoc(doc: Document):
+case class SeriesPageDoc(doc: Document, seriesId: String, page: Int):
   val title                   = doc >> text("h2.heading")
   private val metaDataElement = doc >> element("dl.series")
   private val labels          = (metaDataElement >> texts("dt")).map(_.replace(":", ""))
@@ -19,7 +19,9 @@ case class SeriesDoc(doc: Document):
   val words                   = metadata.get("Words").map(commaStyleToInt)
   val complete                = metadata.get("Complete").map(_ == "Yes")
   val bookmarks               = metadata.get("Bookmarks").map(commaStyleToInt)
+  val pageCount               = (doc >?> element(".pagination") >> texts("li")).map(_.flatMap(_.toIntOption).max)
   val workElements            = doc >> elementList("li.work")
+  val works                   = workElements.map(WorkInSeriesDoc(_, seriesId))
   val squareTags              = workElements >> element("ul.required-tags") >> texts("li")
 
   val (ratings, allWarnings, allCategories) = squareTags.flatMap {

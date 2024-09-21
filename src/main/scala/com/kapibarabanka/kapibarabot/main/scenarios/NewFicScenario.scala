@@ -1,9 +1,8 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.airtable.AirtableError
-import com.kapibarabanka.ao3scrapper.models.FicType
+import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
-import com.kapibarabanka.kapibarabot.domain.Fic
 import com.kapibarabanka.kapibarabot.main.BotError.*
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
@@ -41,11 +40,13 @@ case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: A
           ficLink <- startMsg.entities.collectFirst { case OpenEnum.Known(TextLinkMessageEntity(_, _, url)) => url } match
             case Some(value) => ZIO.succeed(value)
             case None        => ZIO.fail(NoLinkInMessage())
-          fic          <- getFicByLink(ficLink)
-          savingMsg    <- bot.editLogText(logParsing, "Saving to database...")
-          fic          <- addFic(fic)
+          ficFromAo3 <- getFicByLink(ficLink)
+          savingMsg  <- bot.editLogText(logParsing, "Saving to database...")
+          savedFic <- ficFromAo3 match
+            case work: Work     => addWork(work)
+            case series: Series => addSeries(series)
           _            <- bot.editLogText(savingMsg, "Enjoy:")
-          nextScenario <- ExistingFicScenario(fic).withStartup
+          nextScenario <- ExistingFicScenario(savedFic).withStartup
         } yield nextScenario) |> sendOnErrors({
           case ao3Error: Ao3Error           => s"getting fic from Ao3"
           case airtableError: AirtableError => s"adding fic to db"
@@ -54,8 +55,8 @@ case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: A
       .getOrElse(ZIO.succeed(this))
   }
 
-  private def getFicByLink(link: String): ZIO[Any, InvalidFicLink | Ao3Error, Fic] = Ao3Url.tryParseFicId(link) match
-    case Some((FicType.Work, id)) => ao3.work(id).map(work => Fic.fromWork(work)).mapError(e => Ao3Error(e.getMessage))
-    case Some((FicType.Series, id)) =>
-      ao3.series(id).map(series => Fic.fromSeries(series)).mapError(e => Ao3Error(e.getMessage))
-    case None => ZIO.fail(InvalidFicLink(link))
+  private def getFicByLink(link: String): ZIO[Any, InvalidFicLink | Ao3Error, Work | Series] =
+    Ao3Url.tryParseFicId(link) match
+      case Some((FicType.Work, id))   => ao3.work(id).mapError(e => Ao3Error(e.getMessage))
+      case Some((FicType.Series, id)) => ao3.series(id).mapError(e => Ao3Error(e.getMessage))
+      case None                       => ZIO.fail(InvalidFicLink(link))

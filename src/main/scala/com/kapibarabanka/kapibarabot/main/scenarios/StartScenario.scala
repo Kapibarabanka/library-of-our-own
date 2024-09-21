@@ -24,9 +24,9 @@ case class StartScenario()(implicit bot: BotApiWrapper, airtable: AirtableClient
 
   private def tryParseFicLink(text: String): UIO[Option[Scenario]] = Ao3Url.tryParseFicId(text) match
     case None => ZIO.succeed(None)
-    case Some((_, id)) =>
+    case Some((ficType, id)) =>
       (for {
-        maybeFic <- db.fics.getFic(id)
+        maybeFic <- db.getFicOption(id, ficType)
         nextScenario <- maybeFic match
           case Some(record) => ExistingFicScenario(record).withStartup
           case None         => NewFicScenario(text).withStartup

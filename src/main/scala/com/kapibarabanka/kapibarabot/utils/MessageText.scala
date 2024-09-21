@@ -7,7 +7,7 @@ object MessageText {
   def existingFic(model: FicDisplayModel): String =
     s"""
        |${info(model)}
-       |${model.stats |> displayMyRating}
+       |${model |> displayMyRating}
        |${model.stats |> displayStats}
        |""".stripMargin
 
@@ -32,10 +32,12 @@ object MessageText {
        |${if (stats.read) s"${Emoji.read} Already read" else s"${Emoji.cross} Not read"}${readDates(stats)}
        |""".stripMargin
 
-  private def displayMyRating(stats: MyFicStats) =
-    (if (stats.fire) s"${Emoji.fire}<b>It has fire!</b>${Emoji.fire}\n" else "")
-      + stats.quality.fold("")(q => s"You rated it ${formatQuality(q)}\n")
-      + stats.comment.fold("")(c => s"\nYour thoughts on it:\n<i>$c</i>")
+  private def displayMyRating(fic: FicDisplayModel) =
+    (if (fic.stats.fire) s"${Emoji.fire}<b>It has fire!</b>${Emoji.fire}\n" else "")
+      + fic.stats.quality.fold("")(q => s"You rated it ${formatQuality(q)}\n")
+      + (if (fic.comments.isEmpty) ""
+         else
+           s"\nYour thoughts on it:\n<i>${fic.comments.map(_.format()).mkString("\n")}</i>")
 
   private def formatQuality(quality: Quality.Value) = quality match
     case Quality.Brilliant => s"<b>Brilliant</b> ${Emoji.brilliant}"

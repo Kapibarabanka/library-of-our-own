@@ -26,6 +26,8 @@ object Ao3Url {
 
   def series(id: String): String = series.addPathPart(id).toString
 
+  def seriesPage(id: String, page: Int): String = series.addPathPart(id).addParam(("page", page)).toString
+
   def tag(name: String): String = tags.addPathPart(name).toString
 
   def download(link: String): String = baseUrl.addPathPart(link).toString

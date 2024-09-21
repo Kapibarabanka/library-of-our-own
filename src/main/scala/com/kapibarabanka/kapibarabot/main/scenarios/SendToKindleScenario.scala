@@ -55,7 +55,8 @@ case class SendToKindleScenario(fic: FicDisplayModel)(implicit
     )
     patchedRecord <- patchFicStats(
       fic.id,
-      fic.stats.copy(isOnKindle = true, kindleToDo = false)
+      fic.ficType,
+      fic.stats.copy(isOnKindle = true)
     )
     nextScenario <- ExistingFicScenario(patchedRecord).withStartup
   } yield nextScenario) |> sendOnError("patching record")

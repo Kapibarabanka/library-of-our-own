@@ -1,6 +1,7 @@
 package com.kapibarabanka.kapibarabot.persistence.docs
 
 import com.kapibarabanka.airtable.EntityDocument
+import com.kapibarabanka.ao3scrapper.models.FicType
 import com.kapibarabanka.kapibarabot.domain.FicDisplayModel
 
 final case class FicDisplayDoc(
@@ -22,7 +23,6 @@ final case class FicDisplayDoc(
     Backlog: Boolean = false,
     IsOnKindle: Boolean = false,
     ReadDates: Option[String],
-    KindleToDo: Boolean = false,
     Quality: Option[String],
     Comments: Option[String],
     Fire: Boolean = false
@@ -33,7 +33,7 @@ object FicDisplayDoc:
     Title = fic.title,
     Id = fic.id,
     Link = fic.link,
-    IsSeries = fic.isSeries,
+    IsSeries = fic.ficType == FicType.Series,
     Authors = fic.authors.mkString(", "),
     Rating = fic.rating.toString.substring(0, 1),
     Fandoms = fic.fandoms.mkString(", "),
@@ -46,7 +46,6 @@ object FicDisplayDoc:
     Backlog = fic.stats.backlog,
     IsOnKindle = fic.stats.isOnKindle,
     ReadDates = fic.stats.readDates,
-    KindleToDo = fic.stats.kindleToDo,
     Quality = fic.stats.quality.map(_.toString),
     Comments = Some(fic.comments.mkString("\n")),
     Fire = fic.stats.fire

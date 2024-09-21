@@ -53,6 +53,7 @@ case class Ao3HttpClientImpl(
   private def getResponseAndBody(request: Request, allowRedirects: Boolean = true) = ZIO.scoped {
     val withError = for {
       response <- (if (allowRedirects) clientWithRedirects else client).request(request)
+      _        <- ZIO.succeed(if (response.status == Status.TooManyRequests) println("AO3_429"))
       body     <- response.body.asString
     } yield (response, body)
     withError.foldZIO(

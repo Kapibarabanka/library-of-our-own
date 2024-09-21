@@ -1,24 +1,24 @@
 package com.kapibarabanka.kapibarabot.sqlite.tables
 
 import com.kapibarabanka.kapibarabot.sqlite.Sqlite
-import com.kapibarabanka.kapibarabot.sqlite.docs.FicsToFandomsDoc
+import com.kapibarabanka.kapibarabot.sqlite.docs.WorksToFandomsDoc
 import slick.jdbc.PostgresProfile.api.*
 
-class FicsToFandomsTable(tag: Tag) extends Table[FicsToFandomsDoc](tag, FicsToFandomsTable.name):
+class WorksToFandomsTable(tag: Tag) extends Table[WorksToFandomsDoc](tag, WorksToFandomsTable.name):
   def id     = column[Int]("id", O.PrimaryKey, O.Unique)
-  def ficId  = column[String]("ficId")
+  def workId  = column[String]("workId")
   def fandom = column[String]("fandom")
 
-  def * = (id.?, ficId, fandom).mapTo[FicsToFandomsDoc]
+  def * = (id.?, workId, fandom).mapTo[WorksToFandomsDoc]
 
-object FicsToFandomsTable extends MyTable:
-  override val name: String     = "FicsToFandoms"
+object WorksToFandomsTable extends MyTable:
+  override val name: String     = "WorksToFandoms"
   override val keyField: String = "id"
 
   def createIfNotExists = Sqlite.createManyToManyTable(
     name = name,
-    leftFieldName = "ficId",
-    leftTable = FicsTable,
+    leftFieldName = "workId",
+    leftTable = WorksTable,
     rightFieldName = "fandom",
     rightTable = FandomsTable
   )

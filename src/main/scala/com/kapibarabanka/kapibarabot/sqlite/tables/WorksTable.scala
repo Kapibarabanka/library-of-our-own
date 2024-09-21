@@ -1,12 +1,11 @@
 package com.kapibarabanka.kapibarabot.sqlite.tables
 
-import com.kapibarabanka.kapibarabot.sqlite.docs.FicDoc
+import com.kapibarabanka.kapibarabot.sqlite.docs.WorkDoc
 import slick.jdbc.PostgresProfile.api.*
 
-class FicsTable(tag: Tag) extends Table[FicDoc](tag, FicsTable.name):
-  def id       = column[String]("id", O.PrimaryKey, O.Unique)
-  def isSeries = column[Boolean]("isSeries")
-  def title    = column[String]("title")
+class WorksTable(tag: Tag) extends Table[WorkDoc](tag, WorksTable.name):
+  def id    = column[String]("id", O.PrimaryKey, O.Unique)
+  def title = column[String]("title")
 
   def authors      = column[String]("authors")
   def rating       = column[String]("rating")
@@ -22,7 +21,6 @@ class FicsTable(tag: Tag) extends Table[FicDoc](tag, FicsTable.name):
   def read       = column[Boolean]("read")
   def backlog    = column[Boolean]("backlog")
   def isOnKindle = column[Boolean]("isOnKindle")
-  def kindleToDo = column[Boolean]("kindleToDo")
   def readDates  = column[Option[String]]("readDates")
   def quality    = column[Option[String]]("quality")
   def fire       = column[Boolean]("fire")
@@ -31,7 +29,6 @@ class FicsTable(tag: Tag) extends Table[FicDoc](tag, FicsTable.name):
 
   def * = (
     id,
-    isSeries,
     title,
     authors,
     rating,
@@ -48,15 +45,14 @@ class FicsTable(tag: Tag) extends Table[FicDoc](tag, FicsTable.name):
     read,
     backlog,
     isOnKindle,
-    kindleToDo,
     readDates,
     quality,
     fire,
     docCreated
-  ).mapTo[FicDoc]
+  ).mapTo[WorkDoc]
 
-object FicsTable extends MyTable:
-  override val name: String     = "Fics"
+object WorksTable extends MyTable:
+  override val name: String     = "Works"
   override val keyField: String = "id"
 
-  def createIfNotExists = TableQuery[FicsTable].schema.createIfNotExists
+  def createIfNotExists = TableQuery[WorksTable].schema.createIfNotExists

@@ -1,7 +1,8 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3
-import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, Fic, MyFicStats}
+import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, MyFicStats}
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDb
@@ -28,17 +29,23 @@ trait Scenario(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, 
       text = Some(s"You chose ${query.data} and I don't know what to do with it")
     )
 
-  protected def addFic(fic: Fic): IO[Throwable, FicDisplayModel] = for {
-    fic <- db.fics.addFic(fic)
+  protected def addWork(work: Work): IO[Throwable, FicDisplayModel] = for {
+    fic <- db.add(work)
     _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic) else ZIO.unit
   } yield fic
 
-  protected def patchFicStats(ficId: String, stats: MyFicStats): IO[Throwable, FicDisplayModel] = for {
-    fic <- db.fics.patchStats(ficId, stats)
+  protected def addSeries(series: Series): IO[Throwable, FicDisplayModel] = for {
+    fic <- db.add(series)
     _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic) else ZIO.unit
   } yield fic
 
-  protected def addComment(ficId: String, comment: FicComment): IO[Throwable, FicDisplayModel] = for {
-    fic <- db.fics.addComment(ficId, comment)
+  protected def patchFicStats(ficId: String, ficType: FicType, stats: MyFicStats): IO[Throwable, FicDisplayModel] = for {
+    fic <- db.patchFicStats(ficId, ficType, stats)
     _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic) else ZIO.unit
   } yield fic
+
+  protected def addComment(ficId: String, ficType: FicType, comment: FicComment): IO[Throwable, FicDisplayModel] = for {
+    _   <- db.addComment(ficId, ficType, comment)
+    fic <- db.getFicOption(ficId, ficType)
+    _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic.get) else ZIO.unit
+  } yield fic.get

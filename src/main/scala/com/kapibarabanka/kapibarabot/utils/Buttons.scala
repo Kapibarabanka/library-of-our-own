@@ -9,7 +9,7 @@ object Buttons:
       List(
         List(
           if (stats.backlog) None else Some(addToBacklog),
-          if (stats.isOnKindle || stats.kindleToDo) None else Some(sendToKindle)
+          if (stats.isOnKindle) None else Some(sendToKindle)
         ).flatten,
         List(
           if (stats.isReadToday) None else Some(markAsReadToday),
@@ -34,7 +34,6 @@ object Buttons:
   val addToBacklog      = InlineKeyboardButton(s"${Emoji.backlog} Add to backlog", callbackData = Some("addToBacklog"))
   val removeFromBacklog = InlineKeyboardButton(s"${Emoji.cross} Remove from backlog", callbackData = Some("removeFromBacklog"))
   val sendToKindle      = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
-  val kindleToDo        = InlineKeyboardButton(s"${Emoji.kindle} Kindle ToDo", callbackData = Some("kindleToDo"))
   val removeFromKindle  = InlineKeyboardButton(s"${Emoji.kindle} Remove from Kindle", callbackData = Some("removeFromKindle"))
   val markAsReadToday   = InlineKeyboardButton(s"${Emoji.read} Read today", callbackData = Some("markAsReadToday"))
   val markAsRead        = InlineKeyboardButton(s"${Emoji.question} Read some time ago", callbackData = Some("markAsRead"))

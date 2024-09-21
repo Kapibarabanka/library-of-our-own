@@ -4,29 +4,21 @@ import java.time.LocalDate
 
 case class Series(
     id: String,
+    link: String,
     title: String,
     authors: List[String],
-    rating: Rating.Value,
-    warnings: Set[ArchiveWarning],
-    categories: Set[Category.Value],
-    fandoms: Set[Fandom],
-    relationships: List[Relationship],
-    characters: Set[Character],
-    freeformTags: List[FreeformTag],
-    link: String,
     started: LocalDate,
     updated: Option[LocalDate],
     words: Int,
     complete: Boolean,
     bookmarks: Option[Int],
-    workIds: List[String],
-    description: Option[String]
-)
-
-//  val warnings: Set[ArchiveWarning] = works.flatMap(w => w.warnings).toSet
-//  val rating: Rating = works.map(w => w.rating).maxBy(r => r.ordinal)
-//  val categories: Set[Category] = works.flatMap(w => w.categories).toSet
-//  val fandoms: Set[Fandom] = works.flatMap(w => w.fandoms).toSet
-//  val relationships: List[Relationship] = works.flatMap(w => w.relationships).distinct
-//  val characters: Set[Character] = works.flatMap(w => w.characters).toSet
-//  val freeformTags: List[FreeformTag] = works.flatMap(w => w.freeformTags).distinct
+    description: Option[String],
+    works: List[Work]
+):
+  val rating: Rating.Value = works.map(_.rating).maxBy(_.id)
+  val warnings: Set[ArchiveWarning] = works.flatMap(_.warnings).toSet
+  val categories: Set[Category.Value] = works.flatMap(_.categories).toSet
+  val fandoms: Set[Fandom] = works.flatMap(_.fandoms).toSet
+  val relationships: List[Relationship] = works.flatMap(_.relationships).distinct
+  val characters: Set[Character] = works.flatMap(_.characters).toSet
+  val freeformTags: List[FreeformTag] = works.flatMap(_.freeformTags).distinct

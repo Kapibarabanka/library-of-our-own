@@ -6,11 +6,9 @@ case class MyFicStats(
     read: Boolean,
     backlog: Boolean,
     isOnKindle: Boolean,
-    kindleToDo: Boolean,
     readDates: Option[String],
     quality: Option[Quality.Value],
-    fire: Boolean,
-    comment: Option[String]
+    fire: Boolean
 ):
   val readDatesList: List[LocalDate] = readDates
     .map(s =>

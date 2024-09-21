@@ -23,7 +23,7 @@ case class CommentScenario(fic: FicDisplayModel)(implicit
   override def onMessage(msg: Message): UIO[Scenario] =
     (for {
       logPatching    <- bot.sendText("Adding comment...")
-      ficWithComment <- addComment(fic.id, FicComment(LocalDate.now().toString, msg.text.getOrElse("")))
+      ficWithComment <- addComment(fic.id, fic.ficType, FicComment(LocalDate.now().toString, msg.text.getOrElse("")))
       _              <- bot.editLogText(logPatching, "Successfully added comment!")
       nextScenario   <- ExistingFicScenario(ficWithComment).withStartup
     } yield nextScenario) |> sendOnError(s"adding comment to fic ${fic.id}")
