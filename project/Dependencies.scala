@@ -22,10 +22,12 @@ object Dependencies {
 
   val scalaz = "org.scalaz" %% "scalaz-core" % V.scalaz
 
-  val catsEffect = "org.typelevel" %% "cats-effect"      % V.catsEffect
-  val zio        = "dev.zio"       %% "zio"              % V.zio
-  val zioToCats  = "dev.zio"       %% "zio-interop-cats" % "23.1.0.2"
-  val zioHttp    = "dev.zio"       %% "zio-http"         % "3.0.0-RC9"
+  val catsEffect = "org.typelevel" %% "cats-effect" % V.catsEffect
+
+  val zio       = "dev.zio" %% "zio"              % V.zio
+  val zioToCats = "dev.zio" %% "zio-interop-cats" % "23.1.0.2"
+  val zioHttp   = "dev.zio" %% "zio-http"         % "3.0.0-RC9"
+  val zioJson   = "dev.zio" %% "zio-json"         % "0.7.3"
 
   val circeCore    = "io.circe" %% "circe-core"    % V.circe
   val circeParser  = "io.circe" %% "circe-parser"  % V.circe
@@ -53,6 +55,6 @@ object Dependencies {
 
   val ao3: Seq[ModuleID]         = Seq(zio, scalaParallel, scalatest, scalaScraper, uri, zioHttp)
   val airtable: Seq[ModuleID]    = Seq(catsEffect, circeCore, circeGeneric, http4sCirce, http4sBlaze, zio, zioToCats)
-  val kapibarabot: Seq[ModuleID] = Seq(scalaParallel, logback, scalaz, javaMail) ++ telegramium ++ sqlite
+  val kapibarabot: Seq[ModuleID] = Seq(scalaParallel, logback, scalaz, javaMail, zioJson) ++ telegramium ++ sqlite
 
 }

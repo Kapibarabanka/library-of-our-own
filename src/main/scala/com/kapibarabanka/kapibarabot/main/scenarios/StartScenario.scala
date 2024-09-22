@@ -1,6 +1,7 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
+import com.kapibarabanka.kapibarabot.domain.FicKey
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDb
@@ -26,7 +27,7 @@ case class StartScenario()(implicit bot: BotApiWrapper, airtable: AirtableClient
     case None => ZIO.succeed(None)
     case Some((ficType, id)) =>
       (for {
-        maybeFic <- db.getFicOption(id, ficType)
+        maybeFic <- db.getFicOption(FicKey(id, ficType))
         nextScenario <- maybeFic match
           case Some(record) => ExistingFicScenario(record).withStartup
           case None         => NewFicScenario(text).withStartup

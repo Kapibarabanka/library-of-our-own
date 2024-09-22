@@ -21,7 +21,6 @@ class WorksTable(tag: Tag) extends Table[WorkDoc](tag, WorksTable.name):
   def read       = column[Boolean]("read")
   def backlog    = column[Boolean]("backlog")
   def isOnKindle = column[Boolean]("isOnKindle")
-  def readDates  = column[Option[String]]("readDates")
   def quality    = column[Option[String]]("quality")
   def fire       = column[Boolean]("fire")
 
@@ -45,7 +44,6 @@ class WorksTable(tag: Tag) extends Table[WorkDoc](tag, WorksTable.name):
     read,
     backlog,
     isOnKindle,
-    readDates,
     quality,
     fire,
     docCreated

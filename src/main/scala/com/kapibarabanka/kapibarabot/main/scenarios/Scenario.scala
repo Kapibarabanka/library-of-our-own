@@ -2,7 +2,7 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
-import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, MyFicStats}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, FicKey, MyFicStats}
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDb
@@ -29,23 +29,26 @@ trait Scenario(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, 
       text = Some(s"You chose ${query.data} and I don't know what to do with it")
     )
 
-  protected def addWork(work: Work): IO[Throwable, FicDisplayModel] = for {
-    fic <- db.add(work)
-    _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic) else ZIO.unit
-  } yield fic
+  protected def addWork(work: Work): IO[Throwable, FicDisplayModel] =
+    executeAndUpdateAirtable(FicKey.fromWork(work), db.add(work))
 
-  protected def addSeries(series: Series): IO[Throwable, FicDisplayModel] = for {
-    fic <- db.add(series)
-    _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic) else ZIO.unit
-  } yield fic
+  protected def addSeries(series: Series): IO[Throwable, FicDisplayModel] =
+    executeAndUpdateAirtable(FicKey.fromSeries(series), db.add(series))
 
-  protected def patchFicStats(ficId: String, ficType: FicType, stats: MyFicStats): IO[Throwable, FicDisplayModel] = for {
-    fic <- db.patchFicStats(ficId, ficType, stats)
-    _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic) else ZIO.unit
-  } yield fic
+  protected def patchFicStats(key: FicKey, stats: MyFicStats): IO[Throwable, FicDisplayModel] =
+    executeAndUpdateAirtable(key, db.patchFicStats(key, stats))
 
-  protected def addComment(ficId: String, ficType: FicType, comment: FicComment): IO[Throwable, FicDisplayModel] = for {
-    _   <- db.addComment(ficId, ficType, comment)
-    fic <- db.getFicOption(ficId, ficType)
+  protected def addComment(key: FicKey, comment: FicComment): IO[Throwable, FicDisplayModel] =
+    executeAndUpdateAirtable(key, db.addComment(key, comment))
+
+  protected def addStartDate(key: FicKey, startDate: String): IO[Throwable, FicDisplayModel] =
+    executeAndUpdateAirtable(key, db.addStartDate(key, startDate))
+
+  protected def addFinishDate(key: FicKey, finishDate: String): IO[Throwable, FicDisplayModel] =
+    executeAndUpdateAirtable(key, db.addFinishDate(key, finishDate))
+
+  private def executeAndUpdateAirtable(key: FicKey, action: IO[Throwable, Any]) = for {
+    _   <- action
+    fic <- db.getFicOption(key)
     _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic.get) else ZIO.unit
   } yield fic.get

@@ -8,7 +8,7 @@ object MessageText {
     s"""
        |${info(model)}
        |${model |> displayMyRating}
-       |${model.stats |> displayStats}
+       |${model |> displayStats}
        |""".stripMargin
 
   def newFic(link: String): String =
@@ -26,10 +26,10 @@ object MessageText {
        |${f"${fic.words}%,d"} words
        |""".stripMargin
 
-  private def displayStats(stats: MyFicStats) =
-    s"""${if (stats.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}
-       |${if (stats.isOnKindle) s"${Emoji.kindle} Is on Kindle" else s"${Emoji.cross} Not on Kindle"}
-       |${if (stats.read) s"${Emoji.read} Already read" else s"${Emoji.cross} Not read"}${readDates(stats)}
+  private def displayStats(fic: FicDisplayModel) =
+    s"""${if (fic.stats.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}
+       |${if (fic.stats.isOnKindle) s"${Emoji.kindle} Is on Kindle" else s"${Emoji.cross} Not on Kindle"}
+       |${if (fic.stats.read) s"${Emoji.finish} Already read" else s"${Emoji.cross} Not read"}${readDates(fic.readDates)}
        |""".stripMargin
 
   private def displayMyRating(fic: FicDisplayModel) =
@@ -46,9 +46,13 @@ object MessageText {
     case Quality.Meh       => s"<b>Meeeh</b> ${Emoji.meh}"
     case Quality.Never     => s"<b>Never</b> Again ${Emoji.never}"
 
-  private def readDates(stats: MyFicStats) = stats.readDatesList match
+  private def readDates(dates: List[ReadDates]) = dates match
     case List() => ""
-    case dates  => " on: " + dates.mkString(", ")
+    case dates =>
+      ":\n" + dates
+        .map(d => s"from ${d.startDate.getOrElse(d.finishDate.getOrElse("..."))} to ${d.finishDate.getOrElse("...")}")
+        .sorted
+        .mkString("\n")
 
   private def formatShip(shipName: String) = shipName.replace("/", "  /  ").replace(" & ", "  &  ")
 }

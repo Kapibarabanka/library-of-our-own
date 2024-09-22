@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite.repos
 
 import com.kapibarabanka.ao3scrapper.models.{Fandom, FicType, Rating, Work}
-import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, MyFicStats, Quality}
+import com.kapibarabanka.kapibarabot.domain.{FicDisplayModel, MyFicStats, Quality}
 import com.kapibarabanka.kapibarabot.sqlite.WithDb
 import com.kapibarabanka.kapibarabot.sqlite.docs.*
 import com.kapibarabanka.kapibarabot.sqlite.tables.*
@@ -24,7 +24,7 @@ class WorksRepo(userId: String) extends WithDb(userId):
   private val relationships     = TableQuery[RelationshipsTable]
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
-  private val comments          = CommentsRepo(userId)
+  private val stats             = StatsRepo(userId)
 
   def add(work: Work): IO[Throwable, FicDisplayModel] =
     db(DBIO.sequence(getAddingAction(work)).transactionally).flatMap(_ => getById(work.id).map(_.get))
@@ -59,10 +59,15 @@ class WorksRepo(userId: String) extends WithDb(userId):
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
+  def getAll: IO[Throwable, List[FicDisplayModel]] = for {
+    docs   <- db(works.result)
+    models <- ZIO.collectAll(docs.map(docToDisplayModel))
+  } yield models.toList
+
   def patchStats(workId: String, stats: MyFicStats): IO[Throwable, FicDisplayModel] = {
-    val q = works.filter(_.id === workId).map(f => (f.read, f.backlog, f.isOnKindle, f.readDates, f.quality, f.fire))
+    val q = works.filter(_.id === workId).map(w => (w.read, w.backlog, w.isOnKindle, w.quality, w.fire))
     val updateAction =
-      q.update((stats.read, stats.backlog, stats.isOnKindle, stats.readDates, stats.quality.map(_.toString), stats.fire))
+      q.update((stats.read, stats.backlog, stats.isOnKindle, stats.quality.map(_.toString), stats.fire))
     for {
       _   <- db(updateAction)
       fic <- getById(workId).map(_.get)
@@ -70,16 +75,17 @@ class WorksRepo(userId: String) extends WithDb(userId):
   }
 
   def updateStatsFromSeriesAction(workId: String, seriesStats: MyFicStats): FixedSqlAction[Int, NoStream, Effect.Write] = {
-    val q = works.filter(_.id === workId).map(f => (f.read, f.isOnKindle, f.readDates, f.quality))
-    q.update((seriesStats.read, seriesStats.isOnKindle, seriesStats.readDates, seriesStats.quality.map(_.toString)))
+    val q = works.filter(_.id === workId).map(workDoc => (workDoc.read, workDoc.isOnKindle, workDoc.quality))
+    q.update((seriesStats.read, seriesStats.isOnKindle, seriesStats.quality.map(_.toString)))
   }
 
   private def docToDisplayModel(doc: WorkDoc) = for {
+    comments      <- stats.getAllComments(doc.key)
+    readDates     <- stats.getReadDates(doc.key)
     fandoms       <- db(worksToFandoms.filter(_.workId === doc.id).map(_.fandom).result)
     characters    <- db(worksToCharacters.filter(_.workId === doc.id).map(_.character).result)
     relationships <- db(worksToShips.filter(_.workId === doc.id).map(_.shipName).result)
     tags          <- db(worksToTags.filter(_.workId === doc.id).map(_.tagName).result)
-    comments      <- comments.getAllComments(doc.id, false)
   } yield FicDisplayModel(
     id = doc.id,
     ficType = FicType.Work,
@@ -87,18 +93,19 @@ class WorksRepo(userId: String) extends WithDb(userId):
     title = doc.title,
     authors = doc.authors.split(", ").toList,
     rating = Rating.withName(doc.rating),
+    categories = doc.categories.split(", ").toSet,
     fandoms = fandoms.toSet,
     characters = characters.toSet,
     relationships = relationships.toList,
     tags = tags.toList,
     comments = comments,
+    readDates = readDates,
     words = doc.words,
     complete = doc.complete,
     stats = MyFicStats(
       read = doc.read,
       backlog = doc.backlog,
       isOnKindle = doc.isOnKindle,
-      readDates = doc.readDates,
       quality = doc.quality.map(Quality.withName),
       fire = doc.fire
     )

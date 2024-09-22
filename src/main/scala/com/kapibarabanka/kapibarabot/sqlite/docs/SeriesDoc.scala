@@ -1,6 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
-import com.kapibarabanka.ao3scrapper.models.Series
+import com.kapibarabanka.ao3scrapper.models.{FicType, Series}
+import com.kapibarabanka.kapibarabot.domain.FicKey
 
 import java.time.LocalDate
 
@@ -20,7 +21,8 @@ case class SeriesDoc(
     isOnKindle: Boolean,
 //    readDates: Option[String], if date is similar across all works take it as series read date
     docCreated: String
-)
+):
+  val key: FicKey = FicKey(id, FicType.Series)
 
 object SeriesDoc:
   def fromModel(series: Series) = SeriesDoc(

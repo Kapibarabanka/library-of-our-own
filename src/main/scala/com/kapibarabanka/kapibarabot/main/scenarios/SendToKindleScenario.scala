@@ -54,8 +54,7 @@ case class SendToKindleScenario(fic: FicDisplayModel)(implicit
       "Sent to Kindle! You can check the progress <a href=\"https://www.amazon.com/sendtokindle\">here</a>"
     )
     patchedRecord <- patchFicStats(
-      fic.id,
-      fic.ficType,
+      fic.key,
       fic.stats.copy(isOnKindle = true)
     )
     nextScenario <- ExistingFicScenario(patchedRecord).withStartup

@@ -128,7 +128,6 @@ object TestData:
     read = true,
     backlog = false,
     isOnKindle = true,
-    readDates = Some("2024-08-31"),
     quality = Some(Quality.Nice),
     fire = true
   )
