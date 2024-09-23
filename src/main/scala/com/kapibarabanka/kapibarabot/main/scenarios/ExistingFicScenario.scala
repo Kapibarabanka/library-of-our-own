@@ -2,7 +2,7 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.ao3scrapper.models.FicType
-import com.kapibarabanka.kapibarabot.domain.{FicDisplayModel, MyFicStats, Quality}
+import com.kapibarabanka.kapibarabot.domain.{FicDisplayModel, FicKey, MyFicStats, Quality}
 import com.kapibarabanka.kapibarabot.main.BotError.*
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
@@ -24,17 +24,20 @@ case class ExistingFicScenario(fic: FicDisplayModel)(implicit
       WithErrorHandling(bot):
 
   protected override def startupAction: UIO[Unit] =
-    bot.sendMessage(MessageData(MessageText.existingFic(fic), getButtonsForExisting(fic.stats))).unit
+    bot.sendMessage(MessageData(MessageText.existingFic(fic), getButtonsForExisting(fic))).unit
 
   override def onMessage(msg: Message): UIO[Scenario] = StartScenario().onMessage(msg)
 
-  override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] = {
+  override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] =
     query.data match
-      case Buttons.addToBacklog.callbackData        => patchStats(fic.stats.copy(backlog = true), query)
-      case Buttons.removeFromBacklog.callbackData   => patchStats(fic.stats.copy(backlog = false), query)
+      case Buttons.addToBacklog.callbackData      => patchStats(fic.stats.copy(backlog = true), query)
+      case Buttons.removeFromBacklog.callbackData => patchStats(fic.stats.copy(backlog = false), query)
+
       case Buttons.markAsRead.callbackData          => patchStats(fic.stats.copy(read = true), query)
-      case Buttons.markAsStartedToday.callbackData  => markAsStartedToday(query)
-      case Buttons.markAsFinishedToday.callbackData => markAsFinishedToday(query)
+      case Buttons.markAsStartedToday.callbackData  => patchDates(addStartDate(_, LocalDate.now().toString))(query)
+      case Buttons.markAsFinishedToday.callbackData => patchDates(addFinishDate(_, LocalDate.now().toString))(query)
+      case Buttons.cancelStartedToday.callbackData  => patchDates(cancelStartedToday)(query)
+      case Buttons.cancelFinishedToday.callbackData => patchDates(cancelFinishedToday)(query)
 
       case Buttons.rateNever.callbackData     => patchStats(fic.stats.copy(quality = Some(Quality.Never)), query)
       case Buttons.rateMeh.callbackData       => patchStats(fic.stats.copy(quality = Some(Quality.Meh)), query)
@@ -56,49 +59,23 @@ case class ExistingFicScenario(fic: FicDisplayModel)(implicit
               .map(_ => this)
 
       case _ => unknownCallbackQuery(query).map(_ => this)
-  }
 
-  private def patchStats(newStats: MyFicStats, query: CallbackQuery) = {
+  private def patchStats(newStats: MyFicStats, query: CallbackQuery) =
+    patchFic(s"patching fic with id ${fic.id}")(patchFicStats(_, newStats))(query)
+
+  private def patchDates(patch: FicKey => IO[Throwable, FicDisplayModel])(query: CallbackQuery) =
+    patchFic(s"updating fic ${fic.id} read dates")(patch)(query)
+
+  private def patchFic(actionName: String)(patch: FicKey => IO[Throwable, FicDisplayModel])(query: CallbackQuery) =
     query.message
       .collect { case msg: Message =>
         (for {
-          patchedFic <- patchFicStats(fic.key, newStats)
+          patchedFic <- patch(fic.key)
           msgData <- ZIO.succeed(
-            MessageData(MessageText.existingFic(patchedFic), getButtonsForExisting(patchedFic.stats))
+            MessageData(MessageText.existingFic(patchedFic), getButtonsForExisting(patchedFic))
           )
           _ <- bot.answerCallbackQuery(query)
           _ <- bot.editMessage(msg, msgData)
-        } yield ExistingFicScenario(patchedFic)) |> sendOnError(s"patching fic with id ${fic.id}")
+        } yield ExistingFicScenario(patchedFic)) |> sendOnError(actionName)
       }
       .getOrElse(ZIO.succeed(this))
-  }
-
-  private def markAsStartedToday(query: CallbackQuery) = {
-    query.message
-      .collect { case msg: Message =>
-        (for {
-          patchedFic <- addStartDate(fic.key, LocalDate.now().toString)
-          msgData <- ZIO.succeed(
-            MessageData(MessageText.existingFic(patchedFic), getButtonsForExisting(patchedFic.stats))
-          )
-          _ <- bot.answerCallbackQuery(query)
-          _ <- bot.editMessage(msg, msgData)
-        } yield ExistingFicScenario(patchedFic)) |> sendOnError(s"marking fic ${fic.id} as started today")
-      }
-      .getOrElse(ZIO.succeed(this))
-  }
-
-  private def markAsFinishedToday(query: CallbackQuery) = {
-    query.message
-      .collect { case msg: Message =>
-        (for {
-          patchedFic <- addFinishDate(fic.key, LocalDate.now().toString)
-          msgData <- ZIO.succeed(
-            MessageData(MessageText.existingFic(patchedFic), getButtonsForExisting(patchedFic.stats))
-          )
-          _ <- bot.answerCallbackQuery(query)
-          _ <- bot.editMessage(msg, msgData)
-        } yield ExistingFicScenario(patchedFic)) |> sendOnError(s"marking fic ${fic.id} as finished today")
-      }
-      .getOrElse(ZIO.succeed(this))
-  }

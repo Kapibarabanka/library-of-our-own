@@ -53,7 +53,7 @@ class SeriesRepo(userId: String) extends WithDb(userId):
 
   private def docToDisplayModel(doc: SeriesDoc) = for {
     comments             <- stats.getAllComments(doc.key)
-    readDates            <- stats.getReadDates(doc.key)
+    readDatesInfo        <- stats.getReadDatesInfo(doc.key)
     workIdsWithPositions <- db(seriesToWorks.filter(_.seriesId === doc.id).map(d => (d.workId, d.positionInSeries)).result)
     workIds              <- ZIO.succeed(workIdsWithPositions.sortBy(_._2).map(_._1))
     works                <- ZIO.collectAll(workIds.map(id => works.getById(id))).map(_.flatten)
@@ -70,7 +70,7 @@ class SeriesRepo(userId: String) extends WithDb(userId):
     relationships = works.flatMap(_.relationships).toList.distinct,
     tags = works.flatMap(_.tags).toList.distinct,
     comments = comments,
-    readDates = readDates,
+    readDatesInfo = readDatesInfo,
     words = doc.words,
     complete = doc.complete,
     stats = MyFicStats(

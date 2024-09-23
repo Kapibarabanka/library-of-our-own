@@ -3,6 +3,9 @@ package com.kapibarabanka.kapibarabot.utils
 import com.kapibarabanka.kapibarabot.domain.*
 import scalaz.Scalaz.ToIdOps
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
 object MessageText {
   def existingFic(model: FicDisplayModel): String =
     s"""
@@ -29,7 +32,7 @@ object MessageText {
   private def displayStats(fic: FicDisplayModel) =
     s"""${if (fic.stats.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}
        |${if (fic.stats.isOnKindle) s"${Emoji.kindle} Is on Kindle" else s"${Emoji.cross} Not on Kindle"}
-       |${if (fic.stats.read) s"${Emoji.finish} Already read" else s"${Emoji.cross} Not read"}${readDates(fic.readDates)}
+       |${readDates(fic)}
        |""".stripMargin
 
   private def displayMyRating(fic: FicDisplayModel) =
@@ -46,13 +49,21 @@ object MessageText {
     case Quality.Meh       => s"<b>Meeeh</b> ${Emoji.meh}"
     case Quality.Never     => s"<b>Never</b> Again ${Emoji.never}"
 
-  private def readDates(dates: List[ReadDates]) = dates match
-    case List() => ""
-    case dates =>
-      ":\n" + dates
-        .map(d => s"from ${d.startDate.getOrElse(d.finishDate.getOrElse("..."))} to ${d.finishDate.getOrElse("...")}")
-        .sorted
-        .mkString("\n")
+  private def readDates(fic: FicDisplayModel) =
+    fic.readDatesInfo.readDates match
+      case List()            => if (fic.stats.read) s"${Emoji.finish} Already read" else s"${Emoji.cross} Not read"
+      case List(Start(date)) => s"${Emoji.start} Started reading on $date"
+      case dates =>
+        s"${Emoji.finish} Already read:\n" + dates
+          .map {
+            case StartAndFinish(start, finish) if start == finish => s"   - on ${format(start)} (read in one day)"
+            case StartAndFinish(start, finish)                    => s"   - from ${format(start)} to ${format(finish)}"
+            case Start(date)                                      => s"   - started reading on ${format(date)}"
+            case SingleDayRead(date)                              => s"   - on ${format(date)} (read in one day)"
+          }
+          .mkString("\n")
+
+  private def format(isoDate: String) = LocalDate.parse(isoDate).format(DateTimeFormatter.ofPattern("dd MMM uuuu"))
 
   private def formatShip(shipName: String) = shipName.replace("/", "  /  ").replace(" & ", "  &  ")
 }

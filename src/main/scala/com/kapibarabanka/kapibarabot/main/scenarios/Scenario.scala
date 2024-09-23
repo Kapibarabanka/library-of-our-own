@@ -47,8 +47,13 @@ trait Scenario(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, 
   protected def addFinishDate(key: FicKey, finishDate: String): IO[Throwable, FicDisplayModel] =
     executeAndUpdateAirtable(key, db.addFinishDate(key, finishDate))
 
-  private def executeAndUpdateAirtable(key: FicKey, action: IO[Throwable, Any]) = for {
-    _   <- action
-    fic <- db.getFicOption(key)
-    _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic.get) else ZIO.unit
-  } yield fic.get
+  protected def cancelStartedToday(key: FicKey): IO[Throwable, FicDisplayModel] =
+    executeAndUpdateAirtable(key, db.cancelStartedToday(key))
+
+  protected def cancelFinishedToday(key: FicKey): IO[Throwable, FicDisplayModel] =
+    executeAndUpdateAirtable(key, db.cancelFinishedToday(key))
+
+  private def executeAndUpdateAirtable(key: FicKey, action: IO[Throwable, FicDisplayModel]) = for {
+    fic <- action
+    _   <- if (bot.chatId == myChatId) airtable.upsertFic(fic) else ZIO.unit
+  } yield fic

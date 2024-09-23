@@ -16,7 +16,7 @@ case class FicDisplayModel(
     tags: List[String],
     words: Int,
     complete: Boolean,
-    readDates: List[ReadDates],
+    readDatesInfo: ReadDatesInfo,
     comments: List[FicComment],
     stats: MyFicStats
 ):

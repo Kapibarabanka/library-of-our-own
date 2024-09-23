@@ -81,7 +81,7 @@ class WorksRepo(userId: String) extends WithDb(userId):
 
   private def docToDisplayModel(doc: WorkDoc) = for {
     comments      <- stats.getAllComments(doc.key)
-    readDates     <- stats.getReadDates(doc.key)
+    readDatesInfo <- stats.getReadDatesInfo(doc.key)
     fandoms       <- db(worksToFandoms.filter(_.workId === doc.id).map(_.fandom).result)
     characters    <- db(worksToCharacters.filter(_.workId === doc.id).map(_.character).result)
     relationships <- db(worksToShips.filter(_.workId === doc.id).map(_.shipName).result)
@@ -99,7 +99,7 @@ class WorksRepo(userId: String) extends WithDb(userId):
     relationships = relationships.toList,
     tags = tags.toList,
     comments = comments,
-    readDates = readDates,
+    readDatesInfo = readDatesInfo,
     words = doc.words,
     complete = doc.complete,
     stats = MyFicStats(

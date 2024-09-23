@@ -1,23 +1,19 @@
 package com.kapibarabanka.kapibarabot.utils
 
-import com.kapibarabanka.kapibarabot.domain.MyFicStats
+import com.kapibarabanka.kapibarabot.domain.*
 import telegramium.bots.{InlineKeyboardButton, InlineKeyboardMarkup}
 
 object Buttons:
-  def getButtonsForExisting(stats: MyFicStats): Option[InlineKeyboardMarkup] = Some(
+  def getButtonsForExisting(fic: FicDisplayModel): Option[InlineKeyboardMarkup] = Some(
     InlineKeyboardMarkup(inlineKeyboard =
       List(
         List(
-          if (stats.backlog) None else Some(addToBacklog),
-          if (stats.isOnKindle) None else Some(sendToKindle)
+          if (fic.stats.backlog) None else Some(addToBacklog),
+          if (fic.stats.isOnKindle) None else Some(sendToKindle)
         ).flatten,
-        List(
-          if (stats.read || stats.backlog) None else Some(markAsRead),
-          Some(markAsStartedToday),
-          Some(markAsFinishedToday)
-        ).flatten,
-        if (stats.read) List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant) else List(),
-        List(addComment, if (stats.fire) rateNotFire else rateFire)
+        (if (fic.stats.read || fic.stats.backlog) List() else List(markAsRead)) ++ getDatesButtons(fic.readDatesInfo),
+        List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant),
+        List(addComment, if (fic.stats.fire) rateNotFire else rateFire)
       )
     )
   )
@@ -30,15 +26,28 @@ object Buttons:
     )
   )
 
+  private def getDatesButtons(info: ReadDatesInfo): List[InlineKeyboardButton] =
+    List(
+      if (info.canAddStart) Some(markAsStartedToday) else None,
+      if (info.canCancelStart) Some(cancelStartedToday) else None,
+      if (info.canAddFinish) Some(markAsFinishedToday) else None,
+      if (info.canCancelFinish) Some(cancelFinishedToday) else None
+    ).flatten
+
   // for existing
-  val addToBacklog        = InlineKeyboardButton(s"${Emoji.backlog} Add to backlog", callbackData = Some("addToBacklog"))
-  val removeFromBacklog   = InlineKeyboardButton(s"${Emoji.cross} Remove from backlog", callbackData = Some("removeFromBacklog"))
-  val sendToKindle        = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
-  val removeFromKindle    = InlineKeyboardButton(s"${Emoji.kindle} Remove from Kindle", callbackData = Some("removeFromKindle"))
+  val addToBacklog      = InlineKeyboardButton(s"${Emoji.backlog} Add to backlog", callbackData = Some("addToBacklog"))
+  val removeFromBacklog = InlineKeyboardButton(s"${Emoji.cross} Remove from backlog", callbackData = Some("removeFromBacklog"))
+  val sendToKindle      = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
+  val removeFromKindle  = InlineKeyboardButton(s"${Emoji.kindle} Remove from Kindle", callbackData = Some("removeFromKindle"))
+  val addComment        = InlineKeyboardButton(s"${Emoji.comment} Add comment", callbackData = Some("addComment"))
+
+  // read dates
+  val markAsRead          = InlineKeyboardButton(s"${Emoji.question} Read some time ago", callbackData = Some("markAsRead"))
   val markAsStartedToday  = InlineKeyboardButton(s"${Emoji.start} Started today", callbackData = Some("markAsStartedToday"))
   val markAsFinishedToday = InlineKeyboardButton(s"${Emoji.finish} Finished today", callbackData = Some("markAsFinishedToday"))
-  val markAsRead          = InlineKeyboardButton(s"${Emoji.question} Read some time ago", callbackData = Some("markAsRead"))
-  val addComment          = InlineKeyboardButton(s"${Emoji.comment} Add comment", callbackData = Some("addComment"))
+  val cancelStartedToday = InlineKeyboardButton(s"${Emoji.cross} Cancel today's start", callbackData = Some("cancelStartedToday"))
+  val cancelFinishedToday =
+    InlineKeyboardButton(s"${Emoji.cross} Cancel today's finish", callbackData = Some("cancelFinishedToday"))
 
   // rating
   val rateNever     = InlineKeyboardButton(s"${Emoji.never}", callbackData = Some("rateNever"))

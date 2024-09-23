@@ -5,6 +5,7 @@ import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
 import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDisplayModel, FicKey, MyFicStats}
 import com.kapibarabanka.kapibarabot.sqlite.repos.{SeriesRepo, StatsRepo, WorksRepo}
 import com.kapibarabanka.kapibarabot.sqlite.tables.*
+import scalaz.Scalaz.ToIdOps
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
@@ -61,12 +62,20 @@ class FanficDb(userId: String) extends WithDb(userId):
     case models.FicType.Work   => works.patchStats(key.ficId, stats)
     case models.FicType.Series => series.patchStats(key.ficId, stats)
 
-  def addComment(key: FicKey, comment: FicComment): IO[Throwable, Unit] = stats.addComment(key, comment)
+  def addComment(key: FicKey, comment: FicComment): IO[Throwable, FicDisplayModel] =
+    stats.addComment(key, comment) |> returnPatchedFic(key)
 
-  def addStartDate(key: FicKey, startDate: String): IO[Throwable, Unit] = stats.addStartDate(key, startDate)
+  def addStartDate(key: FicKey, startDate: String): IO[Throwable, FicDisplayModel] =
+    stats.addStartDate(key, startDate) |> returnPatchedFic(key)
 
-  def addFinishDate(key: FicKey, finishDate: String): ZIO[Any, Throwable, Unit] = for {
+  def addFinishDate(key: FicKey, finishDate: String): ZIO[Any, Throwable, FicDisplayModel] = (for {
     _   <- stats.addFinishDate(key, finishDate)
     fic <- getFicOption(key).map(_.get)
     _   <- patchFicStats(key, fic.stats.copy(read = true))
-  } yield ()
+  } yield ()) |> returnPatchedFic(key)
+
+  def cancelStartedToday(key: FicKey): IO[Throwable, FicDisplayModel]  = stats.cancelStartedToday(key) |> returnPatchedFic(key)
+  def cancelFinishedToday(key: FicKey): IO[Throwable, FicDisplayModel] = stats.cancelFinishedToday(key) |> returnPatchedFic(key)
+
+  def returnPatchedFic(key: FicKey)(action: IO[Throwable, Any]): IO[Throwable, FicDisplayModel] =
+    action.flatMap(_ => getFicOption(key).map(_.get))

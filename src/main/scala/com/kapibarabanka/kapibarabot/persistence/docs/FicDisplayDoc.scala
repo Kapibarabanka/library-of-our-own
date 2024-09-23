@@ -45,7 +45,7 @@ object FicDisplayDoc:
     Read = fic.stats.read,
     Backlog = fic.stats.backlog,
     IsOnKindle = fic.stats.isOnKindle,
-    ReadDates = Some(fic.readDates.mkString(",")),
+    ReadDates = Some(fic.readDatesInfo.readDates.mkString("; ")),
     Quality = fic.stats.quality.map(_.toString),
     Comments = Some(fic.comments.mkString("\n")),
     Fire = fic.stats.fire
