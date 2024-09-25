@@ -7,20 +7,21 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object MessageText {
-  def existingFic(model: FicDisplayModel): String =
+  def existingFic(record: UserFicRecord): String =
     s"""
-       |${info(model)}
-       |${model |> displayMyRating}
-       |${model |> displayStats}
+       |${info(record.fic)}
+       |${record |> displayMyRating}
+       |${record |> displayStats}
        |""".stripMargin
 
   def newFic(link: String): String =
     s"""
        |<a href="$link">That's a new one!</a>
        |It's not in the database yet, but it could be.
+       |Please note that parsing the AO3 can take some time.
        |""".stripMargin
 
-  private def info(fic: FicDisplayModel) =
+  private def info(fic: FlatFicModel) =
     s"""<b>${fic.title}</b>
        |<i>${fic.authors.mkString(", ")}</i>
        |
@@ -29,18 +30,18 @@ object MessageText {
        |${f"${fic.words}%,d"} words
        |""".stripMargin
 
-  private def displayStats(fic: FicDisplayModel) =
-    s"""${if (fic.stats.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}
-       |${if (fic.stats.isOnKindle) s"${Emoji.kindle} Is on Kindle" else s"${Emoji.cross} Not on Kindle"}
-       |${readDates(fic)}
+  private def displayStats(record: UserFicRecord) =
+    s"""${if (record.details.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}
+       |${if (record.details.isOnKindle) s"${Emoji.kindle} Is on Kindle" else s"${Emoji.cross} Not on Kindle"}
+       |${readDates(record)}
        |""".stripMargin
 
-  private def displayMyRating(fic: FicDisplayModel) =
-    (if (fic.stats.fire) s"${Emoji.fire}<b>It has fire!</b>${Emoji.fire}\n" else "")
-      + fic.stats.quality.fold("")(q => s"You rated it ${formatQuality(q)}\n")
-      + (if (fic.comments.isEmpty) ""
+  private def displayMyRating(record: UserFicRecord) =
+    (if (record.details.fire) s"${Emoji.fire}<b>It has fire!</b>${Emoji.fire}\n" else "")
+      + record.details.quality.fold("")(q => s"You rated it ${formatQuality(q)}\n")
+      + (if (record.comments.isEmpty) ""
          else
-           s"\nYour thoughts on it:\n<i>${fic.comments.map(_.format()).mkString("\n")}</i>")
+           s"\nYour thoughts on it:\n<i>${record.comments.map(_.format()).mkString("\n")}</i>")
 
   private def formatQuality(quality: Quality.Value) = quality match
     case Quality.Brilliant => s"<b>Brilliant</b> ${Emoji.brilliant}"
@@ -49,9 +50,9 @@ object MessageText {
     case Quality.Meh       => s"<b>Meeeh</b> ${Emoji.meh}"
     case Quality.Never     => s"<b>Never</b> Again ${Emoji.never}"
 
-  private def readDates(fic: FicDisplayModel) =
-    fic.readDatesInfo.readDates match
-      case List()            => if (fic.stats.read) s"${Emoji.finish} Already read" else s"${Emoji.cross} Not read"
+  private def readDates(record: UserFicRecord) =
+    record.readDatesInfo.readDates match
+      case List()            => if (record.details.read) s"${Emoji.finish} Already read" else s"${Emoji.cross} Not read"
       case List(Start(date)) => s"${Emoji.start} Started reading on $date"
       case dates =>
         s"${Emoji.finish} Already read:\n" + dates

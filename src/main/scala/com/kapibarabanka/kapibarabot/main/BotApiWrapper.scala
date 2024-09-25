@@ -7,13 +7,13 @@ import telegramium.bots.high.Methods.*
 import telegramium.bots.high.implicits.*
 import zio.*
 
-class BotApiWrapper(val chatId: ChatIntId)(implicit bot: Api[Task]):
+class BotApiWrapper(val chatId: String)(implicit bot: Api[Task]):
   def sendText(text: String): UIO[Option[Message]] = sendMessage(MessageData(text))
 
   def sendMessage(msg: MessageData): UIO[Option[Message]] =
     telegramium.bots.high.Methods
       .sendMessage(
-        chatId,
+        ChatStrId(chatId),
         msg.text,
         msg.businessConnectionId,
         msg.messageThreadId,
@@ -39,7 +39,7 @@ class BotApiWrapper(val chatId: ChatIntId)(implicit bot: Api[Task]):
       .editMessageText(
         msg.text,
         msg.businessConnectionId,
-        Some(chatId),
+        Some(ChatStrId(chatId)),
         Some(startMsg.messageId),
         msg.inlineMessageId,
         msg.parseMode,
@@ -61,7 +61,7 @@ class BotApiWrapper(val chatId: ChatIntId)(implicit bot: Api[Task]):
     telegramium.bots.high.Methods.getFile(id).exec |> logCritical(s"GETTING FILE WITH ID $id")
 
   def sendDocument(file: IFile) =
-    telegramium.bots.high.Methods.sendDocument(chatId, file).exec
+    telegramium.bots.high.Methods.sendDocument(ChatStrId(chatId), file).exec
 
   private def logCritical[T](actionName: String)(action: Task[T]): UIO[Option[T]] =
     action.foldZIO(

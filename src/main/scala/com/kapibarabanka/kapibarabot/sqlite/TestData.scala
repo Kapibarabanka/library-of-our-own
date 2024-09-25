@@ -16,11 +16,14 @@ import com.kapibarabanka.ao3scrapper.models.{
   SingleDate,
   Work
 }
-import com.kapibarabanka.kapibarabot.domain.{FicComment, MyFicStats, Quality}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDetails, Quality}
 
 import java.time.LocalDate
 
 object TestData:
+  val userId1 = "111"
+  val userId2 = "222"
+  
   // Fandoms
   val onePiece = Fandom("One Piece", Some("Anime and Manga"))
   val honkai   = Fandom("Honkai: Star Rail", None)
@@ -124,10 +127,3 @@ object TestData:
   )
 
   val comment = FicComment(commentDate = "2024-08-30", comment = "Some comment")
-  val readStats = MyFicStats(
-    read = true,
-    backlog = false,
-    isOnKindle = true,
-    quality = Some(Quality.Nice),
-    fire = true
-  )

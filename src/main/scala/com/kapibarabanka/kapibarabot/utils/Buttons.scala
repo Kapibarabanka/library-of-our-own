@@ -4,16 +4,16 @@ import com.kapibarabanka.kapibarabot.domain.*
 import telegramium.bots.{InlineKeyboardButton, InlineKeyboardMarkup}
 
 object Buttons:
-  def getButtonsForExisting(fic: FicDisplayModel): Option[InlineKeyboardMarkup] = Some(
+  def getButtonsForExisting(fic: UserFicRecord): Option[InlineKeyboardMarkup] = Some(
     InlineKeyboardMarkup(inlineKeyboard =
       List(
         List(
-          if (fic.stats.backlog) None else Some(addToBacklog),
-          if (fic.stats.isOnKindle) None else Some(sendToKindle)
+          if (fic.details.backlog) None else Some(addToBacklog),
+          if (fic.details.isOnKindle) None else Some(sendToKindle)
         ).flatten,
-        (if (fic.stats.read || fic.stats.backlog) List() else List(markAsRead)) ++ getDatesButtons(fic.readDatesInfo),
+        (if (fic.details.read || fic.details.backlog) List() else List(markAsRead)) ++ getDatesButtons(fic.readDatesInfo),
         List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant),
-        List(addComment, if (fic.stats.fire) rateNotFire else rateFire)
+        List(addComment, if (fic.details.fire) rateNotFire else rateFire)
       )
     )
   )
@@ -21,7 +21,7 @@ object Buttons:
   def getButtonsForNew: Option[InlineKeyboardMarkup] = Some(
     InlineKeyboardMarkup(inlineKeyboard =
       List(
-        List(addToAirtable)
+        List(parseAndSave)
       )
     )
   )
@@ -59,4 +59,4 @@ object Buttons:
   val rateNotFire   = InlineKeyboardButton(s"${Emoji.notFire}", callbackData = Some("rateNotFire"))
 
   // for new
-  val addToAirtable = InlineKeyboardButton(s"${Emoji.airtable} Save", callbackData = Some("addToAirtable"))
+  val parseAndSave = InlineKeyboardButton(s"${Emoji.airtable} Parse and save to db", callbackData = Some("parseAndSave"))

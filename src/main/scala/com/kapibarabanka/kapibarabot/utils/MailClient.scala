@@ -9,13 +9,14 @@ import javax.mail.util.ByteArrayDataSource
 import scala.util.Try
 
 object MailClient {
-  private val senderEmail = sys.env("SENDER_EMAIL")
-  private val password    = sys.env("EMAIL_PASSWORD")
-  private val kindleEmail = sys.env("KINDLE_EMAIL")
-  private val hostName    = "smtp-mail.outlook.com"
-  private val port        = "587"
+  private val senderEmail    = Config.senderEmail
+  private val senderPassword = Config.senderPassword
+  private val kindleEmail    = Config.kindleEmail
+
+  private val hostName = "smtp-mail.outlook.com"
+  private val port     = "587"
   private val auth = new Authenticator() {
-    override protected def getPasswordAuthentication = new PasswordAuthentication(senderEmail, password)
+    override protected def getPasswordAuthentication = new PasswordAuthentication(senderEmail, senderPassword)
   }
 
   val properties = new Properties

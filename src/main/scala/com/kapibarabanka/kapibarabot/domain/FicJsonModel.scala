@@ -21,7 +21,7 @@ case class FicJsonModel(
 
 object FicJsonModel:
   implicit val encoder: JsonEncoder[FicJsonModel] = DeriveJsonEncoder.gen[FicJsonModel]
-  def fromDisplayModel(fic: FicDisplayModel): FicJsonModel = FicJsonModel(
+  def fromDisplayModel(fic: FlatFicModel): FicJsonModel = FicJsonModel(
     id = fic.id,
     isSeries = fic.ficType == FicType.Series,
     link = fic.link,

@@ -1,8 +1,7 @@
 package com.kapibarabanka.kapibarabot.persistence.docs
 
 import com.kapibarabanka.airtable.EntityDocument
-import com.kapibarabanka.ao3scrapper.models.FicType
-import com.kapibarabanka.kapibarabot.domain.FicDisplayModel
+import com.kapibarabanka.kapibarabot.domain.UserFicRecord
 
 final case class FicDisplayDoc(
     Title: String,
@@ -29,24 +28,24 @@ final case class FicDisplayDoc(
 ) extends EntityDocument
 
 object FicDisplayDoc:
-  def fromModel(fic: FicDisplayModel) = FicDisplayDoc(
-    Title = fic.title,
-    Id = fic.id,
-    Link = fic.link,
-    IsSeries = fic.ficType == FicType.Series,
-    Authors = fic.authors.mkString(", "),
-    Rating = fic.rating.toString.substring(0, 1),
-    Fandoms = fic.fandoms.mkString(", "),
-    Relationships = fic.relationships.mkString(", "),
-    Characters = fic.characters.mkString(", "),
-    Tags = fic.tags.mkString(", "),
-    Words = fic.words,
-    Complete = fic.complete,
-    Read = fic.stats.read,
-    Backlog = fic.stats.backlog,
-    IsOnKindle = fic.stats.isOnKindle,
-    ReadDates = Some(fic.readDatesInfo.readDates.mkString("; ")),
-    Quality = fic.stats.quality.map(_.toString),
-    Comments = Some(fic.comments.mkString("\n")),
-    Fire = fic.stats.fire
+  def fromModel(record: UserFicRecord) = FicDisplayDoc(
+    Title = record.fic.title,
+    Id = record.fic.id,
+    Link = record.fic.link,
+    IsSeries = record.key.ficIsSeries,
+    Authors = record.fic.authors.mkString(", "),
+    Rating = record.fic.rating.toString.substring(0, 1),
+    Fandoms = record.fic.fandoms.mkString(", "),
+    Relationships = record.fic.relationships.mkString(", "),
+    Characters = record.fic.characters.mkString(", "),
+    Tags = record.fic.tags.mkString(", "),
+    Words = record.fic.words,
+    Complete = record.fic.complete,
+    Read = record.details.read,
+    Backlog = record.details.backlog,
+    IsOnKindle = record.details.isOnKindle,
+    ReadDates = Some(record.readDatesInfo.readDates.mkString("; ")),
+    Quality = record.details.quality.map(_.toString),
+    Comments = Some(record.comments.mkString("\n")),
+    Fire = record.details.fire
   )

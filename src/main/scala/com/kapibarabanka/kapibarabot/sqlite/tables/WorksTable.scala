@@ -18,14 +18,6 @@ class WorksTable(tag: Tag) extends Table[WorkDoc](tag, WorksTable.name):
   def complete     = column[Boolean]("complete")
   def partsWritten = column[Int]("partsWritten")
 
-  def read       = column[Boolean]("read")
-  def backlog    = column[Boolean]("backlog")
-  def isOnKindle = column[Boolean]("isOnKindle")
-  def quality    = column[Option[String]]("quality")
-  def fire       = column[Boolean]("fire")
-
-  def docCreated = column[String]("docCreated")
-
   def * = (
     id,
     title,
@@ -38,15 +30,7 @@ class WorksTable(tag: Tag) extends Table[WorkDoc](tag, WorksTable.name):
     updated,
     words,
     complete,
-    partsWritten,
-
-    // stats
-    read,
-    backlog,
-    isOnKindle,
-    quality,
-    fire,
-    docCreated
+    partsWritten
   ).mapTo[WorkDoc]
 
 object WorksTable extends MyTable:

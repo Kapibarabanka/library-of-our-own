@@ -2,7 +2,7 @@ package com.kapibarabanka.kapibarabot.domain
 
 import com.kapibarabanka.ao3scrapper.models.{FicType, Rating}
 
-case class FicDisplayModel(
+case class FlatFicModel(
     id: String,
     link: String,
     ficType: FicType,
@@ -15,9 +15,5 @@ case class FicDisplayModel(
     relationships: List[String],
     tags: List[String],
     words: Int,
-    complete: Boolean,
-    readDatesInfo: ReadDatesInfo,
-    comments: List[FicComment],
-    stats: MyFicStats
-):
-  val key: FicKey = FicKey(id, ficType)
+    complete: Boolean
+)

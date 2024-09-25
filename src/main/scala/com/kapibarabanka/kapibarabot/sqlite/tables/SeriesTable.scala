@@ -13,11 +13,6 @@ class SeriesTable(tag: Tag) extends Table[SeriesDoc](tag, SeriesTable.name):
   def words    = column[Int]("words")
   def complete = column[Boolean]("complete")
 
-  def backlog    = column[Boolean]("backlog")
-  def isOnKindle = column[Boolean]("isOnKindle")
-
-  def docCreated = column[String]("docCreated")
-
   def * = (
     id,
     title,
@@ -26,12 +21,7 @@ class SeriesTable(tag: Tag) extends Table[SeriesDoc](tag, SeriesTable.name):
     started,
     updated,
     words,
-    complete,
-
-    // stats
-    backlog,
-    isOnKindle,
-    docCreated
+    complete
   ).mapTo[SeriesDoc]
 
 object SeriesTable extends MyTable:

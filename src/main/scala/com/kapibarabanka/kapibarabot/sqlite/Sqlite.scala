@@ -1,6 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite
 
 import com.kapibarabanka.kapibarabot.sqlite.tables.MyTable
+import com.kapibarabanka.kapibarabot.utils
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import slick.dbio.{DBIOAction, NoStream}
 import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
@@ -10,11 +11,11 @@ import zio.ZIO
 type Database = JdbcDatabaseDef
 
 object Sqlite:
-  private val config     = ConfigFactory.parseString("driver=org.sqlite.JDBC,connectionPool=disabled,keepAliveConnection=true")
-  private val dbFilePath = sys.env("SQLITE_DB")
+  private val config    = ConfigFactory.parseString("driver=org.sqlite.JDBC,connectionPool=disabled,keepAliveConnection=true")
+  private val appConfig = utils.Config
 
-  def run[T](userId: String)(action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, Throwable, T] = {
-    val url           = s"jdbc:sqlite:${dbFilePath}ao3_sqlite_$userId.db"
+  def run[T](action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, Throwable, T] = {
+    val url           = s"jdbc:sqlite:${appConfig.dbPath}${appConfig.dbName}"
     val configWithUrl = config.withValue("url", ConfigValueFactory.fromAnyRef(url))
 
     def connectToDb = {

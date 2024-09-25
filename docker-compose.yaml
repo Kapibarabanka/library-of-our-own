@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     build: .
     volumes:
-      - ao3-db:${SQLITE_DB}
+      - ao3-db:${DB_PATH}
     environment:
       - AIRTABLE_TOKEN=${AIRTABLE_TOKEN}
       - TG_TOKEN=${TG_TOKEN}
@@ -13,10 +13,11 @@ services:
       - ALLOWED_CHATS=${ALLOWED_CHATS}
       - MY_CHAT_ID=${MY_CHAT_ID}
       - SENDER_EMAIL=${SENDER_EMAIL}
+      - SENDER_PASSWORD=${SENDER_PASSWORD}
       - KINDLE_EMAIL=${KINDLE_EMAIL}
-      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
       - FICS_TEMP_PATH=${FICS_TEMP_PATH}
-      - SQLITE_DB=${SQLITE_DB}
+      - DB_PATH=${DB_PATH}
+      - DB_NAME=${DB_NAME}
 volumes:
   ao3-db:
     external: true

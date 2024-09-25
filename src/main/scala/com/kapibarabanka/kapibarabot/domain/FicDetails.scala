@@ -1,9 +1,12 @@
 package com.kapibarabanka.kapibarabot.domain
 
-case class MyFicStats(
+import java.time.LocalDate
+
+case class FicDetails(
     read: Boolean,
     backlog: Boolean,
     isOnKindle: Boolean,
     quality: Option[Quality.Value],
-    fire: Boolean
+    fire: Boolean,
+    recordCreated: LocalDate
 )

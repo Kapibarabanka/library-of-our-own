@@ -1,7 +1,6 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
 import com.kapibarabanka.ao3scrapper.models.*
-import com.kapibarabanka.kapibarabot.domain.FicKey
 
 import java.time.LocalDate
 
@@ -17,17 +16,8 @@ case class WorkDoc(
     updated: Option[String],
     words: Int,
     complete: Boolean,
-    partsWritten: Int,
-
-    // stats
-    read: Boolean,
-    backlog: Boolean,
-    isOnKindle: Boolean,
-    quality: Option[String],
-    fire: Boolean,
-    docCreated: String
-):
-  val key: FicKey = FicKey(id, FicType.Work)
+    partsWritten: Int
+)
 
 object WorkDoc:
   def fromModel(work: Work): WorkDoc = WorkDoc(
@@ -54,11 +44,5 @@ object WorkDoc:
     words = work.words,
     link = work.link,
     complete = work.complete,
-    partsWritten = work.chaptersWritten,
-    read = false,
-    backlog = false,
-    isOnKindle = false,
-    quality = None,
-    fire = false,
-    docCreated = LocalDate.now().toString
+    partsWritten = work.chaptersWritten
   )

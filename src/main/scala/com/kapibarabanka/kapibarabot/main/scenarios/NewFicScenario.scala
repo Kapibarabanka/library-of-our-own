@@ -3,10 +3,11 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 import com.kapibarabanka.airtable.AirtableError
 import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
+import com.kapibarabanka.kapibarabot.domain.UserFicKey
 import com.kapibarabanka.kapibarabot.main.BotError.*
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
-import com.kapibarabanka.kapibarabot.sqlite.FanficDb
+import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils.Buttons.getButtonsForNew
 import com.kapibarabanka.kapibarabot.utils.{Buttons, MessageText}
 import iozhik.OpenEnum
@@ -16,7 +17,7 @@ import zio.*
 
 import scala.language.postfixOps
 
-case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, db: FanficDb)
+case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, db: FanficDbOld)
     extends Scenario,
       WithErrorHandling(bot):
 
@@ -27,8 +28,8 @@ case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: A
 
   override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] = {
     query.data match
-      case Buttons.addToAirtable.callbackData => onSave(query)
-      case _                                  => unknownCallbackQuery(query).map(_ => this)
+      case Buttons.parseAndSave.callbackData => onSave(query)
+      case _                                 => unknownCallbackQuery(query).map(_ => this)
   }
 
   private def onSave(query: CallbackQuery) = {
@@ -42,11 +43,12 @@ case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: A
             case None        => ZIO.fail(NoLinkInMessage())
           ficFromAo3 <- getFicByLink(ficLink)
           savingMsg  <- bot.editLogText(logParsing, "Saving to database...")
-          savedFic <- ficFromAo3 match
-            case work: Work     => addWork(work)
-            case series: Series => addSeries(series)
+          flatFic <- ficFromAo3 match
+            case work: Work     => db.add(work)
+            case series: Series => db.add(series)
+          record       <- db.getOrCreateUserFic(UserFicKey(bot.chatId, flatFic.id, flatFic.ficType))
           _            <- bot.editLogText(savingMsg, "Enjoy:")
-          nextScenario <- ExistingFicScenario(savedFic).withStartup
+          nextScenario <- ExistingFicScenario(record).withStartup
         } yield nextScenario) |> sendOnErrors({
           case ao3Error: Ao3Error           => s"getting fic from Ao3"
           case airtableError: AirtableError => s"adding fic to db"

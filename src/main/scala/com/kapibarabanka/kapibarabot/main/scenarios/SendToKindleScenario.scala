@@ -1,11 +1,12 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3ClientError}
-import com.kapibarabanka.kapibarabot.domain.FicDisplayModel
-import com.kapibarabanka.kapibarabot.utils.Constants.{tempDir, tgFileUrl}
+import com.kapibarabanka.kapibarabot.domain.UserFicRecord
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.persistence.AirtableClient
-import com.kapibarabanka.kapibarabot.sqlite.FanficDb
+import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
+import com.kapibarabanka.kapibarabot.utils
+import com.kapibarabanka.kapibarabot.utils.Constants.tgFileUrl
 import com.kapibarabanka.kapibarabot.utils.MailClient
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.high.implicits.*
@@ -17,18 +18,18 @@ import java.net.URL
 import scala.language.postfixOps
 import scala.sys.process.*
 
-case class SendToKindleScenario(fic: FicDisplayModel)(implicit
+case class SendToKindleScenario(record: UserFicRecord)(implicit
     bot: BotApiWrapper,
     airtable: AirtableClient,
     ao3: Ao3,
-    db: FanficDb
+    db: FanficDbOld
 ) extends Scenario,
       WithErrorHandling(bot):
   private val sourceFormat = ".mobi"
   private val targetFormat = ".epub"
   protected override def startupAction: UIO[Unit] = (for {
     logLink <- bot.sendText("Getting link from AO3...")
-    url     <- ao3.getDownloadLink(fic.id)
+    url     <- ao3.getDownloadLink(record.fic.id)
     logFile <- bot.editLogText(logLink, s"Uploading $sourceFormat file...")
     _       <- useTempFile(url, sourceFormat)(sendFileFromBot)
     _       <- bot.editLogText(logFile, s"Send file below to @ebook_converter_bot and send me the converted $targetFormat file:")
@@ -38,7 +39,7 @@ case class SendToKindleScenario(fic: FicDisplayModel)(implicit
   })
 
   override def onMessage(msg: Message): UIO[Scenario] = msg.document match
-    case None           => bot.sendText("Not a valid file").flatMap(_ => ExistingFicScenario(fic).withStartup)
+    case None           => bot.sendText("Not a valid file").flatMap(_ => ExistingFicScenario(record).withStartup)
     case Some(document) => sendToKindle(document)
 
   override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] = StartScenario().onCallbackQuery(query)
@@ -54,15 +55,15 @@ case class SendToKindleScenario(fic: FicDisplayModel)(implicit
       "Sent to Kindle! You can check the progress <a href=\"https://www.amazon.com/sendtokindle\">here</a>"
     )
     patchedRecord <- patchFicStats(
-      fic.key,
-      fic.stats.copy(isOnKindle = true)
+      record,
+      record.details.copy(isOnKindle = true)
     )
     nextScenario <- ExistingFicScenario(patchedRecord).withStartup
   } yield nextScenario) |> sendOnError("patching record")
 
   private def useTempFile(url: String, fileFormat: String)(action: File => Task[Unit]) = {
     def acquire = for {
-      file <- ZIO.attempt(File(tempDir + fic.title + fileFormat))
+      file <- ZIO.attempt(File(utils.Config.tempDir + record.fic.title + fileFormat))
       _    <- ZIO.log(s"Created file ${file.getPath}")
     } yield file
 
@@ -86,6 +87,6 @@ case class SendToKindleScenario(fic: FicDisplayModel)(implicit
     bot.sendDocument(InputPartFile(file)).unit |> sendOnError({})(s"uploading file ${file.getName}")
 
   private def sendFileToEmail(file: File) =
-    ZIO.attempt(MailClient.sendFile(file, fic.title + targetFormat)) |> sendOnError({})(
+    ZIO.attempt(MailClient.sendFile(file, record.fic.title + targetFormat)) |> sendOnError({})(
       s"sending file ${file.getName} to kindle email"
     )
