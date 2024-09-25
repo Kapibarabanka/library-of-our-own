@@ -33,12 +33,12 @@ class FanficDbOld:
   )
 
   def init = for {
-    _ <- Sqlite.run(DBIO.sequence(allTables.map(_.createIfNotExists)))
+    _ <- SqliteOld.run(DBIO.sequence(allTables.map(_.createIfNotExists)))
   } yield ()
 
   def beginWithTestData = {
     for {
-      _ <- Sqlite.run(DBIO.sequence(allTables.map(_.dropIfExists)))
+      _ <- SqliteOld.run(DBIO.sequence(allTables.map(_.dropIfExists)))
       _ <- init
       _ <- works.add(TestData.ratiorine)
       _ <- series.add(TestData.opSeries)

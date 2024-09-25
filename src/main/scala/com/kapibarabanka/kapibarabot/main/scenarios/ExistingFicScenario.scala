@@ -5,7 +5,7 @@ import com.kapibarabanka.ao3scrapper.models.FicType
 import com.kapibarabanka.kapibarabot.domain.{FicDetails, Quality, UserFicKey, UserFicRecord}
 import com.kapibarabanka.kapibarabot.main.BotError.*
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
-import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils.Buttons.*
 import com.kapibarabanka.kapibarabot.utils.{Buttons, MessageText}

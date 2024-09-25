@@ -1,7 +1,9 @@
 package com.kapibarabanka.kapibarabot.main
 
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3HttpClientImpl, Ao3Impl}
-import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.airtable.AirtableClient
+import com.kapibarabanka.kapibarabot.services.{FicServiceImpl, UserFicServiceImpl}
+import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.utils
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.Client
@@ -22,6 +24,7 @@ object Application extends ZIOAppDefault {
         implicit val clientWithLogger: Client[Task] = Logger(logBody = true, logHeaders = true)(httpClient)
         implicit val airtable: AirtableClient       = AirtableClient(clientWithLogger, appConfig.airtableToken)
         implicit val api: Api[Task] = BotApi(clientWithLogger, baseUrl = s"https://api.telegram.org/bot${appConfig.tgToken}")
+        val db = KapibarabotDb(s"${appConfig.dbPath}${appConfig.dbName}")
         (for {
           ao3 <- ZIO.service[Ao3]
           bot <- ZIO.succeed(new Kapibarabot()(ao3 = ao3))
@@ -32,7 +35,9 @@ object Application extends ZIOAppDefault {
           ZLayer.succeed(clientConfig),
           ZIOClient.live,
           ZLayer.succeed(NettyConfig.default),
-          DnsResolver.default
+          DnsResolver.default,
+          FicServiceImpl.layer(db),
+          UserFicServiceImpl.layer(db)
         )
       }
   }

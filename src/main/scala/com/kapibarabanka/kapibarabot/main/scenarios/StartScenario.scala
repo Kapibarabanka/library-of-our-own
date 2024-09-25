@@ -3,7 +3,7 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
-import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}

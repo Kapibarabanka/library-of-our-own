@@ -3,7 +3,7 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3ClientError}
 import com.kapibarabanka.kapibarabot.domain.UserFicRecord
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
-import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils
 import com.kapibarabanka.kapibarabot.utils.Constants.tgFileUrl

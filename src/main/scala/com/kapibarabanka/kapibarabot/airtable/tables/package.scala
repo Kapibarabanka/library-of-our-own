@@ -1,6 +1,6 @@
-package com.kapibarabanka.kapibarabot.persistence
+package com.kapibarabanka.kapibarabot.airtable
 
-import com.kapibarabanka.kapibarabot.persistence.docs.*
+import com.kapibarabanka.kapibarabot.airtable.docs.*
 import io.circe.Decoder
 import io.circe.derivation.{Configuration, ConfiguredDecoder}
 

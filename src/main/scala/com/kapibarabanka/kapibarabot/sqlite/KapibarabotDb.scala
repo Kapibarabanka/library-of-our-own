@@ -1,18 +1,39 @@
 package com.kapibarabanka.kapibarabot.sqlite
 
-import com.kapibarabanka.kapibarabot.sqlite.tables.MyTable
+import com.kapibarabanka.kapibarabot.sqlite.tables.*
 import com.kapibarabanka.kapibarabot.utils
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import slick.dbio.{DBIOAction, NoStream}
 import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
 import slick.jdbc.PostgresProfile.api.*
-import zio.ZIO
+import zio.{IO, ZIO}
 
-type Database = JdbcDatabaseDef
-
-object Sqlite:
+class KapibarabotDb(dbWithPath: String):
   private val config    = ConfigFactory.parseString("driver=org.sqlite.JDBC,connectionPool=disabled,keepAliveConnection=true")
   private val appConfig = utils.Config
+
+  val allTables: List[MyTable] = List(
+    UsersTable,
+    WorksTable,
+    SeriesTable,
+    FicsDetailsTable,
+    SeriesToWorksTable,
+    FandomsTable,
+    WorksToFandomsTable,
+    CharactersTable,
+    WorksToCharactersTable,
+    RelationshipsTable,
+    ShipsToCharactersTable,
+    WorksToShipsTable,
+    TagsTable,
+    WorksToTagsTable,
+    CommentsTable,
+    ReadDatesTable
+  )
+
+  def init: IO[Throwable, Unit] = for {
+    _ <- run(DBIO.sequence(allTables.map(_.createIfNotExists)))
+  } yield ()
 
   def run[T](action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, Throwable, T] = {
     val url           = s"jdbc:sqlite:${appConfig.dbPath}${appConfig.dbName}"
@@ -35,7 +56,8 @@ object Sqlite:
     ZIO.acquireReleaseWith(connectToDb)(close)(use)
   }
 
-  def createManyToManyTable(
+object KapibarabotDb:
+  def createManyToManyTableAction(
       name: String,
       leftFieldName: String,
       leftTable: MyTable,
@@ -43,11 +65,11 @@ object Sqlite:
       rightTable: MyTable
   ) =
     sqlu"""
-      CREATE TABLE IF NOT EXISTS "#$name" (
-      "id"	INTEGER NOT NULL UNIQUE,
-      "#$leftFieldName"	TEXT NOT NULL,
-      "#$rightFieldName"	TEXT NOT NULL,
-      PRIMARY KEY("id"),
-      FOREIGN KEY("#$leftFieldName") REFERENCES "#${leftTable.name}"("#${leftTable.keyField}") ON UPDATE CASCADE ON DELETE CASCADE,
-      FOREIGN KEY("#$rightFieldName") REFERENCES "#${rightTable.name}"("#${rightTable.keyField}") ON UPDATE CASCADE ON DELETE CASCADE);
-      """
+        CREATE TABLE IF NOT EXISTS "#$name" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "#$leftFieldName"	TEXT NOT NULL,
+        "#$rightFieldName"	TEXT NOT NULL,
+        PRIMARY KEY("id"),
+        FOREIGN KEY("#$leftFieldName") REFERENCES "#${leftTable.name}"("#${leftTable.keyField}") ON UPDATE CASCADE ON DELETE CASCADE,
+        FOREIGN KEY("#$rightFieldName") REFERENCES "#${rightTable.name}"("#${rightTable.keyField}") ON UPDATE CASCADE ON DELETE CASCADE);
+        """

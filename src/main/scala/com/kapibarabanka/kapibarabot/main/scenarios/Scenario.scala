@@ -4,7 +4,7 @@ import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
 import com.kapibarabanka.kapibarabot.domain.{FicComment, UserFicRecord, UserFicKey, FicDetails}
 import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
-import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils.Config.myChatId
 import telegramium.bots.{CallbackQuery, Message}

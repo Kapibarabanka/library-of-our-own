@@ -1,8 +1,8 @@
-package com.kapibarabanka.kapibarabot.persistence
+package com.kapibarabanka.kapibarabot.airtable
 
 import com.kapibarabanka.kapibarabot.domain.UserFicRecord
-import com.kapibarabanka.kapibarabot.persistence.docs.*
-import com.kapibarabanka.kapibarabot.persistence.tables.*
+import com.kapibarabanka.kapibarabot.airtable.docs.*
+import com.kapibarabanka.kapibarabot.airtable.tables.*
 import org.http4s.client.Client
 import zio.*
 

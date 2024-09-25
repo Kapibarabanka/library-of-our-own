@@ -2,13 +2,12 @@ package com.kapibarabanka.kapibarabot.sqlite.repos
 
 import com.kapibarabanka.ao3scrapper.models.{Fandom, FicType, Rating, Work}
 import com.kapibarabanka.kapibarabot.domain.{FicDetails, FlatFicModel, Quality}
-import com.kapibarabanka.kapibarabot.sqlite.Sqlite
+import com.kapibarabanka.kapibarabot.sqlite.SqliteOld
 import com.kapibarabanka.kapibarabot.sqlite.docs.*
 import com.kapibarabanka.kapibarabot.sqlite.tables.*
 import scalaz.Scalaz.ToIdOps
 import slick.dbio.Effect
 import slick.jdbc.PostgresProfile.api.*
-import slick.sql.FixedSqlAction
 import zio.{IO, ZIO}
 
 import scala.collection.immutable.Iterable
@@ -26,7 +25,7 @@ class WorksRepo:
   private val worksToShips      = TableQuery[WorksToShipsTable]
 
   def add(work: Work): IO[Throwable, FlatFicModel] =
-    Sqlite.run(DBIO.sequence(getAddingAction(work)).transactionally).flatMap(_ => getById(work.id).map(_.get))
+    SqliteOld.run(DBIO.sequence(getAddingAction(work)).transactionally).flatMap(_ => getById(work.id).map(_.get))
 
   def getAddingAction(work: Work): List[DBIOAction[Any, NoStream, Effect.Write & Effect.Read]] = {
     val fandomDocs = work.fandoms.map(FandomDoc.fromModel)
@@ -52,22 +51,22 @@ class WorksRepo:
   }
 
   def getById(workId: String): IO[Throwable, Option[FlatFicModel]] = for {
-    docs <- Sqlite.run(works.filter(_.id === workId).result)
+    docs <- SqliteOld.run(works.filter(_.id === workId).result)
     maybeDisplayModel <- docs.headOption match
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
   def getAll: IO[Throwable, List[FlatFicModel]] = for {
-    docs   <- Sqlite.run(works.result)
+    docs   <- SqliteOld.run(works.result)
     models <- ZIO.collectAll(docs.map(docToModel))
   } yield models.toList
 
   private def docToModel(doc: WorkDoc) = for {
-    fandoms       <- Sqlite.run(worksToFandoms.filter(_.workId === doc.id).map(_.fandom).result)
-    characters    <- Sqlite.run(worksToCharacters.filter(_.workId === doc.id).map(_.character).result)
-    relationships <- Sqlite.run(worksToShips.filter(_.workId === doc.id).map(_.shipName).result)
-    tags          <- Sqlite.run(worksToTags.filter(_.workId === doc.id).map(_.tagName).result)
+    fandoms       <- SqliteOld.run(worksToFandoms.filter(_.workId === doc.id).map(_.fandom).result)
+    characters    <- SqliteOld.run(worksToCharacters.filter(_.workId === doc.id).map(_.character).result)
+    relationships <- SqliteOld.run(worksToShips.filter(_.workId === doc.id).map(_.shipName).result)
+    tags          <- SqliteOld.run(worksToTags.filter(_.workId === doc.id).map(_.tagName).result)
   } yield FlatFicModel(
     id = doc.id,
     ficType = FicType.Work,

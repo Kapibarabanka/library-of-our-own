@@ -4,7 +4,7 @@ import cats.Parallel
 import cats.effect.Async
 import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.kapibarabot.main.scenarios.{Scenario, StartScenario}
-import com.kapibarabanka.kapibarabot.persistence.AirtableClient
+import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils.Config.allowedChats
 import telegramium.bots.*

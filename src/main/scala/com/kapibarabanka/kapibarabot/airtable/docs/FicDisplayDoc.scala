@@ -1,4 +1,4 @@
-package com.kapibarabanka.kapibarabot.persistence.docs
+package com.kapibarabanka.kapibarabot.airtable.docs
 
 import com.kapibarabanka.airtable.EntityDocument
 import com.kapibarabanka.kapibarabot.domain.UserFicRecord
