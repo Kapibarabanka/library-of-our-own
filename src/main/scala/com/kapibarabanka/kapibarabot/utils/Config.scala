@@ -1,10 +1,6 @@
 package com.kapibarabanka.kapibarabot.utils
 
-import telegramium.bots.ChatIntId
-
 object Config:
-  val airtableToken: String = sys.env("AIRTABLE_TOKEN")
-
   val ao3Login: String    = sys.env("AO3_LOGIN")
   val ao3Password: String = sys.env("AO3_PASSWORD")
 

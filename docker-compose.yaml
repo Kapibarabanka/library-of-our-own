@@ -6,7 +6,6 @@ services:
     volumes:
       - ao3-db:${DB_PATH}
     environment:
-      - AIRTABLE_TOKEN=${AIRTABLE_TOKEN}
       - TG_TOKEN=${TG_TOKEN}
       - AO3_LOGIN=${AO3_LOGIN}
       - AO3_PASSWORD=${AO3_PASSWORD}
