@@ -1,6 +1,5 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
-import com.kapibarabanka.airtable.AirtableError
 import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
@@ -48,8 +47,8 @@ case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId
           record <- db.details.getOrCreateUserFic(UserFicKey(bot.chatId, flatFic.id, flatFic.ficType))
           _      <- bot.editLogText(savingMsg, "Enjoy:")
         } yield ExistingFicBotState(record, true)) |> sendOnErrors({
-          case ao3Error: Ao3Error           => s"getting fic from Ao3"
-          case airtableError: AirtableError => s"adding fic to db"
+          case ao3Error: Ao3Error => s"getting fic from Ao3"
+          case _                  => s"adding fic to db"
         })
       }
       .getOrElse(ZIO.succeed(currentState))

@@ -12,12 +12,8 @@ lazy val ao3 = (project in file("ao3-scrapper"))
   .settings(libraryDependencies ++= Dependencies.ao3)
   .settings(libraryDependencySchemes += "org.typelevel" %% "cats-parse" % VersionScheme.Always)
 
-lazy val airtable = (project in file("airtable"))
-  .settings(name := "airtable")
-  .settings(libraryDependencies ++= Dependencies.airtable)
-
 lazy val root = (project in file("."))
-  .dependsOn(ao3, airtable)
+  .dependsOn(ao3)
   .settings(name := "kapibarabot")
   .settings(libraryDependencies ++= Dependencies.kapibarabot)
   .settings(libraryDependencySchemes += "org.typelevel" %% "cats-parse" % VersionScheme.Always)
