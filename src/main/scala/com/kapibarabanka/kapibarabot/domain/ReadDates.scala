@@ -1,6 +1,5 @@
 package com.kapibarabanka.kapibarabot.domain
 
-
 sealed trait ReadDates
 
 case class StartAndFinish(startDate: String, finishDate: String) extends ReadDates

@@ -1,7 +1,7 @@
-package com.kapibarabanka.kapibarabot.persistence.tables
+package com.kapibarabanka.kapibarabot.airtable.tables
 
 import com.kapibarabanka.airtable.{TableBase, UpsertParameters}
-import com.kapibarabanka.kapibarabot.persistence.docs.FicDisplayDoc
+import com.kapibarabanka.kapibarabot.airtable.docs.FicDisplayDoc
 import io.circe.generic.auto.deriveEncoder
 import org.http4s.client.Client
 import zio.Task

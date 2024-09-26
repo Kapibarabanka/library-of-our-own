@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.sqlite.tables
 
-import com.kapibarabanka.kapibarabot.sqlite.Sqlite
+import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.docs.WorksToTagsDoc
 import slick.jdbc.PostgresProfile.api.*
 
@@ -15,7 +15,7 @@ object WorksToTagsTable extends MyTable:
   override val name: String     = "WorksToTags"
   override val keyField: String = "id"
 
-  def createIfNotExists = Sqlite.createManyToManyTable(
+  def createIfNotExists = KapibarabotDb.createManyToManyTableAction(
     name = name,
     leftFieldName = "workId",
     leftTable = WorksTable,
