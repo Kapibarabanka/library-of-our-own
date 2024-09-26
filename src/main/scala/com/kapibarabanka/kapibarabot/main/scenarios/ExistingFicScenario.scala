@@ -4,11 +4,11 @@ import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.ao3scrapper.models.FicType
 import com.kapibarabanka.kapibarabot.domain.{FicDetails, Quality, UserFicKey, UserFicRecord}
 import com.kapibarabanka.kapibarabot.main.BotError.*
-import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
+import com.kapibarabanka.kapibarabot.main.MessageData
 import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils.Buttons.*
-import com.kapibarabanka.kapibarabot.utils.{Buttons, MessageText}
+import com.kapibarabanka.kapibarabot.utils.{BotWithChatId, Buttons, MessageText}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
 import zio.*
@@ -16,7 +16,7 @@ import zio.*
 import java.time.LocalDate
 
 case class ExistingFicScenario(record: UserFicRecord)(implicit
-    bot: BotApiWrapper,
+    bot: BotWithChatId,
     airtable: AirtableClient,
     ao3: Ao3,
     db: FanficDbOld

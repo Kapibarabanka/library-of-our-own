@@ -1,8 +1,9 @@
-package com.kapibarabanka.kapibarabot.main
+package com.kapibarabanka.kapibarabot.main.scenarios
 
+import com.kapibarabanka.kapibarabot.utils.BotWithChatId
 import zio.*
 
-trait WithErrorHandling(bot: BotApiWrapper):
+trait WithErrorHandling(bot: BotWithChatId):
 
   def sendOnErrors[T](defaultValue: T)(errorToActionName: PartialFunction[Throwable, String])(
       action: ZIO[Any, Throwable, T]

@@ -2,9 +2,9 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.kapibarabot.domain.{FicComment, UserFicRecord}
-import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
+import com.kapibarabanka.kapibarabot.utils.BotWithChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}
 import zio.*
@@ -12,7 +12,7 @@ import zio.*
 import java.time.LocalDate
 
 case class CommentScenario(record: UserFicRecord)(implicit
-    bot: BotApiWrapper,
+    bot: BotWithChatId,
     airtable: AirtableClient,
     ao3: Ao3,
     db: FanficDbOld

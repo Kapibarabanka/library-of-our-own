@@ -2,15 +2,15 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
-import com.kapibarabanka.kapibarabot.domain.{FicComment, UserFicRecord, UserFicKey, FicDetails}
-import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
+import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDetails, UserFicKey, UserFicRecord}
 import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
+import com.kapibarabanka.kapibarabot.utils.BotWithChatId
 import com.kapibarabanka.kapibarabot.utils.Config.myChatId
 import telegramium.bots.{CallbackQuery, Message}
 import zio.*
 
-trait Scenario(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, db: FanficDbOld) extends WithErrorHandling:
+trait Scenario(implicit bot: BotWithChatId, airtable: AirtableClient, ao3: Ao3, db: FanficDbOld) extends WithErrorHandling:
   protected def startupAction: UIO[Unit]
   def onMessage(msg: Message): UIO[Scenario]
   def onCallbackQuery(query: CallbackQuery): UIO[Scenario]
@@ -26,7 +26,7 @@ trait Scenario(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, 
   protected def unknownCallbackQuery(query: CallbackQuery): ZIO[Any, Nothing, Unit] =
     bot.answerCallbackQuery(
       query,
-      text = Some(s"You chose ${query.data} and I don't know what to do with it")
+      Some(s"You chose ${query.data} and I don't know what to do with it")
     )
 
   protected def patchFicStats(record: UserFicRecord, stats: FicDetails): IO[Throwable, UserFicRecord] =

@@ -2,14 +2,14 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
-import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
+import com.kapibarabanka.kapibarabot.utils.BotWithChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}
 import zio.*
 
-case class StartScenario()(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, db: FanficDbOld)
+case class StartScenario()(implicit bot: BotWithChatId, airtable: AirtableClient, ao3: Ao3, db: FanficDbOld)
     extends Scenario,
       WithErrorHandling(bot):
   protected override def startupAction: UIO[Unit] = ZIO.unit

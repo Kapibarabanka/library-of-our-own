@@ -2,12 +2,11 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3ClientError}
 import com.kapibarabanka.kapibarabot.domain.UserFicRecord
-import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, WithErrorHandling}
 import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils
 import com.kapibarabanka.kapibarabot.utils.Constants.tgFileUrl
-import com.kapibarabanka.kapibarabot.utils.MailClient
+import com.kapibarabanka.kapibarabot.utils.{BotWithChatId, MailClient}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.high.implicits.*
 import telegramium.bots.{CallbackQuery, Document, InputPartFile, Message}
@@ -19,7 +18,7 @@ import scala.language.postfixOps
 import scala.sys.process.*
 
 case class SendToKindleScenario(record: UserFicRecord)(implicit
-    bot: BotApiWrapper,
+    bot: BotWithChatId,
     airtable: AirtableClient,
     ao3: Ao3,
     db: FanficDbOld

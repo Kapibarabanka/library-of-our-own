@@ -5,11 +5,11 @@ import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
 import com.kapibarabanka.kapibarabot.main.BotError.*
-import com.kapibarabanka.kapibarabot.main.{BotApiWrapper, MessageData, WithErrorHandling}
+import com.kapibarabanka.kapibarabot.main.MessageData
 import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils.Buttons.getButtonsForNew
-import com.kapibarabanka.kapibarabot.utils.{Buttons, MessageText}
+import com.kapibarabanka.kapibarabot.utils.{BotWithChatId, Buttons, MessageText}
 import iozhik.OpenEnum
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
@@ -17,7 +17,7 @@ import zio.*
 
 import scala.language.postfixOps
 
-case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: AirtableClient, ao3: Ao3, db: FanficDbOld)
+case class NewFicScenario(link: String)(implicit bot: BotWithChatId, airtable: AirtableClient, ao3: Ao3, db: FanficDbOld)
     extends Scenario,
       WithErrorHandling(bot):
 
@@ -36,8 +36,8 @@ case class NewFicScenario(link: String)(implicit bot: BotApiWrapper, airtable: A
     query.message
       .collect { case startMsg: Message =>
         (for {
-          _          <- bot.answerCallbackQuery(query, text = Some("Working on it..."))
-          logParsing <- bot.editLogText(startMsg, "Parsing AO3...")
+          _          <- bot.answerCallbackQuery(query, Some("Working on it..."))
+          logParsing <- bot.editLogText(Some(startMsg), "Parsing AO3...")
           ficLink <- startMsg.entities.collectFirst { case OpenEnum.Known(TextLinkMessageEntity(_, _, url)) => url } match
             case Some(value) => ZIO.succeed(value)
             case None        => ZIO.fail(NoLinkInMessage())
