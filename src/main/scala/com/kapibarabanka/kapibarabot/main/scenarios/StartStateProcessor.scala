@@ -2,13 +2,12 @@ package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.Ao3Url
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
-import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
-import com.kapibarabanka.kapibarabot.utils.BotWithChatId
+import com.kapibarabanka.kapibarabot.services.{BotWithChatId, DbService}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}
 import zio.*
 
-case class StartStateProcessor(currentState: StartBotState, bot: BotWithChatId, dbOld: FanficDbOld)
+case class StartStateProcessor(currentState: StartBotState, bot: BotWithChatId, db: DbService)
     extends StateProcessor(currentState, bot),
       WithErrorHandling(bot):
   override def startup: UIO[Unit] = ZIO.unit
@@ -28,12 +27,12 @@ case class StartStateProcessor(currentState: StartBotState, bot: BotWithChatId, 
       case None => ZIO.succeed(None)
       case Some((ficType, ficId)) =>
         (for {
-          ficExists <- dbOld.ficIsInDb(ficId, ficType)
+          ficExists <- db.fics.ficIsInDb(ficId, ficType)
           nextScenario <-
             if (!ficExists)
               ZIO.succeed(NewFicBotState(text))
             else
               for {
-                record <- dbOld.getOrCreateUserFic(UserFicKey(bot.chatId, ficId, ficType))
+                record <- db.details.getOrCreateUserFic(UserFicKey(bot.chatId, ficId, ficType))
               } yield ExistingFicBotState(record, true)
         } yield nextScenario) |> sendOnError("looking for fic in Airtable") map (scenario => Some(scenario))

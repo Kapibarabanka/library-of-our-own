@@ -54,6 +54,7 @@ case class Ao3HttpClientImpl(
     val withError = for {
       response <- (if (allowRedirects) clientWithRedirects else client).request(request)
       _        <- ZIO.succeed(if (response.status == Status.TooManyRequests) println("AO3_429"))
+      _        <- ZIO.succeed(if (response.status == Status.NotFound) println("ERROR AO3_404"))
       body     <- response.body.asString
     } yield (response, body)
     withError.foldZIO(

@@ -1,7 +1,6 @@
-package com.kapibarabanka.kapibarabot.utils
+package com.kapibarabanka.kapibarabot.services
 
 import com.kapibarabanka.kapibarabot.main.MessageData
-import com.kapibarabanka.kapibarabot.services.MyBotApi
 import telegramium.bots.{CallbackQuery, File, IFile, Message}
 import zio.{Task, UIO}
 

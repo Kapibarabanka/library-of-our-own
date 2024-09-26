@@ -6,11 +6,13 @@ import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import slick.dbio.{DBIOAction, NoStream}
 import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
 import slick.jdbc.PostgresProfile.api.*
-import zio.{IO, ZIO}
+import zio.{IO, ZIO, ZLayer}
 
-class KapibarabotDb(dbWithPath: String):
-  private val config    = ConfigFactory.parseString("driver=org.sqlite.JDBC,connectionPool=disabled,keepAliveConnection=true")
-  private val appConfig = utils.Config
+trait KapibarabotDb:
+  def run[T](action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, Throwable, T]
+
+case class KapibarabotDbImpl(dbWithPath: String) extends KapibarabotDb:
+  private val config = ConfigFactory.parseString("driver=org.sqlite.JDBC,connectionPool=disabled,keepAliveConnection=true")
 
   val allTables: List[MyTable] = List(
     UsersTable,
@@ -36,7 +38,7 @@ class KapibarabotDb(dbWithPath: String):
   } yield ()
 
   def run[T](action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, Throwable, T] = {
-    val url           = s"jdbc:sqlite:${appConfig.dbPath}${appConfig.dbName}"
+    val url           = s"jdbc:sqlite:$dbWithPath"
     val configWithUrl = config.withValue("url", ConfigValueFactory.fromAnyRef(url))
 
     def connectToDb = {
@@ -55,6 +57,15 @@ class KapibarabotDb(dbWithPath: String):
 
     ZIO.acquireReleaseWith(connectToDb)(close)(use)
   }
+
+object KapibarabotDbImpl:
+  def layer(dbWithPath: String): ZLayer[Any, Throwable, KapibarabotDb] = ZLayer {
+    for {
+      db <- ZIO.succeed(KapibarabotDbImpl(dbWithPath))
+      _  <- db.init
+    } yield db
+  }
+end KapibarabotDbImpl
 
 object KapibarabotDb:
   def createManyToManyTableAction(

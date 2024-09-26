@@ -1,10 +1,10 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3ClientError}
-import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
+import com.kapibarabanka.kapibarabot.services.{BotWithChatId, DbService}
 import com.kapibarabanka.kapibarabot.utils
 import com.kapibarabanka.kapibarabot.utils.Constants.tgFileUrl
-import com.kapibarabanka.kapibarabot.utils.{BotWithChatId, MailClient}
+import com.kapibarabanka.kapibarabot.utils.MailClient
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.high.implicits.*
 import telegramium.bots.{CallbackQuery, Document, InputPartFile, Message}
@@ -15,12 +15,12 @@ import java.net.URL
 import scala.language.postfixOps
 import scala.sys.process.*
 
-case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithChatId, db: FanficDbOld, ao3: Ao3)
+case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithChatId, db: DbService, ao3: Ao3)
     extends StateProcessor(state, bot),
       WithErrorHandling(bot):
   private val sourceFormat = ".mobi"
   private val targetFormat = ".epub"
-  
+
   override def startup: UIO[Unit] = (for {
     logLink <- bot.sendText("Getting link from AO3...")
     url     <- ao3.getDownloadLink(state.ficToSend.fic.id)
@@ -48,7 +48,7 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
       logSending,
       "Sent to Kindle! You can check the progress <a href=\"https://www.amazon.com/sendtokindle\">here</a>"
     )
-    patchedRecord <- db.patchFicStats(
+    patchedRecord <- db.details.patchFicStats(
       state.ficToSend,
       state.ficToSend.details.copy(isOnKindle = true)
     )

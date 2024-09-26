@@ -2,19 +2,18 @@ package com.kapibarabanka.kapibarabot.sqlite.repos
 
 import com.kapibarabanka.ao3scrapper.models.{FicType, Rating, Series}
 import com.kapibarabanka.kapibarabot.domain.{FicDetails, FlatFicModel}
-import com.kapibarabanka.kapibarabot.sqlite.SqliteOld
+import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.docs.{SeriesDoc, SeriesToWorksDoc}
 import com.kapibarabanka.kapibarabot.sqlite.tables.{MyTable, SeriesTable, SeriesToWorksTable}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
-class SeriesRepo:
+class SeriesRepo(db: KapibarabotDb, works: WorksRepo):
   private val series                    = TableQuery[SeriesTable]
   private val seriesToWorks             = TableQuery[SeriesToWorksTable]
-  private val works                     = WorksRepo()
 
   def add(s: Series): IO[Throwable, FlatFicModel] = {
-    SqliteOld
+    db
       .run(
         DBIO
           .seq(
@@ -28,19 +27,19 @@ class SeriesRepo:
   }
 
   def getById(id: String): IO[Throwable, Option[FlatFicModel]] = for {
-    docs <- SqliteOld.run(series.filter(_.id === id).result)
+    docs <- db.run(series.filter(_.id === id).result)
     maybeDisplayModel <- docs.headOption match
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
   def getAll: IO[Throwable, List[FlatFicModel]] = for {
-    docs   <- SqliteOld.run(series.result)
+    docs   <- db.run(series.result)
     models <- ZIO.collectAll(docs.map(docToModel))
   } yield models.toList
 
   private def docToModel(doc: SeriesDoc) = for {
-    workIdsWithPositions <- SqliteOld.run(
+    workIdsWithPositions <- db.run(
       seriesToWorks.filter(_.seriesId === doc.id).map(d => (d.workId, d.positionInSeries)).result
     )
     workIds <- ZIO.succeed(workIdsWithPositions.sortBy(_._2).map(_._1))

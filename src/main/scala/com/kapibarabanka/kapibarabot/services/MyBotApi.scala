@@ -18,10 +18,10 @@ trait MyBotApi:
   def answerCallbackQuery(query: CallbackQuery, text: Option[String] = None): UIO[Unit]
   def getFile(id: String): UIO[Option[File]]
   def sendDocument(chatId: String)(file: IFile): Task[Message]
-  
+
 case class MyBotApiImpl(baseApi: Api[Task]) extends MyBotApi:
   implicit val botImplicit: Api[Task] = baseApi
-  
+
   override def sendText(chatId: String)(text: String): UIO[Option[Message]] = sendMessage(chatId)(MessageData(text))
 
   override def sendMessage(chatId: String)(msg: MessageData): UIO[Option[Message]] =

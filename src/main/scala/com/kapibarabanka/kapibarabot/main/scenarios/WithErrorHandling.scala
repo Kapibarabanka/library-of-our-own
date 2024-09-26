@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.main.scenarios
 
-import com.kapibarabanka.kapibarabot.utils.BotWithChatId
+import com.kapibarabanka.kapibarabot.services.BotWithChatId
 import zio.*
 
 trait WithErrorHandling(bot: BotWithChatId):

@@ -4,9 +4,7 @@ import cats.Parallel
 import cats.effect.Async
 import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.kapibarabot.main.scenarios.*
-import com.kapibarabanka.kapibarabot.services.MyBotApi
-import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
-import com.kapibarabanka.kapibarabot.utils.BotWithChatId
+import com.kapibarabanka.kapibarabot.services.{BotWithChatId, DbService, MyBotApi}
 import com.kapibarabanka.kapibarabot.utils.Config.allowedChats
 import telegramium.bots.*
 import telegramium.bots.high.LongPollBot
@@ -16,18 +14,14 @@ import zio.*
 import scala.collection.mutable
 import scala.collection.mutable.*
 
-class Kapibarabot()(implicit
-    bot: MyBotApi,
+class Kapibarabot(bot: MyBotApi, ao3: Ao3, db: DbService)(implicit
     asyncF: Async[Task],
-    parallel: Parallel[Task],
-    ao3: Ao3
+    parallel: Parallel[Task]
 ) extends LongPollBot[Task](bot.baseApi):
   private val statesByUsers: mutable.Map[String, BotState] = mutable.Map.empty[String, BotState]
-  private val db: FanficDbOld                              = FanficDbOld()
 
   override def start(): Task[Unit] = for {
     _ <- ZIO.succeed(allowedChats.map(id => statesByUsers.addOne((id, StartBotState()))))
-    _ <- db.init
     _ <- super.start()
   } yield ()
 

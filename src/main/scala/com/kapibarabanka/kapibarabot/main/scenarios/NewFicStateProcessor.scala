@@ -6,9 +6,9 @@ import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
 import com.kapibarabanka.kapibarabot.main.BotError.*
 import com.kapibarabanka.kapibarabot.main.MessageData
-import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
+import com.kapibarabanka.kapibarabot.services.{BotWithChatId, DbService}
 import com.kapibarabanka.kapibarabot.utils.Buttons.getButtonsForNew
-import com.kapibarabanka.kapibarabot.utils.{BotWithChatId, Buttons, MessageText}
+import com.kapibarabanka.kapibarabot.utils.{Buttons, MessageText}
 import iozhik.OpenEnum
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
@@ -16,7 +16,7 @@ import zio.*
 
 import scala.language.postfixOps
 
-case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId, ao3: Ao3, db: FanficDbOld)
+case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId, ao3: Ao3, db: DbService)
     extends StateProcessor(currentState, bot),
       WithErrorHandling(bot):
 
@@ -43,9 +43,9 @@ case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId
           ficFromAo3 <- getFicByLink(ficLink)
           savingMsg  <- bot.editLogText(logParsing, "Saving to database...")
           flatFic <- ficFromAo3 match
-            case work: Work     => db.add(work)
-            case series: Series => db.add(series)
-          record <- db.getOrCreateUserFic(UserFicKey(bot.chatId, flatFic.id, flatFic.ficType))
+            case work: Work     => db.fics.add(work)
+            case series: Series => db.fics.add(series)
+          record <- db.details.getOrCreateUserFic(UserFicKey(bot.chatId, flatFic.id, flatFic.ficType))
           _      <- bot.editLogText(savingMsg, "Enjoy:")
         } yield ExistingFicBotState(record, true)) |> sendOnErrors({
           case ao3Error: Ao3Error           => s"getting fic from Ao3"
