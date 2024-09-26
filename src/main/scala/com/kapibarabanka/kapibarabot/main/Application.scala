@@ -1,7 +1,6 @@
 package com.kapibarabanka.kapibarabot.main
 
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3HttpClientImpl, Ao3Impl}
-import com.kapibarabanka.kapibarabot.airtable.{AirtableClient, AirtableClientImpl}
 import com.kapibarabanka.kapibarabot.services.{CatsHttpClient, CatsHttpClientImpl, MyBotApi, MyBotApiImpl}
 import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.utils
@@ -15,12 +14,11 @@ object Application extends ZIOAppDefault {
   private val clientConfig = ZClient.Config.default.idleTimeout(5.minutes)
 
   private val runBot = for {
-    airtable   <- ZIO.service[AirtableClient]
     myBotApi <- ZIO.service[MyBotApi]
     _ <- {
       for {
         ao3 <- ZIO.service[Ao3]
-        bot <- ZIO.succeed(new Kapibarabot()(ao3 = ao3, airtable = airtable, bot = myBotApi))
+        bot <- ZIO.succeed(new Kapibarabot()(ao3 = ao3, bot = myBotApi))
         _   <- bot.start()
       } yield ()
     }
@@ -33,7 +31,6 @@ object Application extends ZIOAppDefault {
       Ao3Impl.layer,
       CatsHttpClientImpl.layer,
       MyBotApiImpl.layer(s"https://api.telegram.org/bot${appConfig.tgToken}"),
-      AirtableClientImpl.layer(appConfig.airtableToken),
       ZLayer.succeed(clientConfig),
       ZIOClient.live,
       ZLayer.succeed(NettyConfig.default),
@@ -43,6 +40,4 @@ object Application extends ZIOAppDefault {
       Scope.default
     )
   }
-
-  def run1 = runBot
 }

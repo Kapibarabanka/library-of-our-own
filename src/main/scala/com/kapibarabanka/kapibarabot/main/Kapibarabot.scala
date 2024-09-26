@@ -3,16 +3,15 @@ package com.kapibarabanka.kapibarabot.main
 import cats.Parallel
 import cats.effect.Async
 import com.kapibarabanka.ao3scrapper.Ao3
-import com.kapibarabanka.kapibarabot.main.scenarios.{Scenario, StartScenario}
-import com.kapibarabanka.kapibarabot.airtable.AirtableClient
+import com.kapibarabanka.kapibarabot.main.scenarios.*
 import com.kapibarabanka.kapibarabot.services.MyBotApi
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils.BotWithChatId
 import com.kapibarabanka.kapibarabot.utils.Config.allowedChats
 import telegramium.bots.*
-import telegramium.bots.high.{Api, LongPollBot}
-import zio.*
+import telegramium.bots.high.LongPollBot
 import telegramium.bots.high.implicits.*
+import zio.*
 
 import scala.collection.mutable
 import scala.collection.mutable.*
@@ -21,36 +20,41 @@ class Kapibarabot()(implicit
     bot: MyBotApi,
     asyncF: Async[Task],
     parallel: Parallel[Task],
-    airtable: AirtableClient,
     ao3: Ao3
 ) extends LongPollBot[Task](bot.baseApi):
-  private val scenarios: mutable.Map[String, Scenario] = mutable.Map.empty[String, Scenario]
+  private val statesByUsers: mutable.Map[String, BotState] = mutable.Map.empty[String, BotState]
+  private val db: FanficDbOld                              = FanficDbOld()
 
   override def start(): Task[Unit] = for {
-    _ <- ZIO.collectAll(allowedChats map setup)
+    _ <- ZIO.succeed(allowedChats.map(id => statesByUsers.addOne((id, StartBotState()))))
+    _ <- db.init
     _ <- super.start()
   } yield ()
 
-  private def setup(chatId: String) = {
-    implicit val botWithChatId: BotWithChatId = BotWithChatId(chatId, bot)
-    implicit val db: FanficDbOld              = FanficDbOld()
-    scenarios.addOne((chatId, StartScenario()))
-    db.init
-  }
-
   override def onMessage(msg: Message): Task[Unit] =
-    useScenario(msg.chat.id.toString)(scenario => scenario.onMessage(msg))
+    useScenario(msg.chat.id.toString)(stateProcessor => stateProcessor.onMessage(msg))
 
   override def onCallbackQuery(query: CallbackQuery): Task[Unit] =
-    useScenario(query.from.id.toString)(scenario => scenario.onCallbackQuery(query))
+    useScenario(query.from.id.toString)(stateProcessor => stateProcessor.onCallbackQuery(query))
 
-  private def useScenario(chatId: String)(f: Scenario => Task[Scenario]): Task[Unit] =
-    scenarios.get(chatId) match
+  private def useScenario(chatId: String)(getNextState: StateProcessor => Task[BotState]): Task[Unit] =
+    statesByUsers.get(chatId) match
       case None => sendMessage(chatId = ChatStrId(chatId), text = "You are not in the allowed user list").exec(bot.baseApi).unit
-      case Some(scenario) =>
+      case Some(currentState) =>
+        val currentStateProcessor = getStateProcessor(currentState, chatId)
         for {
-          newScenario <- f(scenario)
+          nextState <- getNextState(currentStateProcessor)
+          _         <- if (nextState.performStartup) getStateProcessor(nextState, chatId).startup else ZIO.unit
           _ <- ZIO.succeed({
-            scenarios(chatId) = newScenario
+            statesByUsers(chatId) = nextState
           })
         } yield ()
+
+  private def getStateProcessor(currentState: BotState, chatId: String) =
+    val botWithChatId = BotWithChatId(chatId, bot)
+    currentState match
+      case state: CommentBotState      => CommentStateProcessor(state, botWithChatId, db)
+      case state: ExistingFicBotState  => ExistingFicStateProcessor(state, botWithChatId, db)
+      case state: NewFicBotState       => NewFicStateProcessor(state, botWithChatId, ao3, db)
+      case state: SendToKindleBotState => SendToKindleStateProcessor(state, botWithChatId, db, ao3)
+      case state: StartBotState        => StartStateProcessor(state, botWithChatId, db)

@@ -6,7 +6,6 @@ import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
 import com.kapibarabanka.kapibarabot.main.BotError.*
 import com.kapibarabanka.kapibarabot.main.MessageData
-import com.kapibarabanka.kapibarabot.airtable.AirtableClient
 import com.kapibarabanka.kapibarabot.sqlite.FanficDbOld
 import com.kapibarabanka.kapibarabot.utils.Buttons.getButtonsForNew
 import com.kapibarabanka.kapibarabot.utils.{BotWithChatId, Buttons, MessageText}
@@ -17,19 +16,19 @@ import zio.*
 
 import scala.language.postfixOps
 
-case class NewFicScenario(link: String)(implicit bot: BotWithChatId, airtable: AirtableClient, ao3: Ao3, db: FanficDbOld)
-    extends Scenario,
+case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId, ao3: Ao3, db: FanficDbOld)
+    extends StateProcessor(currentState, bot),
       WithErrorHandling(bot):
 
-  protected override def startupAction: UIO[Unit] =
-    bot.sendMessage(MessageData(MessageText.newFic(link), replyMarkup = getButtonsForNew)).unit
+  override def startup: UIO[Unit] =
+    bot.sendMessage(MessageData(MessageText.newFic(currentState.ao3Link), replyMarkup = getButtonsForNew)).unit
 
-  override def onMessage(msg: Message): UIO[Scenario] = StartScenario().onMessage(msg)
+  override def onMessage(msg: Message): UIO[BotState] = StartStateProcessor(StartBotState(), bot, db).onMessage(msg)
 
-  override def onCallbackQuery(query: CallbackQuery): UIO[Scenario] = {
+  override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = {
     query.data match
       case Buttons.parseAndSave.callbackData => onSave(query)
-      case _                                 => unknownCallbackQuery(query).map(_ => this)
+      case _                                 => unknownCallbackQuery(query).map(_ => currentState)
   }
 
   private def onSave(query: CallbackQuery) = {
@@ -46,15 +45,14 @@ case class NewFicScenario(link: String)(implicit bot: BotWithChatId, airtable: A
           flatFic <- ficFromAo3 match
             case work: Work     => db.add(work)
             case series: Series => db.add(series)
-          record       <- db.getOrCreateUserFic(UserFicKey(bot.chatId, flatFic.id, flatFic.ficType))
-          _            <- bot.editLogText(savingMsg, "Enjoy:")
-          nextScenario <- ExistingFicScenario(record).withStartup
-        } yield nextScenario) |> sendOnErrors({
+          record <- db.getOrCreateUserFic(UserFicKey(bot.chatId, flatFic.id, flatFic.ficType))
+          _      <- bot.editLogText(savingMsg, "Enjoy:")
+        } yield ExistingFicBotState(record, true)) |> sendOnErrors({
           case ao3Error: Ao3Error           => s"getting fic from Ao3"
           case airtableError: AirtableError => s"adding fic to db"
         })
       }
-      .getOrElse(ZIO.succeed(this))
+      .getOrElse(ZIO.succeed(currentState))
   }
 
   private def getFicByLink(link: String): ZIO[Any, InvalidFicLink | Ao3Error, Work | Series] =
