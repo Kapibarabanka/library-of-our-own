@@ -3,7 +3,7 @@ package com.kapibarabanka.kapibarabot.sqlite.repos
 import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDetails, ReadDatesInfo, UserFicKey}
 import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.docs.{CommentDoc, FicDetailsDoc, ReadDatesDoc}
-import com.kapibarabanka.kapibarabot.sqlite.tables.{CommentsTable, FicsDetailsTable, ReadDatesTable}
+import com.kapibarabanka.kapibarabot.sqlite.tables.{CommentsTable, FicsDetailsTable, ReadDatesTable, UsersTable}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
@@ -13,6 +13,10 @@ class FicDetailsRepo(db: KapibarabotDb):
   private val comments    = TableQuery[CommentsTable]
   private val readDates   = TableQuery[ReadDatesTable]
   private val ficsDetails = TableQuery[FicsDetailsTable]
+  private val users       = TableQuery[UsersTable]
+
+  def getUserEmail(userId: String): IO[Throwable, Option[String]] =
+    db.run(users.filter(_.chatId === userId).map(_.kindleEmail).result).map(_.flatten.headOption)
 
   def addUserFicRecord(key: UserFicKey): IO[Throwable, FicDetails] = for {
     _ <- db.run(
@@ -100,7 +104,7 @@ class FicDetailsRepo(db: KapibarabotDb):
 
   def cancelStartedToday(key: UserFicKey): IO[Throwable, Unit] = for {
     maybeLast <- db.run(lastDatesRecord(key).result).map(_.headOption)
-    _ <- if (canCancelStart(maybeLast)) db.run(readDates.filter(d => d.id === maybeLast.get.id).delete).unit else ZIO.unit
+    _         <- if (canCancelStart(maybeLast)) db.run(readDates.filter(d => d.id === maybeLast.get.id).delete).unit else ZIO.unit
   } yield ()
 
   def cancelFinishedToday(key: UserFicKey): IO[Throwable, Unit] = for {

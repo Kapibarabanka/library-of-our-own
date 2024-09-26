@@ -10,7 +10,6 @@ object Config:
 
   val senderEmail: String    = sys.env("SENDER_EMAIL")
   val senderPassword: String = sys.env("SENDER_PASSWORD")
-  val kindleEmail: String    = sys.env("KINDLE_EMAIL")
   val tempDir: String        = sys.env("FICS_TEMP_PATH")
 
   val dbPath: String = sys.env("DB_PATH")

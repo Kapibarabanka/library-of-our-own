@@ -16,7 +16,8 @@ case class StartStateProcessor(currentState: StartBotState, bot: BotWithChatId, 
     maybeState <- tryParseFicLink(msg)
     nextScenario <- maybeState match
       case Some(nextState) => ZIO.succeed(nextState)
-      case None => bot.sendText(s"'${msg.text}' is not parsable AO3 link, don't know what to do :c ").map(_ => currentState)
+      case None =>
+        bot.sendText(s"'${msg.text.getOrElse("")}' is not parsable AO3 link, don't know what to do :c ").map(_ => currentState)
   } yield nextScenario
 
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = unknownCallbackQuery(query).map(_ => currentState)

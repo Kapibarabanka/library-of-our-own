@@ -13,8 +13,8 @@ import zio.*
 
 import java.time.LocalDate
 
-case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: BotWithChatId,  db: DbService)
-  extends StateProcessor(currentState, bot),
+case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: BotWithChatId, db: DbService)
+    extends StateProcessor(currentState, bot),
       WithErrorHandling(bot):
   private val record = currentState.displayedFic
 
@@ -46,14 +46,29 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
       case Buttons.addComment.callbackData => bot.answerCallbackQuery(query).map(_ => CommentBotState(record))
 
       case Buttons.sendToKindle.callbackData =>
-        record.fic.ficType match
-          case FicType.Work => bot.answerCallbackQuery(query).map(_ => SendToKindleBotState(record))
-          case FicType.Series =>
-            bot
-              .answerCallbackQuery(query, text = Some("Sorry, can't send series to Kindle yet, please send each work separately"))
-              .map(_ => currentState)
+        (for {
+          maybeEmail <- db.details.getUserEmail(record.userId)
+          nextState <- maybeEmail match
+            case None =>
+              bot
+                .answerCallbackQuery(
+                  query,
+                  text = Some("Couldn't find kindle email for this user, please notify the bot's author")
+                )
+                .map(_ => currentState.withoutStartup)
+            case Some(email) =>
+              record.fic.ficType match
+                case FicType.Work => bot.answerCallbackQuery(query).map(_ => SendToKindleBotState(record, email))
+                case FicType.Series =>
+                  bot
+                    .answerCallbackQuery(
+                      query,
+                      text = Some("Sorry, can't send series to Kindle yet, please send each work separately")
+                    )
+                    .map(_ => currentState.withoutStartup)
+        } yield nextState) |> sendOnError("getting user Kindle email")
 
-      case _ => unknownCallbackQuery(query).map(_ => currentState)
+      case _ => unknownCallbackQuery(query).map(_ => currentState.withoutStartup)
 
   private def patchStats(newStats: FicDetails, query: CallbackQuery) =
     patchFic(s"patching fic with id ${record.key}")(db.details.patchFicStats(_, newStats))(query)
@@ -73,4 +88,4 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
           _ <- bot.editMessage(msg, msgData)
         } yield ExistingFicBotState(patchedFic, false)) |> sendOnError(actionName)
       }
-      .getOrElse(ZIO.succeed(currentState))
+      .getOrElse(ZIO.succeed(currentState.withoutStartup))

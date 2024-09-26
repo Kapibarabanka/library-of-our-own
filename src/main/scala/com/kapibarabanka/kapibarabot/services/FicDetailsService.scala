@@ -6,6 +6,7 @@ import com.kapibarabanka.kapibarabot.sqlite.repos.FicDetailsRepo
 import zio.{IO, ZIO, ZLayer}
 
 trait FicDetailsService:
+  def getUserEmail(userId: String): IO[Throwable, Option[String]]
   def getOrCreateUserFic(key: UserFicKey): IO[Throwable, UserFicRecord]
   def patchFicStats(record: UserFicRecord, details: FicDetails): IO[Throwable, UserFicRecord]
   def addComment(record: UserFicRecord, comment: FicComment): IO[Throwable, UserFicRecord]
@@ -16,6 +17,8 @@ trait FicDetailsService:
 
 case class FicDetailsServiceImpl(db: KapibarabotDb, ficService: FicService) extends FicDetailsService:
   private val repo = FicDetailsRepo(db)
+
+  override def getUserEmail(userId: String): IO[Throwable, Option[String]] = repo.getUserEmail(userId)
 
   override def getOrCreateUserFic(key: UserFicKey): IO[Throwable, UserFicRecord] = for {
     details       <- repo.getOrCreateDetails(key)

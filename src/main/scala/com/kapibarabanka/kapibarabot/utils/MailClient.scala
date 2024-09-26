@@ -11,7 +11,6 @@ import scala.util.Try
 object MailClient {
   private val senderEmail    = Config.senderEmail
   private val senderPassword = Config.senderPassword
-  private val kindleEmail    = Config.kindleEmail
 
   private val hostName = "smtp-mail.outlook.com"
   private val port     = "587"
@@ -29,23 +28,23 @@ object MailClient {
   properties.put("mail.smtp.starttls.required", "true")
   properties.put("mail.smtp.ssl.protocols", "TLSv1.2")
 
-  def send(text: String): Try[Unit] = {
+  def send(text: String, receiverEmail: String): Try[Unit] = {
     Try({
       val session = Session.getInstance(properties, auth)
       val msg     = new MimeMessage(session)
       msg.setText(text)
       msg.setFrom(new InternetAddress(senderEmail))
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(kindleEmail))
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(receiverEmail))
       Transport.send(msg)
     })
   }
 
-  def sendBytes(bytes: Array[Byte], fileName: String): Try[Unit] = {
+  def sendBytes(bytes: Array[Byte], fileName: String, receiverEmail: String): Try[Unit] = {
     Try({
       val session = Session.getInstance(properties, auth)
       val msg     = new MimeMessage(session)
       msg.setFrom(new InternetAddress(senderEmail))
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(kindleEmail))
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(receiverEmail))
 
       val multipart      = new MimeMultipart()
       val attachmentPart = new MimeBodyPart()
@@ -59,11 +58,11 @@ object MailClient {
     })
   }
 
-  def sendFile(file: File, fileName: String): Unit = {
+  def sendFile(file: File, fileName: String, receiverEmail: String): Unit = {
     val session = Session.getInstance(properties, auth)
     val msg     = new MimeMessage(session)
     msg.setFrom(new InternetAddress(senderEmail))
-    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(kindleEmail))
+    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(receiverEmail))
 
     val multipart      = new MimeMultipart()
     val attachmentPart = new MimeBodyPart()

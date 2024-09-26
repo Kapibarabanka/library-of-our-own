@@ -80,6 +80,6 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
     bot.sendDocument(InputPartFile(file)).unit |> sendOnError({})(s"uploading file ${file.getName}")
 
   private def sendFileToEmail(file: File) =
-    ZIO.attempt(MailClient.sendFile(file, state.ficToSend.fic.title + targetFormat)) |> sendOnError({})(
+    ZIO.attempt(MailClient.sendFile(file, state.ficToSend.fic.title + targetFormat, state.userEmail)) |> sendOnError({})(
       s"sending file ${file.getName} to kindle email"
     )

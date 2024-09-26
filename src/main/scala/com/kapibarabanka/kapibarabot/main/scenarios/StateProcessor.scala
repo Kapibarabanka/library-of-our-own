@@ -18,5 +18,5 @@ trait StateProcessor(currentState: BotState, bot: BotWithChatId) extends WithErr
   protected def unknownCallbackQuery(query: CallbackQuery): ZIO[Any, Nothing, Unit] =
     bot.answerCallbackQuery(
       query,
-      Some(s"You chose ${query.data} and I don't know what to do with it")
+      Some(s" Don't know how to answer the query ${query.data.getOrElse("")}")
     )
