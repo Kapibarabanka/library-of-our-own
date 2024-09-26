@@ -7,7 +7,6 @@ COPY ./src ./src
 COPY ./project/build.properties ./project/
 COPY ./project/Dependencies.scala ./project/
 
-COPY ./airtable/src ./airtable/src
 COPY ./ao3-scrapper/src ./ao3-scrapper/src
 
 RUN sbt clean compile
