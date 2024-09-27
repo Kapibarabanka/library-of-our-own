@@ -1,5 +1,6 @@
 package com.kapibarabanka.ao3scrapper
 
+import com.kapibarabanka.ao3scrapper
 import com.kapibarabanka.ao3scrapper.domain.FicType
 import io.lemonlabs.uri.Url
 import io.lemonlabs.uri.config.UriConfig
@@ -22,6 +23,10 @@ object Ao3Url {
   private val seriesIdRegex: Regex = """^https://archiveofourown\.org:?/series/(\d+)(?:/.*)?$""".r
   private val workIdRegex: Regex   = """^https://archiveofourown\.org:?/works/(\d+)(?:[/?#].*)?$""".r
 
+  def fic(id: String, ficType: FicType): String = ficType match
+    case ao3scrapper.domain.FicType.Work   => work(id)
+    case ao3scrapper.domain.FicType.Series => series(id)
+
   def work(id: String): String = works.addPathPart(id).toString
 
   def series(id: String): String = series.addPathPart(id).toString
@@ -32,8 +37,8 @@ object Ao3Url {
 
   def download(link: String): String = baseUrl.addPathPart(link).toString
 
-  def tryParseFicId(url: String): Option[(FicType, String)] = url match
-    case workIdRegex(id)   => Some((FicType.Work, id))
-    case seriesIdRegex(id) => Some((FicType.Series, id))
+  def tryParseFicLink(url: String): Option[(String, FicType)] = url match
+    case workIdRegex(id)   => Some((id, FicType.Work))
+    case seriesIdRegex(id) => Some((id, FicType.Series))
     case _                 => None
 }

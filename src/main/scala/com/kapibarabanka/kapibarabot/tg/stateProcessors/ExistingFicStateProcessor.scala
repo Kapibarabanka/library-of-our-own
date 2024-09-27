@@ -2,10 +2,16 @@ package com.kapibarabanka.kapibarabot.tg.stateProcessors
 
 import com.kapibarabanka.ao3scrapper.domain.FicType
 import com.kapibarabanka.kapibarabot.domain.{FicDetails, Quality, UserFicRecord}
-import com.kapibarabanka.kapibarabot.tg.BotError.*
 import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.sqlite.services.DbService
-import com.kapibarabanka.kapibarabot.tg.models.{BotState, CommentBotState, ExistingFicBotState, MessageData, SendToKindleBotState, StartBotState}
+import com.kapibarabanka.kapibarabot.tg.models.{
+  BotState,
+  CommentBotState,
+  ExistingFicBotState,
+  MessageData,
+  SendToKindleBotState,
+  StartBotState
+}
 import com.kapibarabanka.kapibarabot.tg.utils.{Buttons, ErrorMessage, MessageText}
 import com.kapibarabanka.kapibarabot.tg.utils.Buttons.*
 import scalaz.Scalaz.ToIdOps
@@ -26,8 +32,7 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
 
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] =
     query.data match
-      case Buttons.addToBacklog.callbackData      => patchStats(record.details.copy(backlog = true), query)
-      case Buttons.removeFromBacklog.callbackData => patchStats(record.details.copy(backlog = false), query)
+      case Buttons.addToBacklog.callbackData => patchStats(record.details.copy(backlog = true), query)
 
       case Buttons.markAsRead.callbackData          => patchStats(record.details.copy(read = true), query)
       case Buttons.markAsStartedToday.callbackData  => patchDates(db.details.addStartDate(_, LocalDate.now().toString))(query)
@@ -46,28 +51,7 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
 
       case Buttons.addComment.callbackData => bot.answerCallbackQuery(query).map(_ => CommentBotState(record))
 
-      case Buttons.sendToKindle.callbackData =>
-        (for {
-          maybeEmail <- db.details.getUserEmail(record.userId)
-          nextState <- maybeEmail match
-            case None =>
-              bot
-                .answerCallbackQuery(
-                  query,
-                  text = Some(ErrorMessage.noKindleEmail)
-                )
-                .map(_ => currentState.withoutStartup)
-            case Some(email) =>
-              record.fic.ficType match
-                case FicType.Work => bot.answerCallbackQuery(query).map(_ => SendToKindleBotState(record, email))
-                case FicType.Series =>
-                  bot
-                    .answerCallbackQuery(
-                      query,
-                      text = Some(ErrorMessage.seriesToKindle)
-                    )
-                    .map(_ => currentState.withoutStartup)
-        } yield nextState) |> sendOnError("getting user Kindle email")
+      case Buttons.sendToKindle.callbackData => sendToKindle(query)
 
       case _ => unknownCallbackQuery(query).map(_ => currentState.withoutStartup)
 
@@ -90,3 +74,21 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
         } yield ExistingFicBotState(patchedFic, false)) |> sendOnError(actionName)
       }
       .getOrElse(ZIO.succeed(currentState.withoutStartup))
+
+  private def sendToKindle(query: CallbackQuery) =
+    val action = for {
+      maybeEmail <- db.details.getUserEmail(record.userId)
+      nextState <- maybeEmail match
+        case None =>
+          bot
+            .answerCallbackQuery(query, text = Some(ErrorMessage.noKindleEmail))
+            .map(_ => currentState.withoutStartup)
+        case Some(email) =>
+          record.fic.ficType match
+            case FicType.Work => bot.answerCallbackQuery(query).map(_ => SendToKindleBotState(record, email))
+            case FicType.Series =>
+              bot
+                .answerCallbackQuery(query, text = Some(ErrorMessage.seriesToKindle))
+                .map(_ => currentState.withoutStartup)
+    } yield nextState
+    action |> sendOnError("getting user Kindle email")

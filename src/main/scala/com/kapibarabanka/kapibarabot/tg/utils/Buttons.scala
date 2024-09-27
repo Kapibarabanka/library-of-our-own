@@ -11,7 +11,8 @@ object Buttons:
           if (fic.details.backlog) None else Some(addToBacklog),
           if (fic.details.isOnKindle) None else Some(sendToKindle)
         ).flatten,
-        (if (fic.details.read || fic.details.backlog) List() else List(markAsRead)) ++ getDatesButtons(fic.readDatesInfo),
+        if (fic.details.read) List() else List(markAsRead),
+        getDatesButtons(fic.readDatesInfo),
         List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant),
         List(addComment, if (fic.details.fire) rateNotFire else rateFire)
       )
@@ -35,19 +36,17 @@ object Buttons:
     ).flatten
 
   // for existing
-  val addToBacklog      = InlineKeyboardButton(s"${Emoji.backlog} Add to backlog", callbackData = Some("addToBacklog"))
-  val removeFromBacklog = InlineKeyboardButton(s"${Emoji.cross} Remove from backlog", callbackData = Some("removeFromBacklog"))
-  val sendToKindle      = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
-  val removeFromKindle  = InlineKeyboardButton(s"${Emoji.kindle} Remove from Kindle", callbackData = Some("removeFromKindle"))
-  val addComment        = InlineKeyboardButton(s"${Emoji.comment} Add comment", callbackData = Some("addComment"))
+  val addToBacklog = InlineKeyboardButton(s"${Emoji.backlog} Add to backlog", callbackData = Some("addToBacklog"))
+  val sendToKindle = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
+
+  val addComment = InlineKeyboardButton(s"${Emoji.comment} Add comment", callbackData = Some("addComment"))
 
   // read dates
   val markAsRead          = InlineKeyboardButton(s"${Emoji.question} Read some time ago", callbackData = Some("markAsRead"))
   val markAsStartedToday  = InlineKeyboardButton(s"${Emoji.start} Started today", callbackData = Some("markAsStartedToday"))
   val markAsFinishedToday = InlineKeyboardButton(s"${Emoji.finish} Finished today", callbackData = Some("markAsFinishedToday"))
-  val cancelStartedToday = InlineKeyboardButton(s"${Emoji.cross} Cancel today's start", callbackData = Some("cancelStartedToday"))
-  val cancelFinishedToday =
-    InlineKeyboardButton(s"${Emoji.cross} Cancel today's finish", callbackData = Some("cancelFinishedToday"))
+  val cancelStartedToday  = InlineKeyboardButton(s"${Emoji.cross} Not started today", callbackData = Some("cancelStartedToday"))
+  val cancelFinishedToday = InlineKeyboardButton(s"${Emoji.cross} Not finished today", callbackData = Some("cancelFinishedToday"))
 
   // rating
   val rateNever     = InlineKeyboardButton(s"${Emoji.never}", callbackData = Some("rateNever"))

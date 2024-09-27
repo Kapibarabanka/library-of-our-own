@@ -17,13 +17,15 @@ case class CommentStateProcessor(state: CommentBotState, bot: BotWithChatId, db:
   override def startup: UIO[Unit] = bot.sendText("Send me your thoughts:").unit
 
   override def onMessage(msg: Message): UIO[BotState] =
-    (for {
-      logPatching <- bot.sendText("Adding comment...")
-      ficWithComment <- db.details.addComment(
-        state.ficForComment,
-        FicComment(LocalDate.now().toString, msg.text.getOrElse(""))
-      )
-      _ <- bot.editLogText(logPatching, "Successfully added comment!")
-    } yield ExistingFicBotState(ficWithComment, true)) |> sendOnError(s"adding comment to fic ${state.ficForComment.key}")
+    addComment(msg.text.getOrElse("")) |> sendOnError(s"adding comment to fic ${state.ficForComment.key}")
 
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = unknownCallbackQuery(query).map(_ => StartBotState())
+
+  private def addComment(comment: String) = for {
+    logPatching <- bot.sendText("Adding comment...")
+    ficWithComment <- db.details.addComment(
+      state.ficForComment,
+      FicComment(LocalDate.now().toString, comment)
+    )
+    _ <- bot.editLogText(logPatching, "Successfully added comment!")
+  } yield ExistingFicBotState(ficWithComment, true)

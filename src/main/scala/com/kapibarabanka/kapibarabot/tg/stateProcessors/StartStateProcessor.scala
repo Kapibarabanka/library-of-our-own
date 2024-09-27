@@ -27,14 +27,14 @@ case class StartStateProcessor(currentState: StartBotState, bot: BotWithChatId, 
 
   private def tryParseFicLink(msg: Message): UIO[Option[BotState]] =
     val text = msg.text.getOrElse("NO_TEXT")
-    Ao3Url.tryParseFicId(text) match
+    Ao3Url.tryParseFicLink(text) match
       case None => ZIO.succeed(None)
-      case Some((ficType, ficId)) =>
+      case Some((ficId, ficType)) =>
         (for {
           ficExists <- db.fics.ficIsInDb(ficId, ficType)
           nextScenario <-
             if (!ficExists)
-              ZIO.succeed(NewFicBotState(text))
+              ZIO.succeed(NewFicBotState(ficId, ficType))
             else
               for {
                 record <- db.details.getOrCreateUserFic(UserFicKey(bot.chatId, ficId, ficType))

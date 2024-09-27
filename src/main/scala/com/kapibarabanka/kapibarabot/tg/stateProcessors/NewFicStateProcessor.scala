@@ -1,15 +1,13 @@
 package com.kapibarabanka.kapibarabot.tg.stateProcessors
 
 import com.kapibarabanka.ao3scrapper.domain.{FicType, Series, Work}
-import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
+import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Error, Ao3Url, domain}
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
-import com.kapibarabanka.kapibarabot.tg.BotError.*
-import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.sqlite.services.DbService
-import com.kapibarabanka.kapibarabot.tg.models.{BotState, ExistingFicBotState, MessageData, NewFicBotState, StartBotState}
-import com.kapibarabanka.kapibarabot.tg.utils.{Buttons, MessageText}
+import com.kapibarabanka.kapibarabot.tg.models.*
+import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.tg.utils.Buttons.getButtonsForNew
-import iozhik.OpenEnum
+import com.kapibarabanka.kapibarabot.tg.utils.{Buttons, MessageText}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
 import zio.*
@@ -21,7 +19,11 @@ case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId
       WithErrorHandling(bot):
 
   override def startup: UIO[Unit] =
-    bot.sendMessage(MessageData(MessageText.newFic(currentState.ao3Link), replyMarkup = getButtonsForNew)).unit
+    bot
+      .sendMessage(
+        MessageData(MessageText.newFic(Ao3Url.fic(currentState.ficId, currentState.ficType)), replyMarkup = getButtonsForNew)
+      )
+      .unit
 
   override def onMessage(msg: Message): UIO[BotState] = StartStateProcessor(StartBotState(), bot, db).onMessage(msg)
 
@@ -37,10 +39,7 @@ case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId
         (for {
           _          <- bot.answerCallbackQuery(query, Some("Working on it..."))
           logParsing <- bot.editLogText(Some(startMsg), "Parsing AO3...")
-          ficLink <- startMsg.entities.collectFirst { case OpenEnum.Known(TextLinkMessageEntity(_, _, url)) => url } match
-            case Some(value) => ZIO.succeed(value)
-            case None        => ZIO.fail(NoLinkInMessage())
-          ficFromAo3 <- getFicByLink(ficLink)
+          ficFromAo3 <- getFic
           savingMsg  <- bot.editLogText(logParsing, "Saving to database...")
           flatFic <- ficFromAo3 match
             case work: Work     => db.fics.add(work)
@@ -55,8 +54,7 @@ case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId
       .getOrElse(ZIO.succeed(currentState))
   }
 
-  private def getFicByLink(link: String): ZIO[Any, InvalidFicLink | Ao3Error, Work | Series] =
-    Ao3Url.tryParseFicId(link) match
-      case Some((FicType.Work, id))   => ao3.work(id).mapError(e => Ao3Error(e.getMessage))
-      case Some((FicType.Series, id)) => ao3.series(id).mapError(e => Ao3Error(e.getMessage))
-      case None                       => ZIO.fail(InvalidFicLink(link))
+  private def getFic: ZIO[Any, Ao3Error, Work | Series] =
+    currentState.ficType match
+      case domain.FicType.Work   => ao3.work(currentState.ficId)
+      case domain.FicType.Series => ao3.series(currentState.ficId)
