@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
-import com.kapibarabanka.ao3scrapper.models.{Character, Relationship, RelationshipType}
+import com.kapibarabanka.ao3scrapper.domain.{Character, Relationship, RelationshipType}
 
 case class RelationshipDoc(name: String, relationshipType: String, nameInFic: Option[String]):
   def toModel(characters: Set[Character]): Relationship =

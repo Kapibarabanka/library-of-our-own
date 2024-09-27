@@ -1,8 +1,8 @@
 package com.kapibarabanka.kapibarabot.sqlite.repos
 
 import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDetails, ReadDatesInfo, UserFicKey}
-import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.docs.{CommentDoc, FicDetailsDoc, ReadDatesDoc}
+import com.kapibarabanka.kapibarabot.sqlite.services.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.tables.{CommentsTable, FicsDetailsTable, ReadDatesTable, UsersTable}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}

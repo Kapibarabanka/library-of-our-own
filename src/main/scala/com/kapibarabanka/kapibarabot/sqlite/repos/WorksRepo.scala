@@ -1,9 +1,9 @@
 package com.kapibarabanka.kapibarabot.sqlite.repos
 
-import com.kapibarabanka.ao3scrapper.models.{Fandom, FicType, Rating, Work}
+import com.kapibarabanka.ao3scrapper.domain.{Fandom, FicType, Rating, Work}
 import com.kapibarabanka.kapibarabot.domain.FlatFicModel
-import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.docs.*
+import com.kapibarabanka.kapibarabot.sqlite.services.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.tables.*
 import scalaz.Scalaz.ToIdOps
 import slick.dbio.Effect

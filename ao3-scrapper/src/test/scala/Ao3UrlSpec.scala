@@ -1,4 +1,4 @@
-import com.kapibarabanka.ao3scrapper.Ao3Url
+import com.kapibarabanka.ao3scrapper.utils.Ao3Url
 import org.scalatest.funsuite.AnyFunSuite
 
 class Ao3UrlSpec extends AnyFunSuite {

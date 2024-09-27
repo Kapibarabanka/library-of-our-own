@@ -13,10 +13,8 @@ services:
       - MY_CHAT_ID=${MY_CHAT_ID}
       - SENDER_EMAIL=${SENDER_EMAIL}
       - SENDER_PASSWORD=${SENDER_PASSWORD}
-      - KINDLE_EMAIL=${KINDLE_EMAIL}
       - FICS_TEMP_PATH=${FICS_TEMP_PATH}
       - DB_PATH=${DB_PATH}
-      - DB_NAME=${DB_NAME}
 volumes:
   ao3-db:
     external: true

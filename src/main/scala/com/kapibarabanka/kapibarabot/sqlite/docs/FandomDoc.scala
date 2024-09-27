@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
-import com.kapibarabanka.ao3scrapper.StringUtils
-import com.kapibarabanka.ao3scrapper.models.Fandom
+import com.kapibarabanka.ao3scrapper.domain.Fandom
+import com.kapibarabanka.ao3scrapper.utils.StringUtils
 
 case class FandomDoc(fullName: String, name: String, label: Option[String]):
   def toModel: Fandom = Fandom(name, label)

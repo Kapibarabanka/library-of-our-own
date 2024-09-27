@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
-import com.kapibarabanka.ao3scrapper.StringUtils
-import com.kapibarabanka.ao3scrapper.models.Character
+import com.kapibarabanka.ao3scrapper.domain.Character
+import com.kapibarabanka.ao3scrapper.utils.StringUtils
 
 case class CharacterDoc(fullName: String, name: String, label: Option[String]):
   def toModel: Character = Character(name, label)

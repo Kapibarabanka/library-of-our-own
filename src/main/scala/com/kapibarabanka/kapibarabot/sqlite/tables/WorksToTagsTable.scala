@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite.tables
 
-import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.docs.WorksToTagsDoc
+import com.kapibarabanka.kapibarabot.sqlite.services.KapibarabotDb
 import slick.jdbc.PostgresProfile.api.*
 
 class WorksToTagsTable(tag: Tag) extends Table[WorksToTagsDoc](tag, WorksToTagsTable.name):

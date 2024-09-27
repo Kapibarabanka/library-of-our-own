@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.domain
 
-import com.kapibarabanka.ao3scrapper.models.FicType
+import com.kapibarabanka.ao3scrapper.domain.FicType
 import zio.json.*
 
 case class FicJsonModel(

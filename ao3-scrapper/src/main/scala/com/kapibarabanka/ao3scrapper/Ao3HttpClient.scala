@@ -49,20 +49,21 @@ case class Ao3HttpClientImpl(
       else ZIO.succeed(authedResponse)
   } yield res
 
-  /// TODO: add check for 429 and delays
+  /// TODO: add delays in case of 429
   private def getResponseAndBody(request: Request, allowRedirects: Boolean = true) = ZIO.scoped {
-    val withError = for {
-      response <- (if (allowRedirects) clientWithRedirects else client).request(request)
-      _        <- ZIO.succeed(if (response.status == Status.TooManyRequests) println("AO3_429"))
-      _        <- ZIO.succeed(if (response.status == Status.NotFound) println("ERROR AO3_404"))
-      body     <- response.body.asString
+    for {
+      entityName <- ZIO.succeed(s"response from ${request.url.host.getOrElse("") + request.url.path}")
+      response <- (if (allowRedirects) clientWithRedirects else client)
+        .request(request)
+        .mapError(e => UnspecifiedError(e.getMessage))
+      body <- response.status match
+        case Status.Found | Status.Ok =>
+          response.body.asString.mapError(e => ParsingError(e.getMessage, entityName))
+        case Status.TooManyRequests => ZIO.fail(TooManyRequests())
+        case Status.NotFound        => ZIO.fail(NotFound(entityName))
+        case status =>
+          ZIO.fail(HttpError(status.code, s"getting $entityName"))
     } yield (response, body)
-    withError.foldZIO(
-      e => {
-        ZIO.fail(HttpError(e.getMessage))
-      },
-      s => ZIO.succeed(s)
-    )
   }
 
   private def getToken(body: String): String = {

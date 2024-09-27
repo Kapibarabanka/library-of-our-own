@@ -2,9 +2,11 @@ package com.kapibarabanka.ao3scrapper
 
 import com.kapibarabanka.ao3scrapper.docs.*
 import Ao3ClientError.*
-import com.kapibarabanka.ao3scrapper.models.*
-import com.kapibarabanka.ao3scrapper.models.RelationshipType.*
+import com.kapibarabanka.ao3scrapper.domain.*
+import com.kapibarabanka.ao3scrapper.domain.RelationshipType.*
+import com.kapibarabanka.ao3scrapper.utils.{Ao3Url, StringUtils}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
+import net.ruippeixotog.scalascraper.model.Document
 import org.jsoup.HttpStatusException
 import zio.{IO, ZIO, ZLayer}
 
@@ -178,7 +180,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
   // TODO: add more formats
   override def getDownloadLink(workId: String): IO[Ao3ClientError, String] = for {
     doc  <- getWorkDoc(workId)
-    link <- doc.mobiLink.fold[IO[Ao3ClientError, String]](ZIO.fail(LinkNotFound(workId)))(s => ZIO.succeed(s))
+    link <- doc.mobiLink.fold[IO[Ao3ClientError, String]](ZIO.fail(DownloadLinkNotFound(workId)))(s => ZIO.succeed(s))
   } yield Ao3Url.download(link)
 
   private def canonize[TTag](tagNames: Seq[String])(
@@ -196,24 +198,30 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
       } yield newMap
     )
 
-  private def getWorkDoc(id: String) = http.getAuthed(Ao3Url.work(id)).map(html => WorkDoc(jsoupBrowser.parseString(html)))
+  private def getWorkDoc(id: String) =
+    getDoc(Ao3Url.work(id), true, s"work with id $id")(html => WorkDoc(html))
 
   private def getSeriesFirstPage(id: String) =
-    http.getAuthed(Ao3Url.series(id)).map(html => SeriesPageDoc(jsoupBrowser.parseString(html), id, 1))
+    getDoc(Ao3Url.series(id), true, s"series with id $id")(html => SeriesPageDoc(html, id, 1))
 
   private def getSeriesPageDocs(id: String) = for {
-    firstPage <- getSeriesFirstPage(id)
+    entityName <- ZIO.succeed(s"series with id $id")
+    firstPage  <- getSeriesFirstPage(id)
     allPages <- firstPage.pageCount match
       case None => ZIO.succeed(List(firstPage))
       case Some(pageCount) =>
         ZIO.collectAll(
           for i <- 1 to pageCount
-          yield http.getAuthed(Ao3Url.seriesPage(id, i)).map(html => SeriesPageDoc(jsoupBrowser.parseString(html), id, i))
+          yield getDoc(Ao3Url.seriesPage(id, i), true, entityName)(html => SeriesPageDoc(html, id, i))
         )
   } yield allPages.toList
 
-  private def getTagDocFromClient(id: String) = http.get(Ao3Url.tag(id)).map(html => TagDoc(jsoupBrowser.parseString(html)))
-  private def getTagDocFromJsoup(id: String)  = ZIO.succeed(TagDoc(jsoupBrowser.get(Ao3Url.tag(id))))
+  private def getTagDocFromClient(id: String) = getDoc(Ao3Url.tag(id), false, s"tag '$id'")(html => TagDoc(html))
+  private def getTagDocFromJsoup(id: String) = for {
+    entityName <- ZIO.succeed(s"tag '$id'")
+    html       <- ZIO.attempt(jsoupBrowser.get(Ao3Url.tag(id))).mapError(e => UnspecifiedError(e.toString))
+    doc        <- tryParseToDoc(html, entityName)(html => TagDoc(html))
+  } yield doc
 
   private val getTagDoc = if (getTagsFromClient) getTagDocFromClient else getTagDocFromJsoup
 
@@ -224,9 +232,27 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
 
   private def tagExists(tag: String) = Try(jsoupBrowser.get(Ao3Url.tag(tag))) match
     case Failure(exception: HttpStatusException) =>
-      if (exception.getStatusCode == 404) ZIO.succeed(false) else ZIO.fail(HttpError(exception.getMessage))
-    case Failure(exception) => ZIO.fail(HttpError(exception.getMessage))
+      if (exception.getStatusCode == 404) ZIO.succeed(false)
+      else ZIO.fail(HttpError(exception.getStatusCode, s"checking if tag '$tag' exists"))
+    case Failure(exception) => ZIO.fail(UnspecifiedError(exception.getMessage))
     case Success(_)         => ZIO.succeed(true)
+
+  private def getDoc[TDoc](url: String, authed: Boolean, entityName: String)(htmlToDoc: Document => TDoc) = for {
+    body <- (if (authed) http.getAuthed(url) else http.get(url)).mapError {
+      case NotFound(_) => NotFound(entityName)
+      case e           => e
+    }
+    html <- ZIO.attempt(jsoupBrowser.parseString(body)).mapError(e => ParsingError(e.toString, entityName))
+    doc  <- tryParseToDoc(html, entityName)(htmlToDoc)
+  } yield doc
+
+  private def tryParseToDoc[TDoc](html: Document, entityName: String)(parse: Document => TDoc) = {
+    ZIO.attempt(parse(html)).mapError {
+      case noSuchElement: NoSuchElementException =>
+        ParsingError("Cannot parse html into custom doc: element not found exception", entityName)
+      case e => ParsingError(e.toString, entityName)
+    }
+  }
 
 object Ao3Impl:
   val layer: ZLayer[Ao3HttpClient, Nothing, Ao3Impl] = ZLayer {

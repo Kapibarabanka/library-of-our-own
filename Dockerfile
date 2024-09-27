@@ -11,4 +11,4 @@ COPY ./ao3-scrapper/src ./ao3-scrapper/src
 
 RUN sbt clean compile
 
-ENTRYPOINT ["sbt", "runMain com.kapibarabanka.kapibarabot.main.Application"]
+ENTRYPOINT ["sbt", "runMain com.kapibarabanka.kapibarabot.Application"]

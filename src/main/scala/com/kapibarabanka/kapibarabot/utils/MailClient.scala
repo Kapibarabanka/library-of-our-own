@@ -1,5 +1,7 @@
 package com.kapibarabanka.kapibarabot.utils
 
+import com.kapibarabanka.kapibarabot.AppConfig
+
 import java.io.File
 import java.util.Properties
 import javax.activation.DataHandler
@@ -9,8 +11,8 @@ import javax.mail.util.ByteArrayDataSource
 import scala.util.Try
 
 object MailClient {
-  private val senderEmail    = Config.senderEmail
-  private val senderPassword = Config.senderPassword
+  private val senderEmail    = AppConfig.senderEmail
+  private val senderPassword = AppConfig.senderPassword
 
   private val hostName = "smtp-mail.outlook.com"
   private val port     = "587"

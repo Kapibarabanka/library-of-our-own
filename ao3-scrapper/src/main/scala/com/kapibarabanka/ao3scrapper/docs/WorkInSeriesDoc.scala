@@ -1,6 +1,6 @@
 package com.kapibarabanka.ao3scrapper.docs
 
-import com.kapibarabanka.ao3scrapper.StringUtils.commaStyleToInt
+import com.kapibarabanka.ao3scrapper.utils.StringUtils.commaStyleToInt
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Element

@@ -1,9 +1,9 @@
 package com.kapibarabanka.kapibarabot.sqlite.repos
 
-import com.kapibarabanka.ao3scrapper.models.{FicType, Rating, Series}
+import com.kapibarabanka.ao3scrapper.domain.{FicType, Rating, Series}
 import com.kapibarabanka.kapibarabot.domain.{FicDetails, FlatFicModel}
-import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.docs.{SeriesDoc, SeriesToWorksDoc}
+import com.kapibarabanka.kapibarabot.sqlite.services.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.tables.{MyTable, SeriesTable, SeriesToWorksTable}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}

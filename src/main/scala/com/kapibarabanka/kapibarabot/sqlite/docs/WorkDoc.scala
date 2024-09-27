@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.sqlite.docs
 
-import com.kapibarabanka.ao3scrapper.models.*
+import com.kapibarabanka.ao3scrapper.domain.*
 
 import java.time.LocalDate
 

@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.domain
 
-import com.kapibarabanka.ao3scrapper.models.{FicType, Series, Work}
+import com.kapibarabanka.ao3scrapper.domain.{FicType, Series, Work}
 
 case class UserFicKey(userId: String, ficId: String, ficType: FicType):
   val ficIsSeries: Boolean = ficType == FicType.Series

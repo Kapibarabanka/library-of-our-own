@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite.tables
 
-import com.kapibarabanka.kapibarabot.sqlite.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.docs.WorksToShipsDoc
+import com.kapibarabanka.kapibarabot.sqlite.services.KapibarabotDb
 import slick.jdbc.PostgresProfile.api.*
 
 class WorksToShipsTable(tag: Tag) extends Table[WorksToShipsDoc](tag, WorksToShipsTable.name):
