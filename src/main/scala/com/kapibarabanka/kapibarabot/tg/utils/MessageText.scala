@@ -8,13 +8,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object MessageText {
-  def existingFic(record: UserFicRecord): String =
-    s"""
-       |${info(record.fic)}
-       |${record |> displayMyRating}
-       |${record |> displayStats}
-       |""".stripMargin
-
   def newFic(link: String): String =
     s"""
        |<a href="$link">That's a new one!</a>
@@ -22,11 +15,20 @@ object MessageText {
        |Please note that parsing the AO3 can take some time.
        |""".stripMargin
 
+  def existingFic(record: UserFicRecord): String =
+    s"""
+       |${info(record.fic)}
+       |${record |> displayMyRating}
+       |${record |> displayStats}
+       |""".stripMargin
+
   private def info(fic: FlatFicModel) =
     s"""<b>${fic.title}</b>
        |<i>${fic.authors.mkString(", ")}</i>
        |
        |${fic.relationships.map(formatShip).mkString("\n")}
+       |
+       |${fic.tags.mkString(",   ")}
        |
        |${f"${fic.words}%,d"} words
        |""".stripMargin
@@ -67,5 +69,6 @@ object MessageText {
 
   private def format(isoDate: String) = LocalDate.parse(isoDate).format(DateTimeFormatter.ofPattern("dd MMM uuuu"))
 
-  private def formatShip(shipName: String) = shipName.replace("/", "  /  ").replace(" & ", "  &  ")
+  private def formatShip(shipName: String) =
+    shipName.replace("/", s"  ${Emoji.romantic}  ").replace(" & ", s"  ${Emoji.platonic}  ")
 }
