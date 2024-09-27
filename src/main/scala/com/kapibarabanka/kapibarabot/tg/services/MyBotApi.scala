@@ -1,6 +1,7 @@
 package com.kapibarabanka.kapibarabot.tg.services
 
 import com.kapibarabanka.kapibarabot.tg.models.MessageData
+import com.kapibarabanka.kapibarabot.tg.TgError.*
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.middleware.Logger
 import scalaz.Scalaz.ToIdOps
@@ -19,7 +20,7 @@ trait MyBotApi:
   def editMessage(chatId: String)(startMsg: Message, msg: MessageData): UIO[Option[Message]]
   def answerCallbackQuery(query: CallbackQuery, text: Option[String] = None): UIO[Unit]
   def getFile(id: String): UIO[Option[File]]
-  def sendDocument(chatId: String)(file: IFile): Task[Message]
+  def sendDocument(chatId: String)(file: IFile): IO[CantSendDocument, Message]
 
 case class MyBotApiImpl(baseApi: Api[Task]) extends MyBotApi:
   implicit val botImplicit: Api[Task] = baseApi
@@ -74,18 +75,18 @@ case class MyBotApiImpl(baseApi: Api[Task]) extends MyBotApi:
   override def getFile(id: String): UIO[Option[File]] =
     telegramium.bots.high.Methods.getFile(id).exec |> logCritical(s"GETTING FILE WITH ID $id")
 
-  override def sendDocument(chatId: String)(file: IFile): Task[Message] =
-    telegramium.bots.high.Methods.sendDocument(ChatStrId(chatId), file).exec
+  override def sendDocument(chatId: String)(file: IFile): IO[CantSendDocument, Message] =
+    telegramium.bots.high.Methods.sendDocument(ChatStrId(chatId), file).exec.mapError(CantSendDocument(_))
 
   private def logCritical[T](actionName: String)(action: Task[T]): UIO[Option[T]] =
     action.foldZIO(
       // TODO: add notification for me here
-      error => ZIO.logError(s"CRITICAL ERROR WHILE $actionName" + error.getMessage).map(_ => None),
+      error => ZIO.logError(s"[Kapibarabot] CRITICAL ERROR WHILE $actionName" + error.getMessage).map(_ => None),
       result => ZIO.succeed(Some(result))
     )
 
 object MyBotApiImpl:
-  def layer(baseUrl: String) = ZLayer {
+  def layer(baseUrl: String): ZLayer[Any & Scope, Throwable, MyBotApiImpl] = ZLayer {
     for {
       catsHttpClient       <- BlazeClientBuilder[Task].resource.toScopedZIO
       catsClientWithLogger <- ZIO.succeed(Logger(logBody = true, logHeaders = true)(catsHttpClient))

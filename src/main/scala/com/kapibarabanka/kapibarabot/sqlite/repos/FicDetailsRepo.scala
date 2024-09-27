@@ -1,6 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite.repos
 
 import com.kapibarabanka.kapibarabot.domain.{FicComment, FicDetails, ReadDatesInfo, UserFicKey}
+import com.kapibarabanka.kapibarabot.sqlite.SqliteError
 import com.kapibarabanka.kapibarabot.sqlite.docs.{CommentDoc, FicDetailsDoc, ReadDatesDoc}
 import com.kapibarabanka.kapibarabot.sqlite.services.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.tables.{CommentsTable, FicsDetailsTable, ReadDatesTable, UsersTable}
@@ -15,10 +16,10 @@ class FicDetailsRepo(db: KapibarabotDb):
   private val ficsDetails = TableQuery[FicsDetailsTable]
   private val users       = TableQuery[UsersTable]
 
-  def getUserEmail(userId: String): IO[Throwable, Option[String]] =
+  def getUserEmail(userId: String): IO[SqliteError, Option[String]] =
     db.run(users.filter(_.chatId === userId).map(_.kindleEmail).result).map(_.flatten.headOption)
 
-  def addUserFicRecord(key: UserFicKey): IO[Throwable, FicDetails] = for {
+  def addUserFicRecord(key: UserFicKey): IO[SqliteError, FicDetails] = for {
     _ <- db.run(
       ficsDetails += FicDetailsDoc(
         id = None,
@@ -36,11 +37,11 @@ class FicDetailsRepo(db: KapibarabotDb):
     maybeDetails <- getDetailsOption(key)
   } yield maybeDetails.get
 
-  def getDetailsOption(key: UserFicKey): IO[Throwable, Option[FicDetails]] = for {
+  def getDetailsOption(key: UserFicKey): IO[SqliteError, Option[FicDetails]] = for {
     docs <- db.run(filterDetails(key).result)
   } yield docs.headOption.map(_.toModel)
 
-  def getOrCreateDetails(key: UserFicKey): IO[Throwable, FicDetails] = for {
+  def getOrCreateDetails(key: UserFicKey): IO[SqliteError, FicDetails] = for {
     maybeDetails <- getDetailsOption(key)
     details <- maybeDetails match
       case Some(value) => ZIO.succeed(value)
@@ -64,21 +65,21 @@ class FicDetailsRepo(db: KapibarabotDb):
     )
   } yield ()
 
-  def addComment(key: UserFicKey, comment: FicComment): IO[Throwable, Unit] = db
+  def addComment(key: UserFicKey, comment: FicComment): IO[SqliteError, Unit] = db
     .run(
       comments += CommentDoc(None, key.userId, key.ficId, key.ficIsSeries, comment.commentDate, comment.comment)
     )
     .unit
 
-  def getAllComments(key: UserFicKey): IO[Throwable, List[FicComment]] = for {
+  def getAllComments(key: UserFicKey): IO[SqliteError, List[FicComment]] = for {
     comments <- db.run(filterComments(key).result)
   } yield comments.map(_.toModel).toList.sortBy(_.commentDate)
 
-  def addStartDate(key: UserFicKey, startDate: String): IO[Throwable, Unit] = for {
+  def addStartDate(key: UserFicKey, startDate: String): IO[SqliteError, Unit] = for {
     _ <- db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, Some(startDate), None))
   } yield ()
 
-  def addFinishDate(key: UserFicKey, endDate: String): IO[Throwable, Unit] =
+  def addFinishDate(key: UserFicKey, endDate: String): IO[SqliteError, Unit] =
     for {
       startDates <- db.run(
         filterDates(key)
@@ -91,7 +92,7 @@ class FicDetailsRepo(db: KapibarabotDb):
         case None => db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, None, Some(endDate)))
     } yield ()
 
-  def getReadDatesInfo(key: UserFicKey): IO[Throwable, ReadDatesInfo] = for {
+  def getReadDatesInfo(key: UserFicKey): IO[SqliteError, ReadDatesInfo] = for {
     dates     <- db.run(filterDates(key).sortBy(_.id).result)
     maybeLast <- ZIO.succeed[Option[ReadDatesDoc]](dates.lastOption)
   } yield ReadDatesInfo(
@@ -102,12 +103,12 @@ class FicDetailsRepo(db: KapibarabotDb):
     canCancelFinish = canCancelFinish(maybeLast)
   )
 
-  def cancelStartedToday(key: UserFicKey): IO[Throwable, Unit] = for {
+  def cancelStartedToday(key: UserFicKey): IO[SqliteError, Unit] = for {
     maybeLast <- db.run(lastDatesRecord(key).result).map(_.headOption)
     _         <- if (canCancelStart(maybeLast)) db.run(readDates.filter(d => d.id === maybeLast.get.id).delete).unit else ZIO.unit
   } yield ()
 
-  def cancelFinishedToday(key: UserFicKey): IO[Throwable, Unit] = for {
+  def cancelFinishedToday(key: UserFicKey): IO[SqliteError, Unit] = for {
     maybeLast <- db.run(lastDatesRecord(key).result).map(_.headOption)
     _ <-
       if (canCancelFinish(maybeLast))

@@ -47,7 +47,7 @@ protected[ao3scrapper] case class Ao3HttpClientImpl(
     requestWithCookies           <- ZIO.succeed(populateCookies(request, preLoginResponse))
     (authedResponse, authedBody) <- getResponseAndBody(requestWithCookies, false)
     res <-
-      if (authedBody.contains("auth_error")) ZIO.fail(AuthFailed)
+      if (authedBody.contains("auth_error")) ZIO.fail(AuthFailed())
       else ZIO.succeed(authedResponse)
   } yield res
 
@@ -61,7 +61,7 @@ protected[ao3scrapper] case class Ao3HttpClientImpl(
       body <- response.status match
         case Status.Found | Status.Ok =>
           response.body.asString.mapError(e => ParsingError(e.getMessage, entityName))
-        case Status.TooManyRequests => ZIO.fail(TooManyRequests)
+        case Status.TooManyRequests => ZIO.fail(TooManyRequests())
         case Status.NotFound        => ZIO.fail(NotFound(entityName))
         case status =>
           ZIO.fail(HttpError(status.code, s"getting $entityName"))

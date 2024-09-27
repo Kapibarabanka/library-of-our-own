@@ -1,6 +1,8 @@
 package com.kapibarabanka.kapibarabot.sqlite.services
 
+import com.kapibarabanka.kapibarabot.sqlite.SqliteError
 import com.kapibarabanka.kapibarabot.sqlite.tables.*
+import com.kapibarabanka.kapibarabot.sqlite.SqliteError.*
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import slick.dbio.{DBIOAction, NoStream}
 import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
@@ -8,7 +10,7 @@ import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO, ZLayer}
 
 trait KapibarabotDb:
-  def run[T](action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, Throwable, T]
+  def run[T](action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, SqliteError, T]
 
 case class KapibarabotDbImpl(dbWithPath: String) extends KapibarabotDb:
   private val config = ConfigFactory.parseString("driver=org.sqlite.JDBC,connectionPool=disabled,keepAliveConnection=true")
@@ -32,33 +34,31 @@ case class KapibarabotDbImpl(dbWithPath: String) extends KapibarabotDb:
     ReadDatesTable
   )
 
-  def init: IO[Throwable, Unit] = for {
-    _ <- run(DBIO.sequence(allTables.map(_.createIfNotExists)))
+  def init: IO[SqliteError, Unit] = for {
+    _ <- run(DBIO.sequence(allTables.map(_.createIfNotExists))).mapError(DbInitError(_))
   } yield ()
 
-  def run[T](action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, Throwable, T] = {
+  def run[T](action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, SqliteError, T] = {
     val url           = s"jdbc:sqlite:$dbWithPath"
     val configWithUrl = config.withValue("url", ConfigValueFactory.fromAnyRef(url))
 
-    def connectToDb = {
-      for {
-        db <- ZIO.attempt(Database.forConfig("", configWithUrl))
-        _  <- ZIO.log(s"Connected to DB $url")
-      } yield db
-    }
+    def connectToDb = (for {
+      db <- ZIO.attempt(Database.forConfig("", configWithUrl))
+      _  <- ZIO.log(s"Connected to DB $url")
+    } yield db).mapError(CantConnectToDb(_))
 
     def close(db: JdbcDatabaseDef) = for {
       _ <- ZIO.succeed(db.close())
       _ <- ZIO.log(s"Closed connection to DB $url")
     } yield ()
 
-    def use(db: JdbcDatabaseDef) = ZIO.fromFuture { implicit ec => db.run(action) }
+    def use(db: JdbcDatabaseDef) = ZIO.fromFuture { implicit ec => db.run(action) } mapError (DbActionError(_))
 
     ZIO.acquireReleaseWith(connectToDb)(close)(use)
   }
 
 object KapibarabotDbImpl:
-  def layer(dbWithPath: String): ZLayer[Any, Throwable, KapibarabotDb] = ZLayer {
+  def layer(dbWithPath: String): ZLayer[Any, SqliteError, KapibarabotDb] = ZLayer {
     for {
       db <- ZIO.succeed(KapibarabotDbImpl(dbWithPath))
       _  <- db.init

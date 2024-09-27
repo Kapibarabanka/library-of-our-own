@@ -13,9 +13,9 @@ object ErrorMessage:
 
   def fromThrowable(error: Throwable, actionName: String): String =
     error match
-      case AuthFailed      => authFailed
-      case TooManyRequests => rateLimit
-      case _               => defaultMessage(error, actionName)
+      case AuthFailed()      => authFailed
+      case TooManyRequests() => rateLimit
+      case _                 => defaultMessage(error, actionName)
 
   private def defaultMessage(error: Throwable, actionName: String) = s"\nError happened while $actionName: ${error.getMessage}"
 

@@ -26,17 +26,18 @@ case class StartStateProcessor(currentState: StartBotState, bot: BotWithChatId, 
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = unknownCallbackQuery(query).map(_ => currentState)
 
   private def tryParseFicLink(msg: Message): UIO[Option[BotState]] =
-    val text = msg.text.getOrElse("NO_TEXT")
-    Ao3Url.tryParseFicLink(text) match
+    Ao3Url.tryParseFicLink(msg.text.getOrElse("NO_TEXT")) match
       case None => ZIO.succeed(None)
       case Some((ficId, ficType)) =>
-        (for {
+        val ficKey = UserFicKey(bot.chatId, ficId, ficType)
+        val action = for {
           ficExists <- db.fics.ficIsInDb(ficId, ficType)
           nextScenario <-
             if (!ficExists)
               ZIO.succeed(NewFicBotState(ficId, ficType))
             else
               for {
-                record <- db.details.getOrCreateUserFic(UserFicKey(bot.chatId, ficId, ficType))
+                record <- db.details.getOrCreateUserFic(ficKey)
               } yield ExistingFicBotState(record, true)
-        } yield nextScenario) |> sendOnError("looking for fic in Airtable") map (scenario => Some(scenario))
+        } yield nextScenario
+        action |> sendOnError(s"getting or creating fic $ficKey in DB") map (scenario => Some(scenario))

@@ -22,16 +22,15 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
   private val sourceFormat = ".mobi"
   private val targetFormat = ".epub"
 
-  override def startup: UIO[Unit] = (for {
-    logLink <- bot.sendText("Getting link from AO3...")
-    url     <- ao3.getDownloadLink(state.ficToSend.fic.id)
-    logFile <- bot.editLogText(logLink, s"Uploading $sourceFormat file...")
-    _       <- useTempFile(url, sourceFormat)(sendFileFromBot)
-    _       <- bot.editLogText(logFile, s"Send file below to @ebook_converter_bot and send me the converted $targetFormat file:")
-  } yield ()) |> sendOnErrors({})({
-    case ao3Error: Ao3Error => s"downloading link from AO3"
-    case fileError          => s"getting or uploading file"
-  })
+  override def startup: UIO[Unit] =
+    val action = for {
+      logLink <- bot.sendText("Getting link from AO3...")
+      url     <- ao3.getDownloadLink(state.ficToSend.fic.id)
+      logFile <- bot.editLogText(logLink, s"Uploading $sourceFormat file...")
+      _       <- useTempFile(url, sourceFormat)(sendFileFromBot)
+      _ <- bot.editLogText(logFile, s"Send file below to @ebook_converter_bot and send me the converted $targetFormat file:")
+    } yield ()
+    action |> sendOnError({})("getting download link from AO3")
 
   override def onMessage(msg: Message): UIO[BotState] = msg.document match
     case None           => bot.sendText("Not a valid file").map(_ => ExistingFicBotState(state.ficToSend, true))
@@ -39,21 +38,23 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
 
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = unknownCallbackQuery(query).map(_ => StartBotState())
 
-  private def sendToKindle(document: Document) = (for {
-    logLink    <- bot.sendText("Getting file link from TG...")
-    tgFile     <- bot.getFile(document.fileId)
-    url        <- ZIO.succeed(tgFileUrl(tgFile.flatMap(_.filePath).getOrElse("FILE_PATH_NOT_FOUND")))
-    logSending <- bot.editLogText(logLink, "Downloading file and sending it to Kindle...")
-    _          <- useTempFile(url, targetFormat)(sendFileToEmail)
-    _ <- bot.editLogText(
-      logSending,
-      "Sent to Kindle! You can check the progress <a href=\"https://www.amazon.com/sendtokindle\">here</a>"
-    )
-    patchedRecord <- db.details.patchFicStats(
-      state.ficToSend,
-      state.ficToSend.details.copy(isOnKindle = true)
-    )
-  } yield ExistingFicBotState(patchedRecord, true)) |> sendOnError("patching record")
+  private def sendToKindle(document: Document) =
+    val action = for {
+      logLink    <- bot.sendText("Getting file link from TG...")
+      tgFile     <- bot.getFile(document.fileId)
+      url        <- ZIO.succeed(tgFileUrl(tgFile.flatMap(_.filePath).getOrElse("FILE_PATH_NOT_FOUND")))
+      logSending <- bot.editLogText(logLink, "Downloading file and sending it to Kindle...")
+      _          <- useTempFile(url, targetFormat)(sendFileToEmail)
+      _ <- bot.editLogText(
+        logSending,
+        "Sent to Kindle! You can check the progress <a href=\"https://www.amazon.com/sendtokindle\">here</a>"
+      )
+      patchedRecord <- db.details.patchFicDetails(
+        state.ficToSend,
+        state.ficToSend.details.copy(isOnKindle = true)
+      )
+    } yield ExistingFicBotState(patchedRecord, true)
+    action |> sendOnError(s"marking fic ${state.ficToSend.key} as sent to Kindle in DB")
 
   private def useTempFile(url: String, fileFormat: String)(action: File => Task[Unit]) = {
     def acquire = for {
@@ -84,5 +85,5 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
     ZIO.attempt(MailClient.sendFile(file, state.ficToSend.fic.title + targetFormat, state.userEmail)) |> sendOnError({})(
       s"sending file ${file.getName} to kindle email"
     )
-    
+
   private def tgFileUrl(filePath: String): String = s"https://api.telegram.org/file/bot${AppConfig.tgToken}/$filePath"

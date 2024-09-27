@@ -2,6 +2,7 @@ package com.kapibarabanka.kapibarabot.sqlite.repos
 
 import com.kapibarabanka.ao3scrapper.domain.{Fandom, FicType, Rating, Work}
 import com.kapibarabanka.kapibarabot.domain.FlatFicModel
+import com.kapibarabanka.kapibarabot.sqlite.SqliteError
 import com.kapibarabanka.kapibarabot.sqlite.docs.*
 import com.kapibarabanka.kapibarabot.sqlite.services.KapibarabotDb
 import com.kapibarabanka.kapibarabot.sqlite.tables.*
@@ -24,7 +25,7 @@ class WorksRepo(db: KapibarabotDb):
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
 
-  def add(work: Work): IO[Throwable, FlatFicModel] =
+  def add(work: Work): IO[SqliteError, FlatFicModel] =
     db.run(DBIO.sequence(getAddingAction(work)).transactionally).flatMap(_ => getById(work.id).map(_.get))
 
   def getAddingAction(work: Work): List[DBIOAction[Any, NoStream, Effect.Write & Effect.Read]] = {
@@ -50,14 +51,14 @@ class WorksRepo(db: KapibarabotDb):
     )
   }
 
-  def getById(workId: String): IO[Throwable, Option[FlatFicModel]] = for {
+  def getById(workId: String): IO[SqliteError, Option[FlatFicModel]] = for {
     docs <- db.run(works.filter(_.id === workId).result)
     maybeDisplayModel <- docs.headOption match
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
-  def getAll: IO[Throwable, List[FlatFicModel]] = for {
+  def getAll: IO[SqliteError, List[FlatFicModel]] = for {
     docs   <- db.run(works.result)
     models <- ZIO.collectAll(docs.map(docToModel))
   } yield models.toList
