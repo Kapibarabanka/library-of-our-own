@@ -1,10 +1,10 @@
 package com.kapibarabanka.ao3scrapper
 
-import com.kapibarabanka.ao3scrapper.docs.*
-import Ao3ClientError.*
+import com.kapibarabanka.ao3scrapper.Ao3Error.*
 import com.kapibarabanka.ao3scrapper.domain.*
 import com.kapibarabanka.ao3scrapper.domain.RelationshipType.*
-import com.kapibarabanka.ao3scrapper.utils.{Ao3Url, StringUtils}
+import com.kapibarabanka.ao3scrapper.internal.docs.{SeriesPageDoc, TagDoc, WorkDoc}
+import com.kapibarabanka.ao3scrapper.internal.{Ao3HttpClient, Ao3HttpClientImpl}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.model.Document
 import org.jsoup.HttpStatusException
@@ -13,21 +13,21 @@ import zio.{IO, ZIO, ZLayer}
 import scala.util.{Failure, Success, Try}
 
 trait Ao3:
-  def work(id: String): IO[Ao3ClientError, Work]
-  def series(id: String): IO[Ao3ClientError, Series]
-  def character(nameInWork: String): IO[Ao3ClientError, Character]
-  def relationship(nameInWork: String, characters: Map[String, Character] = Map()): IO[Ao3ClientError, Relationship]
-  def fandom(nameInWork: String): IO[Ao3ClientError, Fandom]
-  def freeformTag(nameInWork: String): IO[Ao3ClientError, FreeformTag]
-  def getCanonicalTagName(tagName: String): IO[Ao3ClientError, Option[String]]
-  def getDownloadLink(workId: String): IO[Ao3ClientError, String]
+  def work(id: String): IO[Ao3Error, Work]
+  def series(id: String): IO[Ao3Error, Series]
+  def character(nameInWork: String): IO[Ao3Error, Character]
+  def relationship(nameInWork: String, characters: Map[String, Character] = Map()): IO[Ao3Error, Relationship]
+  def fandom(nameInWork: String): IO[Ao3Error, Fandom]
+  def freeformTag(nameInWork: String): IO[Ao3Error, FreeformTag]
+  def getCanonicalTagName(tagName: String): IO[Ao3Error, Option[String]]
+  def getDownloadLink(workId: String): IO[Ao3Error, String]
 
 case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
   private val getTagsFromClient = true
 
   private val jsoupBrowser = JsoupBrowser()
 
-  override def work(id: String): IO[Ao3ClientError, Work] = for {
+  override def work(id: String): IO[Ao3Error, Work] = for {
     _             <- ZIO.log(s"Parsing work with id '$id'")
     doc           <- getWorkDoc(id)
     _             <- ZIO.log(s"Parsing fandoms")
@@ -68,7 +68,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
     _ <- ZIO.log(s"Parsed work: $work")
   } yield work
 
-  override def series(id: String): IO[Ao3ClientError, Series] = for {
+  override def series(id: String): IO[Ao3Error, Series] = for {
     _               <- ZIO.log(s"Parsing series with id '$id'")
     pageDocs        <- getSeriesPageDocs(id)
     firstPage       <- ZIO.succeed(pageDocs.head)
@@ -130,13 +130,13 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
     _ <- ZIO.log(s"Parsed series: $series")
   } yield series
 
-  override def character(nameInWork: String): IO[Ao3ClientError, Character] = for {
+  override def character(nameInWork: String): IO[Ao3Error, Character] = for {
     canonicalName <- getCanonicalTagName(nameInWork)
   } yield Character.fromNameInWork(canonicalName.getOrElse(nameInWork))
 
-  override def relationship(nameInWork: String, characters: Map[String, Character] = Map()): IO[Ao3ClientError, Relationship] = {
-    def characterWithLabel(name: String, label: Option[String]): IO[Ao3ClientError, Character] =
-      val nameWithLabel = StringUtils.combineWithLabel(name, label)
+  override def relationship(nameInWork: String, characters: Map[String, Character] = Map()): IO[Ao3Error, Relationship] = {
+    def characterWithLabel(name: String, label: Option[String]): IO[Ao3Error, Character] =
+      val nameWithLabel = Ao3TagName.combineWithLabel(name, label)
       if (characters.contains(nameWithLabel))
         ZIO.succeed(characters(nameWithLabel))
       if (characters.contains(name))
@@ -150,7 +150,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
     val shipType   = if (isRomantic) Romantic else Platonic
     for {
       canonicalShipName <- getCanonicalTagName(nameInWork).map(n => n.getOrElse(nameInWork))
-      (ship, label)     <- ZIO.succeed(StringUtils.trySeparateLabel(canonicalShipName))
+      (ship, label)     <- ZIO.succeed(Ao3TagName.trySeparateLabel(canonicalShipName))
       characterNames    <- ZIO.succeed(ship.split(separator))
       characters        <- ZIO.collectAll(characterNames.toSet.map(name => characterWithLabel(name, label)))
     } yield Relationship(
@@ -161,31 +161,31 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
     )
   }
 
-  override def fandom(nameInWork: String): IO[Ao3ClientError, Fandom] = for {
+  override def fandom(nameInWork: String): IO[Ao3Error, Fandom] = for {
     canonicalName <- getCanonicalTagName(nameInWork)
   } yield Fandom.fromNameInWork(canonicalName.getOrElse(nameInWork))
 
-  override def freeformTag(nameInWork: String): IO[Ao3ClientError, FreeformTag] = for {
+  override def freeformTag(nameInWork: String): IO[Ao3Error, FreeformTag] = for {
     _   <- ZIO.log(s"Getting canonical name for tag '$nameInWork'")
     doc <- getTagDoc(nameInWork)
     _   <- ZIO.log(s"Canonical name for'$nameInWork' is '${doc.canonicalName.getOrElse(nameInWork)}'")
   } yield FreeformTag(doc.canonicalName.getOrElse(nameInWork), Some(doc.isFilterable))
 
-  override def getCanonicalTagName(tagName: String): IO[Ao3ClientError, Option[String]] = for {
+  override def getCanonicalTagName(tagName: String): IO[Ao3Error, Option[String]] = for {
     _   <- ZIO.log(s"Getting canonical name for tag '$tagName'")
     doc <- getTagDoc(tagName)
     _   <- ZIO.log(s"Canonical name for'$tagName' is '${doc.canonicalName.getOrElse(tagName)}'")
   } yield doc.canonicalName
 
   // TODO: add more formats
-  override def getDownloadLink(workId: String): IO[Ao3ClientError, String] = for {
+  override def getDownloadLink(workId: String): IO[Ao3Error, String] = for {
     doc  <- getWorkDoc(workId)
-    link <- doc.mobiLink.fold[IO[Ao3ClientError, String]](ZIO.fail(DownloadLinkNotFound(workId)))(s => ZIO.succeed(s))
+    link <- doc.mobiLink.fold[IO[Ao3Error, String]](ZIO.fail(DownloadLinkNotFound(workId)))(s => ZIO.succeed(s))
   } yield Ao3Url.download(link)
 
   private def canonize[TTag](tagNames: Seq[String])(
-      canonize: String => IO[Ao3ClientError, TTag]
-  ): IO[Ao3ClientError, Map[String, TTag]] =
+      canonize: String => IO[Ao3Error, TTag]
+  ): IO[Ao3Error, Map[String, TTag]] =
     tagNames.foldLeft(ZIO.succeed(Map[String, TTag]()))((mapZIO, name) =>
       for {
         map <- mapZIO
@@ -254,34 +254,34 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
     }
   }
 
-object Ao3Impl:
-  val layer: ZLayer[Ao3HttpClient, Nothing, Ao3Impl] = ZLayer {
-    for {
-      http <- ZIO.service[Ao3HttpClient]
-    } yield Ao3Impl(http)
+object Ao3:
+  private val ownLayer = ZLayer {
+    ZIO.service[Ao3HttpClient].map(Ao3Impl(_))
   }
 
-object Ao3:
-  def work(id: String): ZIO[Ao3, Ao3ClientError, Work] =
+  def live(login: String, password: String): ZLayer[Any, Throwable, Ao3] =
+    ZLayer.make[Ao3](ownLayer, Ao3HttpClientImpl.layer(login, password))
+
+  def work(id: String): ZIO[Ao3, Ao3Error, Work] =
     ZIO.serviceWithZIO[Ao3](_.work(id))
 
-  def series(id: String): ZIO[Ao3, Ao3ClientError, Series] =
+  def series(id: String): ZIO[Ao3, Ao3Error, Series] =
     ZIO.serviceWithZIO[Ao3](_.series(id))
 
-  def character(nameInWork: String): ZIO[Ao3, Ao3ClientError, Character] =
+  def character(nameInWork: String): ZIO[Ao3, Ao3Error, Character] =
     ZIO.serviceWithZIO[Ao3](_.character(nameInWork))
 
-  def relationship(nameInWork: String, characters: Map[String, Character] = Map()): ZIO[Ao3, Ao3ClientError, Relationship] =
+  def relationship(nameInWork: String, characters: Map[String, Character] = Map()): ZIO[Ao3, Ao3Error, Relationship] =
     ZIO.serviceWithZIO[Ao3](_.relationship(nameInWork, characters))
 
-  def fandom(nameInWork: String): ZIO[Ao3, Ao3ClientError, Fandom] =
+  def fandom(nameInWork: String): ZIO[Ao3, Ao3Error, Fandom] =
     ZIO.serviceWithZIO[Ao3](_.fandom(nameInWork))
 
-  def freeformTag(nameInWork: String): ZIO[Ao3, Ao3ClientError, FreeformTag] =
+  def freeformTag(nameInWork: String): ZIO[Ao3, Ao3Error, FreeformTag] =
     ZIO.serviceWithZIO[Ao3](_.freeformTag(nameInWork))
 
-  def getCanonicalTagName(tagName: String): ZIO[Ao3, Ao3ClientError, Option[String]] =
+  def getCanonicalTagName(tagName: String): ZIO[Ao3, Ao3Error, Option[String]] =
     ZIO.serviceWithZIO[Ao3](_.getCanonicalTagName(tagName))
 
-  def getDownloadLink(workId: String): ZIO[Ao3, Ao3ClientError, String] =
+  def getDownloadLink(workId: String): ZIO[Ao3, Ao3Error, String] =
     ZIO.serviceWithZIO[Ao3](_.getDownloadLink(workId))

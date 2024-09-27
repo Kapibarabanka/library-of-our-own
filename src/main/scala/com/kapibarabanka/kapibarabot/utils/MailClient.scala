@@ -1,6 +1,8 @@
 package com.kapibarabanka.kapibarabot.utils
 
+
 import com.kapibarabanka.kapibarabot.AppConfig
+import com.kapibarabanka.kapibarabot.sqlite.docs.SeriesDoc
 
 import java.io.File
 import java.util.Properties

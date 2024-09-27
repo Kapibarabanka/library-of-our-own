@@ -1,11 +1,11 @@
-package com.kapibarabanka.ao3scrapper.docs
+package com.kapibarabanka.ao3scrapper.internal.docs
 
-import com.kapibarabanka.ao3scrapper.utils.StringUtils.{commaStyleToInt, parseDate}
+import com.kapibarabanka.ao3scrapper.internal.StringUtils.{commaStyleToInt, parseDate}
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Document
 
-case class WorkDoc(doc: Document):
+protected[ao3scrapper] case class WorkDoc(doc: Document):
   val title   = doc >> text("h2.title")
   val authors = doc >> element("h3.byline") >> texts("a")
   val rating  = doc >> text("dd.rating")

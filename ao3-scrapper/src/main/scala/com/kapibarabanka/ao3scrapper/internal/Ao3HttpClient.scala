@@ -1,18 +1,20 @@
-package com.kapibarabanka.ao3scrapper
+package com.kapibarabanka.ao3scrapper.internal
 
-import Ao3ClientError.*
+import com.kapibarabanka.ao3scrapper.Ao3Error.*
+import com.kapibarabanka.ao3scrapper.Ao3Error
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
-import zio.http.*
 import zio.*
+import zio.http.*
 import zio.http.Header.SetCookie
+import zio.http.netty.NettyConfig
 
-trait Ao3HttpClient:
-  def get(url: String): ZIO[Any, Ao3ClientError, String]
-  def getAuthed(url: String): ZIO[Any, Ao3ClientError, String]
+protected[ao3scrapper] trait Ao3HttpClient:
+  def get(url: String): ZIO[Any, Ao3Error, String]
+  def getAuthed(url: String): ZIO[Any, Ao3Error, String]
 
-case class Ao3HttpClientImpl(
+protected[ao3scrapper] case class Ao3HttpClientImpl(
     username: String,
     password: String,
     client: Client
@@ -22,11 +24,11 @@ case class Ao3HttpClientImpl(
   private val followRedirects     = ZClientAspect.followRedirects(2)((resp, message) => ZIO.logInfo(message).as(resp))
   private val clientWithRedirects = client @@ followRedirects
 
-  override def get(url: String): ZIO[Any, Ao3ClientError, String] = for {
+  override def get(url: String): ZIO[Any, Ao3Error, String] = for {
     (_, body) <- getResponseAndBody(Request.get(url))
   } yield body
 
-  override def getAuthed(url: String): ZIO[Any, Ao3ClientError, String] = for {
+  override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {
     authedResponse   <- getAuthedResponse
     request          <- ZIO.succeed(populateCookies(Request.get(url), authedResponse))
     (response, body) <- getResponseAndBody(request)
@@ -80,18 +82,19 @@ case class Ao3HttpClientImpl(
       case None          => request
   }
 
-object Ao3HttpClientImpl {
-  def layer(username: String, password: String): ZLayer[Client, Nothing, Ao3HttpClientImpl] =
-    ZLayer {
-      for {
-        client <- ZIO.service[Client]
-      } yield Ao3HttpClientImpl(username, password, client)
-    }
-}
+protected[ao3scrapper] object Ao3HttpClientImpl {
+  private val clientConfig = ZClient.Config.default.idleTimeout(5.minutes)
 
-object Ao3HttpClient {
-  def get(url: String): ZIO[Ao3HttpClient, Ao3ClientError, String] = ZIO.serviceWithZIO[Ao3HttpClient](_.get(url))
+  private def ownLayer(username: String, password: String) = ZLayer {
+    ZIO.service[Client].map(Ao3HttpClientImpl(username, password, _))
+  }
 
-  def getAuthed(url: String): ZIO[Ao3HttpClient, Ao3ClientError, String] =
-    ZIO.serviceWithZIO[Ao3HttpClient](_.getAuthed(url))
+  def layer(username: String, password: String): ZLayer[Any, Throwable, Ao3HttpClient] =
+    ZLayer.make[Ao3HttpClient](
+      ownLayer(username, password),
+      ZLayer.succeed(clientConfig),
+      Client.live,
+      ZLayer.succeed(NettyConfig.default),
+      DnsResolver.default
+    )
 }

@@ -1,12 +1,12 @@
-package com.kapibarabanka.ao3scrapper.docs
+package com.kapibarabanka.ao3scrapper.internal.docs
 
-import com.kapibarabanka.ao3scrapper.utils.StringUtils.{commaStyleToInt, parseDate}
+import com.kapibarabanka.ao3scrapper.internal.StringUtils.{commaStyleToInt, parseDate}
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Document
 
 import scala.language.postfixOps
-case class SeriesPageDoc(doc: Document, seriesId: String, page: Int):
+protected[ao3scrapper] case class SeriesPageDoc(doc: Document, seriesId: String, page: Int):
   val title                   = doc >> text("h2.heading")
   private val metaDataElement = doc >> element("dl.series")
   private val labels          = (metaDataElement >> texts("dt")).map(_.replace(":", ""))

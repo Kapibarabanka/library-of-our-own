@@ -1,7 +1,7 @@
 package com.kapibarabanka.kapibarabot.sqlite
 
+import com.kapibarabanka.ao3scrapper.Ao3Url
 import com.kapibarabanka.ao3scrapper.domain.{ArchiveWarning, Category, Character, Fandom, FreeformTag, Published, PublishedAndUpdated, Rating, Relationship, RelationshipType, Series, Work}
-import com.kapibarabanka.ao3scrapper.utils.Ao3Url
 import com.kapibarabanka.kapibarabot.domain.FicComment
 
 import java.time.LocalDate

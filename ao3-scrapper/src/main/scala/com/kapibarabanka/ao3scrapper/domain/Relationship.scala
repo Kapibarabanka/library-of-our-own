@@ -1,7 +1,7 @@
 package com.kapibarabanka.ao3scrapper.domain
 
 import com.kapibarabanka.ao3scrapper.domain.RelationshipType.*
-import com.kapibarabanka.ao3scrapper.utils.StringUtils
+import com.kapibarabanka.ao3scrapper.Ao3TagName
 
 case class Relationship(
     characters: Set[Character],
@@ -17,6 +17,6 @@ case class Relationship(
     val label            = characters.head.label
     val sortedCharacters = characters.toList.sortBy(c => c.name)
     if (sortedCharacters.forall(_.label == label))
-      StringUtils.combineWithLabel(sortedCharacters.map(_.name).mkString(separator), label)
+      Ao3TagName.combineWithLabel(sortedCharacters.map(_.name).mkString(separator), label)
     else
-      sortedCharacters.map(c => StringUtils.combineWithLabel(c.name, c.label)).mkString(separator)
+      sortedCharacters.map(c => Ao3TagName.combineWithLabel(c.name, c.label)).mkString(separator)

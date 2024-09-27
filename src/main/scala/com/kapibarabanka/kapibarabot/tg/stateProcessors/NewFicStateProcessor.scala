@@ -1,8 +1,7 @@
 package com.kapibarabanka.kapibarabot.tg.stateProcessors
 
 import com.kapibarabanka.ao3scrapper.domain.{FicType, Series, Work}
-import com.kapibarabanka.ao3scrapper.Ao3
-import com.kapibarabanka.ao3scrapper.utils.Ao3Url
+import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Url}
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
 import com.kapibarabanka.kapibarabot.tg.BotError.*
 import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId

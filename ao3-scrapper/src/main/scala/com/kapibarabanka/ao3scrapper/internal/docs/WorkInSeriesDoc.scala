@@ -1,6 +1,6 @@
-package com.kapibarabanka.ao3scrapper.docs
+package com.kapibarabanka.ao3scrapper.internal.docs
 
-import com.kapibarabanka.ao3scrapper.utils.StringUtils.commaStyleToInt
+import com.kapibarabanka.ao3scrapper.internal.StringUtils.commaStyleToInt
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Element
@@ -8,7 +8,7 @@ import net.ruippeixotog.scalascraper.model.Element
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-case class WorkInSeriesDoc(doc: Element, seriesId: String):
+protected[ao3scrapper] case class WorkInSeriesDoc(doc: Element, seriesId: String):
   val id: String = (doc >> attr("id")).replace("work_", "")
 
   private val seriesParts = doc >> element("ul.series") >> elementList("li")

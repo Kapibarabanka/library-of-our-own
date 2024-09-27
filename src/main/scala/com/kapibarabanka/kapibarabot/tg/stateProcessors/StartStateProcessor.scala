@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.tg.stateProcessors
 
-import com.kapibarabanka.ao3scrapper.utils.Ao3Url
+import com.kapibarabanka.ao3scrapper.Ao3Url
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
 import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.sqlite.services.DbService

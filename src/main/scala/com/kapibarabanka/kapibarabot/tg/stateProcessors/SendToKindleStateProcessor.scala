@@ -1,6 +1,6 @@
 package com.kapibarabanka.kapibarabot.tg.stateProcessors
 
-import com.kapibarabanka.ao3scrapper.{Ao3, Ao3ClientError}
+import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Error}
 import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.sqlite.services.DbService
 import com.kapibarabanka.kapibarabot.tg.models.{BotState, ExistingFicBotState, SendToKindleBotState, StartBotState}
@@ -29,8 +29,8 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
     _       <- useTempFile(url, sourceFormat)(sendFileFromBot)
     _       <- bot.editLogText(logFile, s"Send file below to @ebook_converter_bot and send me the converted $targetFormat file:")
   } yield ()) |> sendOnErrors({})({
-    case ao3Error: Ao3ClientError => s"downloading link from AO3"
-    case fileError                => s"getting or uploading file"
+    case ao3Error: Ao3Error => s"downloading link from AO3"
+    case fileError          => s"getting or uploading file"
   })
 
   override def onMessage(msg: Message): UIO[BotState] = msg.document match

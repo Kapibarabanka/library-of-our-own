@@ -1,4 +1,4 @@
-package com.kapibarabanka.ao3scrapper.utils
+package com.kapibarabanka.ao3scrapper
 
 import com.kapibarabanka.ao3scrapper.domain.FicType
 import io.lemonlabs.uri.Url
