@@ -11,7 +11,6 @@ object Buttons:
           if (fic.details.backlog) None else Some(addToBacklog),
           if (fic.details.isOnKindle) None else Some(sendToKindle)
         ).flatten,
-        if (fic.details.read) List() else List(markAsRead),
         getDatesButtons(fic.readDatesInfo),
         List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant),
         List(addComment, if (fic.details.fire) rateNotFire else rateFire)

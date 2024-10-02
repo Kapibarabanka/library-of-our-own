@@ -31,5 +31,10 @@ class Ao3UrlSpec extends AnyFunSuite {
     val expected = "https://archiveofourown.org/tags/5%2B1%20Things"
     assert(actual == expected)
   }
+  test("download link") {
+    val actual   = Ao3Url.download("/downloads/123/Test_fic.mobi?updated_at=1701236470")
+    val expected = "https://archiveofourown.org//downloads/123/Test_fic.mobi%3Fupdated_at%3D1701236470"
+    assert(actual == expected)
+  }
 
 }

@@ -7,13 +7,12 @@ import io.lemonlabs.uri.config.UriConfig
 import io.lemonlabs.uri.encoding.{encodeCharAs, percentEncode}
 
 import scala.util.matching.Regex
+import scalaz.Scalaz.ToIdOps
 
 object Ao3Url {
   implicit val config: UriConfig = UriConfig(encoder =
-    percentEncode -- '/' +
-      encodeCharAs('+', "%2B") +
-      encodeCharAs('.', "*d*") +
-      encodeCharAs('/', "*s*")
+    percentEncode -- '*' -- '.' -- '/' +
+      encodeCharAs('+', "%2B")
   )
   private val baseUrl = Url(scheme = "https", host = "archiveofourown.org")
   private val tags    = baseUrl.addPathPart("tags")
@@ -33,7 +32,7 @@ object Ao3Url {
 
   def seriesPage(id: String, page: Int): String = series.addPathPart(id).addParam(("page", page)).toString
 
-  def tag(name: String): String = tags.addPathPart(name).toString
+  def tag(name: String): String = tags.addPathPart(name |> encodeForAo3).toString
 
   def download(link: String): String = baseUrl.addPathPart(link).toString
 
@@ -41,4 +40,6 @@ object Ao3Url {
     case workIdRegex(id)   => Some((id, FicType.Work))
     case seriesIdRegex(id) => Some((id, FicType.Series))
     case _                 => None
+
+  private def encodeForAo3(path: String) = path.replace(".", "*d*").replace("/", "*s*")
 }
