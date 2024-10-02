@@ -1,8 +1,6 @@
 package com.kapibarabanka.kapibarabot.utils
 
-
 import com.kapibarabanka.kapibarabot.AppConfig
-import com.kapibarabanka.kapibarabot.sqlite.docs.SeriesDoc
 
 import java.io.File
 import java.util.Properties
@@ -16,14 +14,16 @@ object MailClient {
   private val senderEmail    = AppConfig.senderEmail
   private val senderPassword = AppConfig.senderPassword
 
-  private val hostName = "smtp-mail.outlook.com"
+  private val hostName = "mail.gmx.com"
   private val port     = "587"
   private val auth = new Authenticator() {
     override protected def getPasswordAuthentication = new PasswordAuthentication(senderEmail, senderPassword)
   }
 
-  val properties = new Properties
+  private val properties = new Properties
+  properties.setProperty("mail.transport.protocol", "smtp")
   properties.setProperty("mail.user", senderEmail)
+  properties.setProperty("mail.password", senderPassword)
   properties.put("mail.smtp.host", hostName)
   properties.put("mail.smtp.port", port)
   properties.put("mail.smtp.starttls.enable", "true")
