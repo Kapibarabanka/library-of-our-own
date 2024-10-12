@@ -11,13 +11,7 @@ import zio.{IO, ZIO}
 import java.time.LocalDate
 
 class FicDetailsRepo(db: KapibarabotDb):
-  private val comments    = TableQuery[CommentsTable]
-  private val readDates   = TableQuery[ReadDatesTable]
   private val ficsDetails = TableQuery[FicsDetailsTable]
-  private val users       = TableQuery[UsersTable]
-
-  def getUserEmail(userId: String): IO[SqliteError, Option[String]] =
-    db.run(users.filter(_.chatId === userId).map(_.kindleEmail).result).map(_.flatten.headOption)
 
   def getUserBacklog(userId: String): IO[SqliteError, List[UserFicKey]] = for {
     docs <- db.run(ficsDetails.filter(doc => doc.userId === userId && doc.backlog === true).result)
@@ -67,93 +61,5 @@ class FicDetailsRepo(db: KapibarabotDb):
     )
   } yield ()
 
-  def addComment(key: UserFicKey, comment: FicComment): IO[SqliteError, Unit] = db
-    .run(
-      comments += CommentDoc(None, key.userId, key.ficId, key.ficIsSeries, comment.commentDate, comment.comment)
-    )
-    .unit
-
-  def getAllComments(key: UserFicKey): IO[SqliteError, List[FicComment]] = for {
-    comments <- db.run(filterComments(key).result)
-  } yield comments.map(_.toModel).toList.sortBy(_.commentDate)
-
-  def addStartDate(key: UserFicKey, startDate: String): IO[SqliteError, Unit] = for {
-    _ <- db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, Some(startDate), None))
-  } yield ()
-
-  def addFinishDate(key: UserFicKey, endDate: String): IO[SqliteError, Unit] =
-    for {
-      startDates <- db.run(
-        filterDates(key)
-          .filter(d => d.endDate.isEmpty)
-          .sortBy(_.startDate.desc)
-          .result
-      )
-      _ <- startDates.headOption match
-        case Some(startDateDoc) => db.run(readDates.filter(_.id === startDateDoc.id).map(_.endDate).update(Some(endDate)))
-        case None => db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, None, Some(endDate)))
-    } yield ()
-
-  def getReadDatesInfo(key: UserFicKey): IO[SqliteError, ReadDatesInfo] = for {
-    dates     <- db.run(filterDates(key).sortBy(_.id).result)
-    maybeLast <- ZIO.succeed[Option[ReadDatesDoc]](dates.lastOption)
-  } yield ReadDatesInfo(
-    readDates = dates.map(_.toModel).toList,
-    canAddStart = canAddStart(maybeLast),
-    canAddFinish = canAddFinish(maybeLast),
-    canCancelStart = canCancelStart(maybeLast),
-    canCancelFinish = canCancelFinish(maybeLast)
-  )
-
-  def cancelStartedToday(key: UserFicKey): IO[SqliteError, Unit] = for {
-    maybeLast <- db.run(lastDatesRecord(key).result).map(_.headOption)
-    _         <- if (canCancelStart(maybeLast)) db.run(readDates.filter(d => d.id === maybeLast.get.id).delete).unit else ZIO.unit
-  } yield ()
-
-  def cancelFinishedToday(key: UserFicKey): IO[SqliteError, Unit] = for {
-    maybeLast <- db.run(lastDatesRecord(key).result).map(_.headOption)
-    _ <-
-      if (canCancelFinish(maybeLast))
-        maybeLast.get.startDate match
-          case None    => db.run(readDates.filter(d => d.id === maybeLast.get.id).delete).unit
-          case Some(_) => db.run(readDates.filter(d => d.id === maybeLast.get.id).map(_.endDate).update(None)).unit
-      else ZIO.unit
-  } yield ()
-
-  private def canAddStart(maybeLastDate: Option[ReadDatesDoc]) =
-    val today = LocalDate.now().toString
-    maybeLastDate match
-      case None => true
-      case Some(doc) =>
-        doc.startDate match
-          case Some(start) => start != today
-          case None        => doc.endDate.getOrElse("") != today
-
-  private def canAddFinish(maybeLastDate: Option[ReadDatesDoc]) =
-    val today = LocalDate.now().toString
-    maybeLastDate match
-      case None      => true
-      case Some(doc) => doc.endDate.getOrElse("") != today
-
-  private def canCancelStart(maybeLastDate: Option[ReadDatesDoc]) =
-    val today = LocalDate.now().toString
-    maybeLastDate match
-      case None      => false
-      case Some(doc) => doc.startDate.getOrElse("") == today && doc.endDate.isEmpty
-
-  private def canCancelFinish(maybeLastDate: Option[ReadDatesDoc]) =
-    val today = LocalDate.now().toString
-    maybeLastDate match
-      case None      => false
-      case Some(doc) => doc.endDate.getOrElse("") == today
-
-  private def lastDatesRecord(key: UserFicKey) = filterDates(key).sortBy(_.id.desc).take(1)
-
   private def filterDetails(key: UserFicKey) =
     ficsDetails.filter(d => d.userId === key.userId && d.ficId === key.ficId && d.ficIsSeries === key.ficIsSeries)
-
-  private def filterDates(key: UserFicKey) =
-    readDates.filter(d => d.userId === key.userId && d.ficId === key.ficId && d.ficIsSeries === key.ficIsSeries)
-
-  private def filterComments(key: UserFicKey) =
-    comments.filter(d => d.userId === key.userId && d.ficId === key.ficId && d.ficIsSeries === key.ficIsSeries)

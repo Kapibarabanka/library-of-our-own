@@ -3,6 +3,7 @@ package com.kapibarabanka.kapibarabot.tg.stateProcessors
 import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Error}
 import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.sqlite.services.DbService
+import com.kapibarabanka.kapibarabot.tg.db
 import com.kapibarabanka.kapibarabot.tg.models.{BotState, ExistingFicBotState, SendToKindleBotState, StartBotState}
 import com.kapibarabanka.kapibarabot.{AppConfig, utils}
 import com.kapibarabanka.kapibarabot.utils.MailClient
@@ -16,7 +17,7 @@ import java.net.URL
 import scala.language.postfixOps
 import scala.sys.process.*
 
-case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithChatId, db: DbService, ao3: Ao3)
+case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithChatId, ao3: Ao3)
     extends StateProcessor(state, bot),
       WithErrorHandling(bot),
       WithTempFiles(bot):

@@ -6,6 +6,7 @@ import com.kapibarabanka.kapibarabot.AppConfig
 import com.kapibarabanka.kapibarabot.domain.{BacklogRequest, UserFicKey}
 import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.sqlite.services.DbService
+import com.kapibarabanka.kapibarabot.tg.db
 import com.kapibarabanka.kapibarabot.tg.models.{BotState, ExistingFicBotState, NewFicBotState, StartBotState}
 import com.kapibarabanka.kapibarabot.tg.utils.{ErrorMessage, MessageText}
 import scalaz.Scalaz.ToIdOps
@@ -18,7 +19,7 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
-case class StartStateProcessor(currentState: StartBotState, bot: BotWithChatId, db: DbService)
+case class StartStateProcessor(currentState: StartBotState, bot: BotWithChatId)
     extends StateProcessor(currentState, bot),
       WithErrorHandling(bot),
       WithTempFiles(bot):
@@ -43,7 +44,7 @@ case class StartStateProcessor(currentState: StartBotState, bot: BotWithChatId, 
   private def getStateWithFic(ficId: String, ficType: FicType): UIO[BotState] =
     val ficKey = UserFicKey(bot.chatId, ficId, ficType)
     val action = for {
-      ficExists <- db.fics.ficIsInDb(ficId, ficType)
+      ficExists <- db.fics.isInDb(ficId, ficType)
       nextState <-
         if (!ficExists)
           ZIO.succeed(NewFicBotState(ficId, ficType))

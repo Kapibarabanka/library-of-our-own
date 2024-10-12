@@ -9,10 +9,7 @@ import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO, ZLayer}
 
-trait KapibarabotDb:
-  def run[T](action: DBIOAction[T, NoStream, Nothing]): ZIO[Any, SqliteError, T]
-
-case class KapibarabotDbImpl(dbWithPath: String) extends KapibarabotDb:
+class KapibarabotDb(dbWithPath: String):
   private val config = ConfigFactory.parseString("driver=org.sqlite.JDBC,connectionPool=disabled,keepAliveConnection=true")
 
   val allTables: List[MyTable] = List(
@@ -56,15 +53,6 @@ case class KapibarabotDbImpl(dbWithPath: String) extends KapibarabotDb:
 
     ZIO.acquireReleaseWith(connectToDb)(close)(use)
   }
-
-object KapibarabotDbImpl:
-  def layer(dbWithPath: String): ZLayer[Any, SqliteError, KapibarabotDb] = ZLayer {
-    for {
-      db <- ZIO.succeed(KapibarabotDbImpl(dbWithPath))
-      _  <- db.init
-    } yield db
-  }
-end KapibarabotDbImpl
 
 object KapibarabotDb:
   def createManyToManyTableAction(

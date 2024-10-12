@@ -16,7 +16,7 @@ import zio.*
 import scala.collection.mutable
 import scala.collection.mutable.*
 
-class Kapibarabot(bot: MyBotApi, ao3: Ao3, db: DbService)(implicit
+class Kapibarabot(bot: MyBotApi, ao3: Ao3)(implicit
     asyncF: Async[Task],
     parallel: Parallel[Task]
 ) extends LongPollBot[Task](bot.baseApi):
@@ -24,6 +24,7 @@ class Kapibarabot(bot: MyBotApi, ao3: Ao3, db: DbService)(implicit
 
   override def start(): Task[Unit] = for {
     _ <- ZIO.succeed(allowedChats.map(id => statesByUsers.addOne((id, StartBotState()))))
+    _ <- db.init
     _ <- super.start()
   } yield ()
 
@@ -49,8 +50,8 @@ class Kapibarabot(bot: MyBotApi, ao3: Ao3, db: DbService)(implicit
   private def getStateProcessor(currentState: BotState, chatId: String) =
     val botWithChatId = BotWithChatId(chatId, bot)
     currentState match
-      case state: CommentBotState      => CommentStateProcessor(state, botWithChatId, db)
-      case state: ExistingFicBotState  => ExistingFicStateProcessor(state, botWithChatId, db)
-      case state: NewFicBotState       => NewFicStateProcessor(state, botWithChatId, ao3, db)
-      case state: SendToKindleBotState => SendToKindleStateProcessor(state, botWithChatId, db, ao3)
-      case state: StartBotState        => StartStateProcessor(state, botWithChatId, db)
+      case state: CommentBotState      => CommentStateProcessor(state, botWithChatId)
+      case state: ExistingFicBotState  => ExistingFicStateProcessor(state, botWithChatId)
+      case state: NewFicBotState       => NewFicStateProcessor(state, botWithChatId, ao3)
+      case state: SendToKindleBotState => SendToKindleStateProcessor(state, botWithChatId, ao3)
+      case state: StartBotState        => StartStateProcessor(state, botWithChatId)

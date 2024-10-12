@@ -5,6 +5,7 @@ import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Error, Ao3Url, domain}
 import com.kapibarabanka.kapibarabot.domain.UserFicKey
 import com.kapibarabanka.kapibarabot.sqlite.services.DbService
 import com.kapibarabanka.kapibarabot.tg.TgError.InaccessibleMessageError
+import com.kapibarabanka.kapibarabot.tg.db
 import com.kapibarabanka.kapibarabot.tg.models.*
 import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.tg.utils.Buttons.getButtonsForNew
@@ -15,7 +16,7 @@ import zio.*
 
 import scala.language.postfixOps
 
-case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId, ao3: Ao3, db: DbService)
+case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId, ao3: Ao3)
     extends StateProcessor(currentState, bot),
       WithErrorHandling(bot):
 
@@ -26,7 +27,7 @@ case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId
       )
       .unit
 
-  override def onMessage(msg: Message): UIO[BotState] = StartStateProcessor(StartBotState(), bot, db).onMessage(msg)
+  override def onMessage(msg: Message): UIO[BotState] = StartStateProcessor(StartBotState(), bot).onMessage(msg)
 
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = {
     query.data match

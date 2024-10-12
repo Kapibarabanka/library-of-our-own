@@ -7,6 +7,7 @@ import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.sqlite.services.DbService
 import com.kapibarabanka.kapibarabot.tg.models.*
 import com.kapibarabanka.kapibarabot.tg.TgError.*
+import com.kapibarabanka.kapibarabot.tg.db
 import com.kapibarabanka.kapibarabot.tg.utils.{Buttons, ErrorMessage, MessageText}
 import com.kapibarabanka.kapibarabot.tg.utils.Buttons.*
 import scalaz.Scalaz.ToIdOps
@@ -15,7 +16,7 @@ import zio.*
 
 import java.time.LocalDate
 
-case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: BotWithChatId, db: DbService)
+case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: BotWithChatId)
     extends StateProcessor(currentState, bot),
       WithErrorHandling(bot):
   private val record = currentState.displayedFic
@@ -23,7 +24,7 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
   override def startup: UIO[Unit] =
     bot.sendMessage(MessageData(MessageText.existingFic(record), getButtonsForExisting(record))).unit
 
-  override def onMessage(msg: Message): UIO[BotState] = StartStateProcessor(StartBotState(), bot, db).onMessage(msg)
+  override def onMessage(msg: Message): UIO[BotState] = StartStateProcessor(StartBotState(), bot).onMessage(msg)
 
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] =
     query.data match
@@ -72,7 +73,7 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
 
   private def sendToKindle(query: CallbackQuery) =
     val action = for {
-      maybeEmail <- db.details.getUserEmail(record.userId)
+      maybeEmail <- db.users.getKindleEmail(record.userId)
       nextState <- maybeEmail match
         case None =>
           bot
