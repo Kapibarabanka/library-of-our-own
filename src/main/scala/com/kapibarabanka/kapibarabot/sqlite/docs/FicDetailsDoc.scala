@@ -9,7 +9,6 @@ case class FicDetailsDoc(
     userId: String,
     ficId: String,
     ficIsSeries: Boolean,
-    read: Boolean,
     backlog: Boolean,
     isOnKindle: Boolean,
     quality: Option[String],
@@ -17,7 +16,6 @@ case class FicDetailsDoc(
     recordCreated: String
 ):
   def toModel: FicDetails = FicDetails(
-    read = read,
     backlog = backlog,
     isOnKindle = isOnKindle,
     quality = quality.map(Quality.withName),

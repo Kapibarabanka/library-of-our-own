@@ -29,7 +29,6 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
     query.data match
       case Buttons.addToBacklog.callbackData => patchDetails(record.details.copy(backlog = true), query)
 
-      case Buttons.markAsRead.callbackData          => patchDetails(record.details.copy(read = true), query)
       case Buttons.markAsStartedToday.callbackData  => patchDates(db.details.addStartDate(_, LocalDate.now().toString))(query)
       case Buttons.markAsFinishedToday.callbackData => patchDates(db.details.addFinishDate(_, LocalDate.now().toString))(query)
       case Buttons.cancelStartedToday.callbackData  => patchDates(db.details.cancelStartedToday)(query)

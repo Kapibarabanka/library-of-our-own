@@ -6,4 +6,10 @@ case class ReadDatesInfo(
     canAddFinish: Boolean,
     canCancelStart: Boolean,
     canCancelFinish: Boolean
-)
+):
+  val finishedReading: Boolean = readDates.exists(d =>
+    d match
+      case StartAndFinish(startDate, finishDate) => true
+      case Start(date)                           => false
+      case SingleDayRead(date)                   => true
+  )

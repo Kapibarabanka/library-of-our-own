@@ -19,6 +19,10 @@ class FicDetailsRepo(db: KapibarabotDb):
   def getUserEmail(userId: String): IO[SqliteError, Option[String]] =
     db.run(users.filter(_.chatId === userId).map(_.kindleEmail).result).map(_.flatten.headOption)
 
+  def getUserBacklog(userId: String): IO[SqliteError, List[UserFicKey]] = for {
+    docs <- db.run(ficsDetails.filter(doc => doc.userId === userId && doc.backlog === true).result)
+  } yield docs.map(doc => UserFicKey.fromBool(doc.userId, doc.ficId, doc.ficIsSeries)).toList
+
   def addUserFicRecord(key: UserFicKey): IO[SqliteError, FicDetails] = for {
     _ <- db.run(
       ficsDetails += FicDetailsDoc(
@@ -26,7 +30,6 @@ class FicDetailsRepo(db: KapibarabotDb):
         userId = key.userId,
         ficId = key.ficId,
         ficIsSeries = key.ficIsSeries,
-        read = false,
         backlog = false,
         isOnKindle = false,
         quality = None,
@@ -52,10 +55,9 @@ class FicDetailsRepo(db: KapibarabotDb):
   def patchDetails(key: UserFicKey, details: FicDetails) = for {
     _ <- db.run(
       filterDetails(key)
-        .map(d => (d.read, d.backlog, d.isOnKindle, d.quality, d.fire))
+        .map(d => (d.backlog, d.isOnKindle, d.quality, d.fire))
         .update(
           (
-            details.read,
             details.backlog,
             details.isOnKindle,
             details.quality.map(_.toString),

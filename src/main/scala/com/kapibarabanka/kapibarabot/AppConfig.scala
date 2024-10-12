@@ -14,3 +14,5 @@ object AppConfig:
 
   val dbPath: String = sys.env("DB_PATH")
   val dbName: String = "kapibarabot.db"
+  
+  val htmlApi: String = sys.env("HTML_API")

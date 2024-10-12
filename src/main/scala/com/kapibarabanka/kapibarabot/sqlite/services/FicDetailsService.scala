@@ -7,6 +7,7 @@ import zio.{IO, ZIO, ZLayer}
 
 trait FicDetailsService:
   def getUserEmail(userId: String): IO[SqliteError, Option[String]]
+  def getUserBacklog(userId: String): IO[SqliteError, List[UserFicRecord]]
   def getOrCreateUserFic(key: UserFicKey): IO[SqliteError, UserFicRecord]
   def patchFicDetails(record: UserFicRecord, details: FicDetails): IO[SqliteError, UserFicRecord]
   def addComment(record: UserFicRecord, comment: FicComment): IO[SqliteError, UserFicRecord]
@@ -19,6 +20,11 @@ case class FicDetailsServiceImpl(db: KapibarabotDb, ficService: FicService) exte
   private val repo = FicDetailsRepo(db)
 
   override def getUserEmail(userId: String): IO[SqliteError, Option[String]] = repo.getUserEmail(userId)
+
+  override def getUserBacklog(userId: String): IO[SqliteError, List[UserFicRecord]] = for {
+    keys    <- repo.getUserBacklog(userId)
+    records <- ZIO.collectAll(keys.map(getOrCreateUserFic))
+  } yield records
 
   override def getOrCreateUserFic(key: UserFicKey): IO[SqliteError, UserFicRecord] = for {
     details       <- repo.getOrCreateDetails(key)
@@ -49,11 +55,8 @@ case class FicDetailsServiceImpl(db: KapibarabotDb, ficService: FicService) exte
 
   override def addFinishDate(record: UserFicRecord, finishDate: String): IO[SqliteError, UserFicRecord] = for {
     _          <- repo.addFinishDate(record.key, finishDate)
-    details    <- repo.getOrCreateDetails(record.key)
-    newDetails <- ZIO.succeed(details.copy(read = true))
-    _          <- if (!details.read) patchFicDetails(record, newDetails) else ZIO.unit
     dates      <- repo.getReadDatesInfo(record.key)
-  } yield record.copy(details = newDetails, readDatesInfo = dates)
+  } yield record.copy(readDatesInfo = dates)
 
   override def cancelStartedToday(record: UserFicRecord): IO[SqliteError, UserFicRecord] = for {
     _     <- repo.cancelStartedToday(record.key)

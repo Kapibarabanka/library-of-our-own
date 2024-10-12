@@ -22,6 +22,17 @@ object MessageText {
        |${record |> displayStats}
        |""".stripMargin
 
+  val help: String =
+    """
+      |Send me a link to a work or series on Ao3. If it is not in my fic database (shared between all users) you can ask me to parse and save it.
+      |
+      |After that you can mark and track when you started/finished reading that fic, rate it, leave comments (visible only to you), and mark if the fic has fire (he-he)
+      |
+      |If you provided your Kindle email you can send a work to your Kindle library. This feature currently doesn't work for series so please send them one work at a time.
+      |
+      |You can also add fics to the backlog and get a filterable HTML file with full backlog with /backlog command
+      |""".stripMargin
+
   private def info(fic: FlatFicModel) =
     s"""<b>${fic.title}</b>
        |<i>${fic.authors.mkString(", ")}</i>
@@ -54,18 +65,18 @@ object MessageText {
     case Quality.Never     => s"<b>Never</b> Again ${Emoji.never}"
 
   private def readDates(record: UserFicRecord) =
-    record.readDatesInfo.readDates match
-      case List()            => if (record.details.read) s"${Emoji.finish} Already read" else s"${Emoji.cross} Not read"
-      case List(Start(date)) => s"${Emoji.start} Started reading on $date"
-      case dates =>
-        s"${Emoji.finish} Already read:\n" + dates
-          .map {
-            case StartAndFinish(start, finish) if start == finish => s"   - on ${format(start)} (read in one day)"
-            case StartAndFinish(start, finish)                    => s"   - from ${format(start)} to ${format(finish)}"
-            case Start(date)                                      => s"   - started reading on ${format(date)}"
-            case SingleDayRead(date)                              => s"   - on ${format(date)} (read in one day)"
-          }
-          .mkString("\n")
+    (if (record.readDatesInfo.finishedReading)
+       s"${Emoji.finish} Already read"
+     else
+       s"${Emoji.cross} Not read")
+      + record.readDatesInfo.readDates
+        .map {
+          case StartAndFinish(start, finish) if start == finish => s"   - on ${format(start)} (read in one day)"
+          case StartAndFinish(start, finish)                    => s"   - from ${format(start)} to ${format(finish)}"
+          case Start(date)                                      => s"   - started reading on ${format(date)}"
+          case SingleDayRead(date)                              => s"   - on ${format(date)} (read in one day)"
+        }
+        .mkString("\n")
 
   private def format(isoDate: String) = LocalDate.parse(isoDate).format(DateTimeFormatter.ofPattern("dd MMM uuuu"))
 

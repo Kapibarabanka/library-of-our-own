@@ -9,7 +9,7 @@ case class FicJsonModel(
     link: String,
     title: String,
     authors: List[String],
-    rating: Char,
+    rating: String,
     categories: Set[String],
     fandoms: Set[String],
     characters: Set[String],
@@ -21,18 +21,18 @@ case class FicJsonModel(
 
 object FicJsonModel:
   implicit val encoder: JsonEncoder[FicJsonModel] = DeriveJsonEncoder.gen[FicJsonModel]
-  def fromDisplayModel(fic: FlatFicModel): FicJsonModel = FicJsonModel(
-    id = fic.id,
-    isSeries = fic.ficType == FicType.Series,
-    link = fic.link,
-    title = fic.title,
-    authors = fic.authors,
-    rating = fic.rating.toString.head,
-    categories = fic.categories,
-    fandoms = fic.fandoms,
-    characters = fic.characters,
-    relationships = fic.relationships,
-    tags = fic.tags,
-    words = fic.words,
-    complete = fic.complete
+  def fromRecord(record: UserFicRecord): FicJsonModel = FicJsonModel(
+    id = record.fic.id,
+    isSeries = record.fic.ficType == FicType.Series,
+    link = record.fic.link,
+    title = record.fic.title,
+    authors = record.fic.authors,
+    rating = record.fic.rating.toString,
+    categories = record.fic.categories,
+    fandoms = record.fic.fandoms,
+    characters = record.fic.characters,
+    relationships = record.fic.relationships,
+    tags = record.fic.tags ++ record.specialTags,
+    words = record.fic.words,
+    complete = record.fic.complete
   )

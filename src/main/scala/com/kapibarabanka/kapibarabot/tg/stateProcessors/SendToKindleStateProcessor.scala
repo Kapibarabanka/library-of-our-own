@@ -18,7 +18,8 @@ import scala.sys.process.*
 
 case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithChatId, db: DbService, ao3: Ao3)
     extends StateProcessor(state, bot),
-      WithErrorHandling(bot):
+      WithErrorHandling(bot),
+      WithTempFiles(bot):
   private val sourceFormat = ".mobi"
   private val targetFormat = ".epub"
 
@@ -27,7 +28,7 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
       logLink <- bot.sendText("Getting link from AO3...")
       url     <- ao3.getDownloadLink(state.ficToSend.fic.id)
       logFile <- bot.editLogText(logLink, s"Uploading $sourceFormat file...")
-      _       <- useTempFile(url, sourceFormat)(sendFileFromBot)
+      _       <- useTempFile(state.ficToSend.fic.title + sourceFormat)(fromUrlToUser(url))
       _ <- bot.editLogText(logFile, s"Send file below to @ebook_converter_bot and send me the converted $targetFormat file:")
     } yield ()
     action |> sendOnError({})("getting download link from AO3")
@@ -44,7 +45,7 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
       tgFile     <- bot.getFile(document.fileId)
       url        <- ZIO.succeed(tgFileUrl(tgFile.flatMap(_.filePath).getOrElse("FILE_PATH_NOT_FOUND")))
       logSending <- bot.editLogText(logLink, "Downloading file and sending it to Kindle...")
-      _          <- useTempFile(url, targetFormat)(sendFileToEmail)
+      _          <- useTempFile(state.ficToSend.fic.title + targetFormat)(fromUrlToEmail(url))
       _ <- bot.editLogText(
         logSending,
         "Sent to Kindle! You can check the progress <a href=\"https://www.amazon.com/sendtokindle\">here</a>"
@@ -56,34 +57,20 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
     } yield ExistingFicBotState(patchedRecord, true)
     action |> sendOnError(s"marking fic ${state.ficToSend.key} as sent to Kindle in DB")
 
-  private def useTempFile(url: String, fileFormat: String)(action: File => Task[Unit]) = {
-    def acquire = for {
-      file <- ZIO.attempt(File(AppConfig.tempDir + state.ficToSend.fic.title + fileFormat))
-      _    <- ZIO.log(s"Created file ${file.getPath}")
-    } yield file
+  private def fromUrlToUser(url: String)(file: File) = for {
+    _ <- ZIO.log(s"Downloading file form $url")
+    _ <- ZIO.attempt(new URL(url) #> file !!) |> sendOnError({})(s"downloading file from $url")
+    _ <- ZIO.log(s"Finished download form $url")
+    _ <- bot.sendDocument(InputPartFile(file)).unit |> sendOnError({})(s"uploading file ${file.getName}")
+  } yield ()
 
-    def deleteFile(temp: File) = for {
-      path <- ZIO.succeed(temp.getPath)
-      _    <- ZIO.succeed(temp.delete())
-      _    <- ZIO.log(s"Deleted file $path")
-    } yield ()
-
-    def use(temp: File) = for {
-      _ <- ZIO.log(s"Downloading file form $url")
-      _ <- ZIO.attempt(new URL(url) #> temp !!) |> sendOnError({})(s"downloading file from $url")
-      _ <- ZIO.log(s"Finished download form $url")
-      _ <- action(temp)
-    } yield ()
-
-    ZIO.acquireReleaseWith(acquire)(deleteFile)(use) |> sendOnError({})("working with temp file")
-  }
-
-  private def sendFileFromBot(file: File) =
-    bot.sendDocument(InputPartFile(file)).unit |> sendOnError({})(s"uploading file ${file.getName}")
-
-  private def sendFileToEmail(file: File) =
-    ZIO.attempt(MailClient.sendFile(file, state.ficToSend.fic.title + targetFormat, state.userEmail)) |> sendOnError({})(
+  private def fromUrlToEmail(url: String)(file: File) = for {
+    _ <- ZIO.log(s"Downloading file form $url")
+    _ <- ZIO.attempt(new URL(url) #> file !!) |> sendOnError({})(s"downloading file from $url")
+    _ <- ZIO.log(s"Finished download form $url")
+    _ <- ZIO.attempt(MailClient.sendFile(file, state.ficToSend.fic.title + targetFormat, state.userEmail)) |> sendOnError({})(
       s"sending file ${file.getName} to kindle email"
     )
+  } yield ()
 
   private def tgFileUrl(filePath: String): String = s"https://api.telegram.org/file/bot${AppConfig.tgToken}/$filePath"

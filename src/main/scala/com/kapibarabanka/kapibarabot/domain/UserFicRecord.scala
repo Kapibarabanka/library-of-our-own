@@ -1,7 +1,5 @@
 package com.kapibarabanka.kapibarabot.domain
 
-import com.kapibarabanka.ao3scrapper.domain.{FicType, Rating}
-
 case class UserFicRecord(
     userId: String,
     fic: FlatFicModel,
@@ -10,3 +8,8 @@ case class UserFicRecord(
     details: FicDetails
 ):
   val key: UserFicKey = UserFicKey(userId, fic.id, fic.ficType)
+  val specialTags: List[String] = List(
+    if (details.isOnKindle) Some("On Kindle") else None,
+    if (readDatesInfo.finishedReading) Some("Already Read") else None,
+    if (details.fire) Some("Has Fire") else None
+  ).flatten

@@ -15,6 +15,7 @@ services:
       - SENDER_PASSWORD=${SENDER_PASSWORD}
       - FICS_TEMP_PATH=${FICS_TEMP_PATH}
       - DB_PATH=${DB_PATH}
+      - HTML_API=${HTML_API}
 volumes:
   ao3-db:
     external: true
