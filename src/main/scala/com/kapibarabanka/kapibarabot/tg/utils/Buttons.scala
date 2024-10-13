@@ -8,7 +8,7 @@ object Buttons:
     InlineKeyboardMarkup(inlineKeyboard =
       List(
         List(
-          if (fic.details.backlog) None else Some(addToBacklog),
+          if (fic.details.backlog) Some(removeFromBacklog) else Some(addToBacklog),
           if (fic.details.isOnKindle) None else Some(sendToKindle)
         ).flatten,
         getDatesButtons(fic.readDatesInfo),
@@ -35,8 +35,9 @@ object Buttons:
     ).flatten
 
   // for existing
-  val addToBacklog = InlineKeyboardButton(s"${Emoji.backlog} Add to backlog", callbackData = Some("addToBacklog"))
-  val sendToKindle = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
+  val addToBacklog      = InlineKeyboardButton(s"${Emoji.backlog} Add to backlog", callbackData = Some("addToBacklog"))
+  val removeFromBacklog = InlineKeyboardButton(s"${Emoji.cross} Remove from backlog", callbackData = Some("removeFromBacklog"))
+  val sendToKindle      = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
 
   val addComment = InlineKeyboardButton(s"${Emoji.comment} Add comment", callbackData = Some("addComment"))
 
