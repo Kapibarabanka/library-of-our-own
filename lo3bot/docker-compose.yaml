@@ -2,7 +2,9 @@ services:
   lo3-bot:
     container_name: lo3-bot
     restart: unless-stopped
-    build: .
+    build:
+      context: ./..
+      dockerfile: ./lo3bot/Dockerfile
     volumes:
       - ao3-db:${DB_PATH}
     environment:

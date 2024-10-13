@@ -7,7 +7,10 @@ scalacOptions ++= Seq(
   "128"
 )
 
+lazy val lo3models = RootProject(file("../lo3models"))
+
 lazy val root = (project in file("."))
+  .dependsOn(lo3models)
   .settings(
     name             := "lo3bot",
     idePackagePrefix := Some("kapibarabanka.lo3.bot")
