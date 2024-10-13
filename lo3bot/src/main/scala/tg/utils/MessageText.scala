@@ -67,9 +67,9 @@ object MessageText {
 
   private def readDates(record: UserFicRecord) =
     (if (record.readDatesInfo.finishedReading)
-       s"${Emoji.finish} Already read"
+       s"${Emoji.finish} Already read\n"
      else
-       s"${Emoji.cross} Not read")
+       s"${Emoji.cross} Not read\n")
       + record.readDatesInfo.readDates
         .map {
           case StartAndFinish(start, finish) if start == finish => s"   - on ${format(start)} (read in one day)"
