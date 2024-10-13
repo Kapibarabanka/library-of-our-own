@@ -1,12 +1,12 @@
 package com.kapibarabanka.kapibarabot.tg.stateProcessors
 
-import com.kapibarabanka.ao3scrapper.{Ao3, Ao3Error}
-import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
-import com.kapibarabanka.kapibarabot.sqlite.services.DbService
+import com.kapibarabanka.ao3scrapper.Ao3
 import com.kapibarabanka.kapibarabot.tg.db
 import com.kapibarabanka.kapibarabot.tg.models.{BotState, ExistingFicBotState, SendToKindleBotState, StartBotState}
-import com.kapibarabanka.kapibarabot.{AppConfig, utils}
+import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
+import com.kapibarabanka.kapibarabot.tg.utils.Utils
 import com.kapibarabanka.kapibarabot.utils.MailClient
+import com.kapibarabanka.kapibarabot.{AppConfig, utils}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.high.implicits.*
 import telegramium.bots.{CallbackQuery, Document, InputPartFile, Message}
@@ -19,8 +19,7 @@ import scala.sys.process.*
 
 case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithChatId, ao3: Ao3)
     extends StateProcessor(state, bot),
-      WithErrorHandling(bot),
-      WithTempFiles(bot):
+      WithErrorHandling(bot):
   private val sourceFormat = ".mobi"
   private val targetFormat = ".epub"
 
@@ -29,7 +28,7 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
       logLink <- bot.sendText("Getting link from AO3...")
       url     <- ao3.getDownloadLink(state.ficToSend.fic.id)
       logFile <- bot.editLogText(logLink, s"Uploading $sourceFormat file...")
-      _       <- useTempFile(state.ficToSend.fic.title + sourceFormat)(fromUrlToUser(url))
+      _       <- Utils.useTempFile(state.ficToSend.fic.title + sourceFormat)(fromUrlToUser(url))
       _ <- bot.editLogText(logFile, s"Send file below to @ebook_converter_bot and send me the converted $targetFormat file:")
     } yield ()
     action |> sendOnError({})("getting download link from AO3")
@@ -38,7 +37,7 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
     case None           => bot.sendText("Not a valid file").map(_ => ExistingFicBotState(state.ficToSend, true))
     case Some(document) => sendToKindle(document)
 
-  override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = unknownCallbackQuery(query).map(_ => StartBotState())
+  override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = unknownCallbackQuery(query)
 
   private def sendToKindle(document: Document) =
     val action = for {
@@ -46,7 +45,7 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
       tgFile     <- bot.getFile(document.fileId)
       url        <- ZIO.succeed(tgFileUrl(tgFile.flatMap(_.filePath).getOrElse("FILE_PATH_NOT_FOUND")))
       logSending <- bot.editLogText(logLink, "Downloading file and sending it to Kindle...")
-      _          <- useTempFile(state.ficToSend.fic.title + targetFormat)(fromUrlToEmail(url))
+      _          <- Utils.useTempFile(state.ficToSend.fic.title + targetFormat)(fromUrlToEmail(url))
       _ <- bot.editLogText(
         logSending,
         "Sent to Kindle! You can check the progress <a href=\"https://www.amazon.com/sendtokindle\">here</a>"
@@ -74,4 +73,4 @@ case class SendToKindleStateProcessor(state: SendToKindleBotState, bot: BotWithC
     )
   } yield ()
 
-  private def tgFileUrl(filePath: String): String = s"https://api.telegram.org/file/bot${AppConfig.tgToken}/$filePath"
+  private def tgFileUrl(filePath: String): String = s"https://api.telegram.org/file/bot${AppConfig.mainBotToken}/$filePath"

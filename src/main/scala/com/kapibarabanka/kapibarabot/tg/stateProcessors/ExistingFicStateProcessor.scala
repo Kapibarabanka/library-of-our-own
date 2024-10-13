@@ -3,13 +3,12 @@ package com.kapibarabanka.kapibarabot.tg.stateProcessors
 import com.kapibarabanka.ao3scrapper.domain.FicType
 import com.kapibarabanka.kapibarabot.domain.{FicDetails, Quality, UserFicRecord}
 import com.kapibarabanka.kapibarabot.sqlite.SqliteError
-import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
-import com.kapibarabanka.kapibarabot.sqlite.services.DbService
-import com.kapibarabanka.kapibarabot.tg.models.*
 import com.kapibarabanka.kapibarabot.tg.TgError.*
 import com.kapibarabanka.kapibarabot.tg.db
-import com.kapibarabanka.kapibarabot.tg.utils.{Buttons, ErrorMessage, MessageText}
+import com.kapibarabanka.kapibarabot.tg.models.*
+import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.tg.utils.Buttons.*
+import com.kapibarabanka.kapibarabot.tg.utils.{Buttons, ErrorMessage, MessageText}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
 import zio.*
@@ -24,7 +23,7 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
   override def startup: UIO[Unit] =
     bot.sendMessage(MessageData(MessageText.existingFic(record), getButtonsForExisting(record))).unit
 
-  override def onMessage(msg: Message): UIO[BotState] = StartStateProcessor(StartBotState(), bot).onMessage(msg)
+  override def onMessage(msg: Message): UIO[BotState] = defaultOnMessage(msg)
 
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] =
     query.data match

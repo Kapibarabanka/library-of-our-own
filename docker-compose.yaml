@@ -6,7 +6,8 @@ services:
     volumes:
       - ao3-db:${DB_PATH}
     environment:
-      - TG_TOKEN=${TG_TOKEN}
+      - MAIN_BOT=${MAIN_BOT}
+      - ADMIN_BOT=${ADMIN_BOT}
       - AO3_LOGIN=${AO3_LOGIN}
       - AO3_PASSWORD=${AO3_PASSWORD}
       - ALLOWED_CHATS=${ALLOWED_CHATS}

@@ -6,6 +6,9 @@ import com.kapibarabanka.kapibarabot.domain.UserFicRecord
 sealed trait BotState:
   val performStartup: Boolean
 
+case class SetEmailBotState() extends BotState:
+  override val performStartup: Boolean = true
+
 case class CommentBotState(ficForComment: UserFicRecord) extends BotState:
   override val performStartup: Boolean = true
 
@@ -18,5 +21,4 @@ case class NewFicBotState(ficId: String, ficType: FicType) extends BotState:
 case class SendToKindleBotState(ficToSend: UserFicRecord, userEmail: String) extends BotState:
   override val performStartup: Boolean = true
 
-case class StartBotState() extends BotState:
-  override val performStartup: Boolean = false
+case class StartBotState(performStartup: Boolean = false) extends BotState

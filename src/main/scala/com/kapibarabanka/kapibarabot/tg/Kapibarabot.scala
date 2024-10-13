@@ -3,11 +3,9 @@ package com.kapibarabanka.kapibarabot.tg
 import cats.Parallel
 import cats.effect.Async
 import com.kapibarabanka.ao3scrapper.Ao3
+import com.kapibarabanka.kapibarabot.tg.models.*
+import com.kapibarabanka.kapibarabot.tg.services.{AdminBot, BotWithChatId, MyBotApi}
 import com.kapibarabanka.kapibarabot.tg.stateProcessors.*
-import com.kapibarabanka.kapibarabot.tg.services.{BotWithChatId, MyBotApi}
-import com.kapibarabanka.kapibarabot.sqlite.services.DbService
-import com.kapibarabanka.kapibarabot.AppConfig.allowedChats
-import com.kapibarabanka.kapibarabot.tg.models.{BotState, CommentBotState, ExistingFicBotState, NewFicBotState, SendToKindleBotState, StartBotState}
 import telegramium.bots.*
 import telegramium.bots.high.LongPollBot
 import telegramium.bots.high.implicits.*
@@ -23,29 +21,39 @@ class Kapibarabot(bot: MyBotApi, ao3: Ao3)(implicit
   private val statesByUsers: mutable.Map[String, BotState] = mutable.Map.empty[String, BotState]
 
   override def start(): Task[Unit] = for {
-    _ <- ZIO.succeed(allowedChats.map(id => statesByUsers.addOne((id, StartBotState()))))
-    _ <- db.init
-    _ <- super.start()
+    allUsers <- db.users.getAllIds
+    _        <- ZIO.succeed(allUsers.map(id => statesByUsers.addOne((id, StartBotState()))))
+    _        <- db.init
+    _        <- super.start()
   } yield ()
 
   override def onMessage(msg: Message): Task[Unit] =
-    useScenario(msg.chat.id.toString)(stateProcessor => stateProcessor.onMessage(msg))
+    useScenario(msg.chat.id.toString, msg.chat.username)(stateProcessor => stateProcessor.onMessage(msg))
 
   override def onCallbackQuery(query: CallbackQuery): Task[Unit] =
-    useScenario(query.from.id.toString)(stateProcessor => stateProcessor.onCallbackQuery(query))
+    useScenario(query.from.id.toString, query.from.username)(stateProcessor => stateProcessor.onCallbackQuery(query))
 
-  private def useScenario(chatId: String)(getNextState: StateProcessor => Task[BotState]): Task[Unit] =
+  private def useScenario(chatId: String, username: Option[String])(getNextState: StateProcessor => Task[BotState]): Task[Unit] =
+    for {
+      currentState          <- getOrCreateCurrentState(chatId, username)
+      currentStateProcessor <- ZIO.succeed(getStateProcessor(currentState, chatId))
+      nextState             <- getNextState(currentStateProcessor)
+      _                     <- if (nextState.performStartup) getStateProcessor(nextState, chatId).startup else ZIO.unit
+      _ <- ZIO.succeed({
+        statesByUsers(chatId) = nextState
+      })
+    } yield ()
+
+  private def getOrCreateCurrentState(chatId: String, username: Option[String]) =
     statesByUsers.get(chatId) match
-      case None => sendMessage(chatId = ChatStrId(chatId), text = "You are not in the allowed user list").exec(bot.baseApi).unit
-      case Some(currentState) =>
-        val currentStateProcessor = getStateProcessor(currentState, chatId)
+      case Some(currentState) => ZIO.succeed(currentState)
+      case None =>
         for {
-          nextState <- getNextState(currentStateProcessor)
-          _         <- if (nextState.performStartup) getStateProcessor(nextState, chatId).startup else ZIO.unit
-          _ <- ZIO.succeed({
-            statesByUsers(chatId) = nextState
-          })
-        } yield ()
+          _          <- db.users.addUser(chatId, username)
+          _          <- AdminBot.newUserAlert(chatId, username)
+          startState <- ZIO.succeed(StartBotState())
+          _          <- ZIO.succeed(statesByUsers.addOne((chatId, startState)))
+        } yield startState
 
   private def getStateProcessor(currentState: BotState, chatId: String) =
     val botWithChatId = BotWithChatId(chatId, bot)
@@ -55,3 +63,4 @@ class Kapibarabot(bot: MyBotApi, ao3: Ao3)(implicit
       case state: NewFicBotState       => NewFicStateProcessor(state, botWithChatId, ao3)
       case state: SendToKindleBotState => SendToKindleStateProcessor(state, botWithChatId, ao3)
       case state: StartBotState        => StartStateProcessor(state, botWithChatId)
+      case state: SetEmailBotState     => SetEmailStateProcessor(state, botWithChatId)

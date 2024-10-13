@@ -27,7 +27,7 @@ case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId
       )
       .unit
 
-  override def onMessage(msg: Message): UIO[BotState] = StartStateProcessor(StartBotState(), bot).onMessage(msg)
+  override def onMessage(msg: Message): UIO[BotState] = defaultOnMessage(msg)
 
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = {
     query.data match

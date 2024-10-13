@@ -1,10 +1,9 @@
 package com.kapibarabanka.kapibarabot.tg.stateProcessors
 
 import com.kapibarabanka.kapibarabot.domain.FicComment
-import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
-import com.kapibarabanka.kapibarabot.sqlite.services.DbService
 import com.kapibarabanka.kapibarabot.tg.db
 import com.kapibarabanka.kapibarabot.tg.models.{BotState, CommentBotState, ExistingFicBotState, StartBotState}
+import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}
 import zio.*
@@ -20,7 +19,7 @@ case class CommentStateProcessor(state: CommentBotState, bot: BotWithChatId)
   override def onMessage(msg: Message): UIO[BotState] =
     addComment(msg.text.getOrElse("")) |> sendOnError(s"adding comment to fic ${state.ficForComment.key}")
 
-  override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = unknownCallbackQuery(query).map(_ => StartBotState())
+  override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = unknownCallbackQuery(query)
 
   private def addComment(comment: String) = for {
     logPatching <- bot.sendText("Adding comment...")

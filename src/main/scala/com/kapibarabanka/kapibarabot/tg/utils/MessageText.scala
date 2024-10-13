@@ -28,7 +28,7 @@ object MessageText {
       |
       |After that you can mark and track when you started/finished reading that fic, rate it, leave comments (visible only to you), and mark if the fic has fire (he-he)
       |
-      |If you provided your Kindle email you can send a work to your Kindle library. This feature currently doesn't work for series so please send them one work at a time.
+      |If you provide your Kindle email with /setKindleEmail command you can send a work to your Kindle library. This feature currently doesn't work for series so please send them one work at a time.
       |
       |You can also add fics to the backlog and get a filterable HTML file with full backlog with /backlog command
       |""".stripMargin

@@ -1,7 +1,6 @@
 package com.kapibarabanka.kapibarabot
 
 import com.kapibarabanka.ao3scrapper.Ao3
-import com.kapibarabanka.kapibarabot.sqlite.services.*
 import com.kapibarabanka.kapibarabot.tg.Kapibarabot
 import com.kapibarabanka.kapibarabot.tg.services.{MyBotApi, MyBotApiImpl}
 import zio.*
@@ -18,7 +17,7 @@ object Application extends ZIOAppDefault {
   def run: ZIO[Any, Throwable, Unit] = {
     runBot.provide(
       Ao3.live(AppConfig.ao3Login, AppConfig.ao3Password),
-      MyBotApiImpl.layer(s"https://api.telegram.org/bot${AppConfig.tgToken}"),
+      MyBotApiImpl.layer(s"https://api.telegram.org/bot${AppConfig.mainBotToken}"),
       Scope.default
     )
   }
