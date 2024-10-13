@@ -1,0 +1,22 @@
+services:
+  lo3-bot:
+    container_name: lo3-bot
+    restart: unless-stopped
+    build: .
+    volumes:
+      - ao3-db:${DB_PATH}
+    environment:
+      - MAIN_BOT=${MAIN_BOT}
+      - ADMIN_BOT=${ADMIN_BOT}
+      - AO3_LOGIN=${AO3_LOGIN}
+      - AO3_PASSWORD=${AO3_PASSWORD}
+      - ALLOWED_CHATS=${ALLOWED_CHATS}
+      - MY_CHAT_ID=${MY_CHAT_ID}
+      - SENDER_EMAIL=${SENDER_EMAIL}
+      - SENDER_PASSWORD=${SENDER_PASSWORD}
+      - FICS_TEMP_PATH=${FICS_TEMP_PATH}
+      - DB_PATH=${DB_PATH}
+      - HTML_API=${HTML_API}
+volumes:
+  ao3-db:
+    external: true
