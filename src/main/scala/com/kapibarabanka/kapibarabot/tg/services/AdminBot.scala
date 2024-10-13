@@ -12,6 +12,11 @@ import zio.interop.catz.*
 object AdminBot:
   private val chatId = AppConfig.myChatId
 
+  def feedback(chatId: String, username: Option[String], message: String) = sendMessage(s"""
+       |New feedback from $chatId (${username.getOrElse("no username")}):
+       |$message
+       |""".stripMargin)
+
   def newUserAlert(chatId: String, username: Option[String]): IO[Throwable, Unit] = sendMessage(s"""
       |New bot user
       |chat id: $chatId

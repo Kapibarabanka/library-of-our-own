@@ -64,3 +64,4 @@ class Kapibarabot(bot: MyBotApi, ao3: Ao3)(implicit
       case state: SendToKindleBotState => SendToKindleStateProcessor(state, botWithChatId, ao3)
       case state: StartBotState        => StartStateProcessor(state, botWithChatId)
       case state: SetEmailBotState     => SetEmailStateProcessor(state, botWithChatId)
+      case state: FeedbackBotState     => FeedbackStateProcessor(state, botWithChatId)

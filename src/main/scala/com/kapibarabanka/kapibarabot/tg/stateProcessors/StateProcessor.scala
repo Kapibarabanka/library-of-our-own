@@ -6,7 +6,7 @@ import com.kapibarabanka.kapibarabot.AppConfig
 import com.kapibarabanka.kapibarabot.domain.{BacklogRequest, UserFicKey}
 import com.kapibarabanka.kapibarabot.tg.TgError.InaccessibleMessageError
 import com.kapibarabanka.kapibarabot.tg.db
-import com.kapibarabanka.kapibarabot.tg.models.{BotState, ExistingFicBotState, NewFicBotState, SetEmailBotState, StartBotState}
+import com.kapibarabanka.kapibarabot.tg.models.*
 import com.kapibarabanka.kapibarabot.tg.services.BotWithChatId
 import com.kapibarabanka.kapibarabot.tg.utils.{ErrorMessage, MessageText, Utils}
 import scalaz.Scalaz.ToIdOps
@@ -53,6 +53,7 @@ trait StateProcessor(currentState: BotState, bot: BotWithChatId) extends WithErr
       case "/backlog"         => backLogCommand()
       case "/help" | "/start" => bot.sendText(MessageText.help).map(_ => StartBotState(true))
       case "/setKindleEmail"  => ZIO.succeed(SetEmailBotState())
+      case "/feedback"        => ZIO.succeed(FeedbackBotState())
       case _ =>
         Ao3Url.tryParseFicLink(text) match
           case Some((ficId, ficType)) => getStateWithFic(ficId, ficType)
