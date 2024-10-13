@@ -6,6 +6,7 @@ COPY build.sbt ./
 COPY ./src ./src
 COPY ./project/build.properties ./project/
 COPY ./project/Dependencies.scala ./project/
+COPY ./project/plugins.sbt ./project/
 
 RUN sbt clean compile
 
