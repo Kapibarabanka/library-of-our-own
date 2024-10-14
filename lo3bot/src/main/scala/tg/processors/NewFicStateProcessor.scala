@@ -1,10 +1,7 @@
 package kapibarabanka.lo3.bot
 package tg.processors
 
-import domain.UserFicKey
-import ao3scrapper.domain.{FicType, Series, Work}
-import ao3scrapper.{Ao3, Ao3Error, Ao3Url, domain}
-import sqlite.services.DbService
+import ao3scrapper.{Ao3, Ao3Error, Ao3Url}
 import tg.TgError.InaccessibleMessageError
 import tg.db
 import tg.models.*
@@ -12,6 +9,8 @@ import tg.services.BotWithChatId
 import tg.utils.Buttons.getButtonsForNew
 import tg.utils.{Buttons, MessageText}
 
+import kapibarabanka.lo3.models.ao3.{FicType, Series, Work}
+import kapibarabanka.lo3.models.tg.UserFicKey
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
 import zio.*
@@ -58,5 +57,5 @@ case class NewFicStateProcessor(currentState: NewFicBotState, bot: BotWithChatId
 
   private def getFic: ZIO[Any, Ao3Error, Work | Series] =
     currentState.ficType match
-      case domain.FicType.Work   => ao3.work(currentState.ficId)
-      case domain.FicType.Series => ao3.series(currentState.ficId)
+      case FicType.Work   => ao3.work(currentState.ficId)
+      case FicType.Series => ao3.series(currentState.ficId)

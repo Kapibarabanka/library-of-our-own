@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.bot
 package sqlite.repos
 
-import domain.{ReadDatesInfo, UserFicKey}
+import kapibarabanka.lo3.models.tg.{ReadDatesInfo, UserFicKey}
 import sqlite.SqliteError
 import sqlite.docs.ReadDatesDoc
 import sqlite.services.KapibarabotDb

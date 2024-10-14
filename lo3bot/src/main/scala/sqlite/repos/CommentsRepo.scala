@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.bot
 package sqlite.repos
 
-import domain.{FicComment, UserFicKey}
+import kapibarabanka.lo3.models.tg.{FicComment, UserFicKey}
 import sqlite.SqliteError
 import sqlite.docs.CommentDoc
 import sqlite.services.KapibarabotDb

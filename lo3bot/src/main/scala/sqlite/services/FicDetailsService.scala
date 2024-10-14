@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.bot
 package sqlite.services
 
-import domain.*
+import kapibarabanka.lo3.models.tg.*
 import sqlite.SqliteError
 import sqlite.repos.*
 

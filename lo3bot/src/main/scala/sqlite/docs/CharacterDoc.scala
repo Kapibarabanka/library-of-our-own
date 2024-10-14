@@ -1,8 +1,8 @@
 package kapibarabanka.lo3.bot
 package sqlite.docs
+import kapibarabanka.lo3.models.ao3.Character
 
-import ao3scrapper.Ao3TagName
-import ao3scrapper.domain.Character
+import kapibarabanka.lo3.models.ao3.Ao3TagName
 
 case class CharacterDoc(fullName: String, name: String, label: Option[String]):
   def toModel: Character = Character(name, label)

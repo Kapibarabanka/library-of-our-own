@@ -1,8 +1,8 @@
 package kapibarabanka.lo3.bot
 package sqlite.services
 
-import ao3scrapper.domain.{FicType, Series, Work}
-import domain.FlatFicModel
+import kapibarabanka.lo3.models.ao3.{FicType, Series, Work}
+import kapibarabanka.lo3.models.tg.FlatFicModel
 import sqlite.SqliteError
 import sqlite.repos.{SeriesRepo, WorksRepo}
 

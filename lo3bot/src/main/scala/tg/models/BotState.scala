@@ -1,8 +1,8 @@
 package kapibarabanka.lo3.bot
 package tg.models
 
-import ao3scrapper.domain.FicType
-import domain.UserFicRecord
+import kapibarabanka.lo3.models.ao3.FicType
+import kapibarabanka.lo3.models.tg.UserFicRecord
 
 sealed trait BotState:
   val performStartup: Boolean
@@ -11,7 +11,7 @@ case class SetEmailBotState() extends BotState:
   override val performStartup: Boolean = true
 
 case class FeedbackBotState() extends BotState:
-    override val performStartup: Boolean = true
+  override val performStartup: Boolean = true
 
 case class CommentBotState(ficForComment: UserFicRecord) extends BotState:
   override val performStartup: Boolean = true

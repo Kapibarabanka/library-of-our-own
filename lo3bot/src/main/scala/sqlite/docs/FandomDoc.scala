@@ -1,8 +1,8 @@
 package kapibarabanka.lo3.bot
 package sqlite.docs
+import kapibarabanka.lo3.models.ao3.Fandom
 
-import ao3scrapper.Ao3TagName
-import ao3scrapper.domain.Fandom
+import kapibarabanka.lo3.models.ao3.Ao3TagName
 
 case class FandomDoc(fullName: String, name: String, label: Option[String]):
   def toModel: Fandom = Fandom(name, label)

@@ -4,7 +4,7 @@ package ao3scrapper
 import io.lemonlabs.uri.Url
 import io.lemonlabs.uri.config.UriConfig
 import io.lemonlabs.uri.encoding.{encodeCharAs, percentEncode}
-import ao3scrapper.domain.FicType
+import kapibarabanka.lo3.models.ao3.FicType
 import scalaz.Scalaz.ToIdOps
 
 import scala.util.matching.Regex
@@ -23,8 +23,8 @@ object Ao3Url {
   private val workIdRegex: Regex   = """^https://archiveofourown\.org:?/works/(\d+)(?:[/?#].*)?$""".r
 
   def fic(id: String, ficType: FicType): String = ficType match
-    case ao3scrapper.domain.FicType.Work   => work(id)
-    case ao3scrapper.domain.FicType.Series => series(id)
+    case FicType.Work   => work(id)
+    case FicType.Series => series(id)
 
   def work(id: String): String = works.addPathPart(id).toString
 

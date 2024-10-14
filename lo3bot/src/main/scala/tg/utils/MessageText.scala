@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.bot
 package tg.utils
 
-import domain.*
+import kapibarabanka.lo3.models.tg.*
 import tg.utils.Emoji
 import scalaz.Scalaz.ToIdOps
 

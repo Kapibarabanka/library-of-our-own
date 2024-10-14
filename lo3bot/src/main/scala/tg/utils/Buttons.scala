@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.bot
 package tg.utils
 
-import domain.*
+import kapibarabanka.lo3.models.tg.*
 import telegramium.bots.{InlineKeyboardButton, InlineKeyboardMarkup}
 
 object Buttons:

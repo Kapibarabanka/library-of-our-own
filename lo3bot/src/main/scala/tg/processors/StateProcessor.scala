@@ -2,8 +2,8 @@ package kapibarabanka.lo3.bot
 package tg.processors
 
 import ao3scrapper.Ao3Url
-import ao3scrapper.domain.FicType
-import domain.{BacklogRequest, UserFicKey}
+import kapibarabanka.lo3.models.ao3.FicType
+import kapibarabanka.lo3.models.tg.UserFicKey
 import tg.TgError.InaccessibleMessageError
 import tg.db
 import tg.models.*

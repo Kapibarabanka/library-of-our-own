@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.bot
 package sqlite.docs
 
-import ao3scrapper.domain.FreeformTag
+import kapibarabanka.lo3.models.ao3.FreeformTag
 
 case class TagDoc(name: String, category: Option[String], filterable: Boolean):
   def toModel = FreeformTag(name, Some(filterable))

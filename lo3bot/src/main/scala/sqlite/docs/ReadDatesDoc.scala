@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.bot
 package sqlite.docs
 
-import domain.{ReadDates, SingleDayRead, Start, StartAndFinish}
+import kapibarabanka.lo3.models.tg.{ReadDates, SingleDayRead, Start, StartAndFinish}
 
 case class ReadDatesDoc(
     id: Option[Int],

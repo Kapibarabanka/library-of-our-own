@@ -1,10 +1,11 @@
 package kapibarabanka.lo3.bot
 package tg.processors
 
-import domain.FicComment
 import tg.db
 import tg.models.{BotState, CommentBotState, ExistingFicBotState, StartBotState}
 import tg.services.BotWithChatId
+
+import kapibarabanka.lo3.models.tg.FicComment
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}
 import zio.*

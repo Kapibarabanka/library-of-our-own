@@ -1,8 +1,8 @@
 package kapibarabanka.lo3.bot
 package tg.processors
 
-import ao3scrapper.domain.FicType
-import domain.{FicDetails, Quality, UserFicRecord}
+import kapibarabanka.lo3.models.ao3.FicType
+import kapibarabanka.lo3.models.tg.{FicDetails, Quality, UserFicRecord}
 import sqlite.SqliteError
 import tg.TgError.*
 import tg.db

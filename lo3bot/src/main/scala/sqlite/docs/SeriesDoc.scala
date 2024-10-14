@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.bot
 package sqlite.docs
 
-import ao3scrapper.domain.{FicType, Series}
+import kapibarabanka.lo3.models.ao3.{FicType, Series}
 
 import java.time.LocalDate
 
