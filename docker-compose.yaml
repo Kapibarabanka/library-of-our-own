@@ -1,2 +1,3 @@
 include:
   - lo3bot/docker-compose.yaml
+  - lo3api/docker-compose.yaml

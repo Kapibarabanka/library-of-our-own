@@ -7,6 +7,8 @@ services:
       dockerfile: ./lo3api/Dockerfile
     volumes:
       - ao3-db:${DB_PATH}
+    ports:
+      - "8080:8080"
     environment:
       - MAIN_BOT=${MAIN_BOT}
       - ADMIN_BOT=${ADMIN_BOT}

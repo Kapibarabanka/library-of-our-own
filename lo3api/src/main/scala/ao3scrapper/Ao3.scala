@@ -21,7 +21,7 @@ trait Ao3:
   def fandom(nameInWork: String): IO[Ao3Error, Fandom]
   def freeformTag(nameInWork: String): IO[Ao3Error, FreeformTag]
   def getCanonicalTagName(tagName: String): IO[Ao3Error, Option[String]]
-  def getDownloadLink(workId: String): IO[Ao3Error, String]
+  def downloadLink(workId: String): IO[Ao3Error, String]
 
 case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
   private val getTagsFromClient = true
@@ -179,7 +179,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
   } yield doc.canonicalName
 
   // TODO: add more formats
-  override def getDownloadLink(workId: String): IO[Ao3Error, String] = for {
+  override def downloadLink(workId: String): IO[Ao3Error, String] = for {
     doc  <- getWorkDoc(workId)
     link <- doc.mobiLink.fold[IO[Ao3Error, String]](ZIO.fail(DownloadLinkNotFound(workId)))(s => ZIO.succeed(s))
   } yield Ao3Url.download(link)
@@ -285,4 +285,4 @@ object Ao3:
     ZIO.serviceWithZIO[Ao3](_.getCanonicalTagName(tagName))
 
   def getDownloadLink(workId: String): ZIO[Ao3, Ao3Error, String] =
-    ZIO.serviceWithZIO[Ao3](_.getDownloadLink(workId))
+    ZIO.serviceWithZIO[Ao3](_.downloadLink(workId))
