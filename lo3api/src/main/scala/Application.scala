@@ -17,8 +17,10 @@ object Application extends ZIOAppDefault {
         OpenAPIGen.fromEndpoints(title = "Library Of Our Own API", version = "1.0", controllers.flatMap(_.endpoints))
       )
     )
-    routes <- ZIO.succeed(controllers.map(c => c.routes).foldRight(swaggerRoutes)((l, r) => l ++ r))
-    _      <- Server.serve(routes)
+    routes <- ZIO.succeed(
+      controllers.map(c => c.routes.map(r => Routes(r)).reduce((r1, r2) => r1 ++ r2)).foldRight(swaggerRoutes)((l, r) => l ++ r)
+    )
+    _ <- Server.serve(routes)
   } yield ()
 
   def run: ZIO[Any, Throwable, Unit] = serve.provide(Ao3.live(AppConfig.ao3Login, AppConfig.ao3Password), Server.default)

@@ -6,5 +6,6 @@ lazy val root = (project in file("."))
   .settings(
     name                             := "lo3models",
     idePackagePrefix                 := Some("kapibarabanka.lo3.models"),
-    libraryDependencies += "dev.zio" %% "zio-schema" % "1.5.0"
+    libraryDependencies += "dev.zio" %% "zio-schema"            % "1.5.0",
+    libraryDependencies += "dev.zio" %% "zio-schema-derivation" % "1.5.0"
   )

@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package controllers
 
-import sqlite.SqliteError
+
 
 import zio.http.*
 import zio.http.codec.*
@@ -15,10 +15,15 @@ protected[api] object UserController extends Controller:
   private val allIdsEndpoint =
     Endpoint(RoutePattern.GET / path / "allIds")
       .out[List[String]]
-      .outError[SqliteError](Status.InternalServerError)
+      .outError[String](Status.InternalServerError)
 
   private val allIdsRoute =
     allIdsEndpoint.implement { case () => db.users.getAllIds }
 
-  override val endpoints: List[Endpoint[?, ?, ?, ?, ?]] = List(allIdsEndpoint)
-  override val routes: Routes[Any, Response]            = Routes(allIdsRoute)
+  private val allIds = create(
+    Endpoint(RoutePattern.GET / path / "allIds")
+      .out[List[String]]
+      .outError[String](Status.InternalServerError)
+  )(Unit => db.users.getAllIds)
+  
+  val (endpoints, routes) = List(allIds).unzip

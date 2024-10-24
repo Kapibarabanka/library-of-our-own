@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package sqlite.repos
 
-import sqlite.SqliteError
+
 import sqlite.docs.*
 import sqlite.services.KapibarabotDb
 import sqlite.tables.*
@@ -27,7 +27,7 @@ class WorksRepo(db: KapibarabotDb):
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
 
-  def add(work: Work): IO[SqliteError, FlatFicModel] =
+  def add(work: Work): IO[String, FlatFicModel] =
     db.run(DBIO.sequence(getAddingAction(work)).transactionally).flatMap(_ => getById(work.id).map(_.get))
 
   def getAddingAction(work: Work): List[DBIOAction[Any, NoStream, Effect.Write & Effect.Read]] = {
@@ -53,14 +53,14 @@ class WorksRepo(db: KapibarabotDb):
     )
   }
 
-  def getById(workId: String): IO[SqliteError, Option[FlatFicModel]] = for {
+  def getById(workId: String): IO[String, Option[FlatFicModel]] = for {
     docs <- db.run(works.filter(_.id === workId).result)
     maybeDisplayModel <- docs.headOption match
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
-  def getAll: IO[SqliteError, List[FlatFicModel]] = for {
+  def getAll: IO[String, List[FlatFicModel]] = for {
     docs   <- db.run(works.result)
     models <- ZIO.collectAll(docs.map(docToModel))
   } yield models.toList

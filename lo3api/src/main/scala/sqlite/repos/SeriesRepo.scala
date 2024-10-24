@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package sqlite.repos
 
-import sqlite.SqliteError
+
 import sqlite.docs.{SeriesDoc, SeriesToWorksDoc}
 import sqlite.services.KapibarabotDb
 import sqlite.tables.{SeriesTable, SeriesToWorksTable}
@@ -15,7 +15,7 @@ class SeriesRepo(db: KapibarabotDb, works: WorksRepo):
   private val series                    = TableQuery[SeriesTable]
   private val seriesToWorks             = TableQuery[SeriesToWorksTable]
 
-  def add(s: Series): IO[SqliteError, FlatFicModel] = {
+  def add(s: Series): IO[String, FlatFicModel] = {
     db
       .run(
         DBIO
@@ -29,14 +29,14 @@ class SeriesRepo(db: KapibarabotDb, works: WorksRepo):
       .flatMap(_ => getById(s.id).map(_.get))
   }
 
-  def getById(id: String): IO[SqliteError, Option[FlatFicModel]] = for {
+  def getById(id: String): IO[String, Option[FlatFicModel]] = for {
     docs <- db.run(series.filter(_.id === id).result)
     maybeDisplayModel <- docs.headOption match
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
-  def getAll: IO[SqliteError, List[FlatFicModel]] = for {
+  def getAll: IO[String, List[FlatFicModel]] = for {
     docs   <- db.run(series.result)
     models <- ZIO.collectAll(docs.map(docToModel))
   } yield models.toList

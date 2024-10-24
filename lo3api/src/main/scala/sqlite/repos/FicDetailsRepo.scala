@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package sqlite.repos
 
-import sqlite.SqliteError
+
 import sqlite.docs.FicDetailsDoc
 import sqlite.services.KapibarabotDb
 import sqlite.tables.FicsDetailsTable
@@ -15,11 +15,11 @@ import java.time.LocalDate
 class FicDetailsRepo(db: KapibarabotDb):
   private val ficsDetails = TableQuery[FicsDetailsTable]
 
-  def getUserBacklog(userId: String): IO[SqliteError, List[UserFicKey]] = for {
+  def getUserBacklog(userId: String): IO[String, List[UserFicKey]] = for {
     docs <- db.run(ficsDetails.filter(doc => doc.userId === userId && doc.backlog === true).result)
   } yield docs.map(doc => UserFicKey.fromBool(doc.userId, doc.ficId, doc.ficIsSeries)).toList
 
-  def addUserFicRecord(key: UserFicKey): IO[SqliteError, FicDetails] = for {
+  def addUserFicRecord(key: UserFicKey): IO[String, FicDetails] = for {
     _ <- db.run(
       ficsDetails += FicDetailsDoc(
         id = None,
@@ -36,11 +36,11 @@ class FicDetailsRepo(db: KapibarabotDb):
     maybeDetails <- getDetailsOption(key)
   } yield maybeDetails.get
 
-  def getDetailsOption(key: UserFicKey): IO[SqliteError, Option[FicDetails]] = for {
+  def getDetailsOption(key: UserFicKey): IO[String, Option[FicDetails]] = for {
     docs <- db.run(filterDetails(key).result)
   } yield docs.headOption.map(_.toModel)
 
-  def getOrCreateDetails(key: UserFicKey): IO[SqliteError, FicDetails] = for {
+  def getOrCreateDetails(key: UserFicKey): IO[String, FicDetails] = for {
     maybeDetails <- getDetailsOption(key)
     details <- maybeDetails match
       case Some(value) => ZIO.succeed(value)
