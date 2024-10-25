@@ -1,6 +1,8 @@
 package kapibarabanka.lo3.models
 package tg
 
+import zio.schema.{DeriveSchema, Schema}
+
 case class ReadDatesInfo(
     readDates: List[ReadDates],
     canAddStart: Boolean,
@@ -14,3 +16,6 @@ case class ReadDatesInfo(
       case Start(date)                           => false
       case SingleDayRead(date)                   => true
   )
+
+object ReadDatesInfo:
+  implicit val schema: Schema[ReadDatesInfo] = DeriveSchema.gen

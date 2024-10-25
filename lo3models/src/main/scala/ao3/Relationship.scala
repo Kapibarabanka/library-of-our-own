@@ -3,6 +3,8 @@ package ao3
 
 import ao3.RelationshipType.Platonic
 
+import zio.schema.{DeriveSchema, Schema}
+
 case class Relationship(
     characters: Set[Character],
     shipType: RelationshipType.Value,
@@ -20,3 +22,6 @@ case class Relationship(
       Ao3TagName.combineWithLabel(sortedCharacters.map(_.name).mkString(separator), label)
     else
       sortedCharacters.map(c => Ao3TagName.combineWithLabel(c.name, c.label)).mkString(separator)
+
+object Relationship:
+  implicit val schema: Schema[Relationship] = DeriveSchema.gen

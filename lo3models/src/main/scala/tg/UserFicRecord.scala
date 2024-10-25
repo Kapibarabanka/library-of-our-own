@@ -1,6 +1,8 @@
 package kapibarabanka.lo3.models
 package tg
 
+import zio.schema.{DeriveSchema, Schema}
+
 case class UserFicRecord(
     userId: String,
     fic: FlatFicModel,
@@ -14,3 +16,6 @@ case class UserFicRecord(
     if (readDatesInfo.finishedReading) Some("Already Read") else None,
     if (details.fire) Some("Has Fire") else None
   ).flatten
+
+object UserFicRecord:
+  implicit val schema: Schema[UserFicRecord] = DeriveSchema.gen

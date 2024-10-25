@@ -1,6 +1,8 @@
 package kapibarabanka.lo3.models
 package ao3
 
+import zio.schema.{DeriveSchema, Schema}
+
 case class Work(
     id: String,
     title: String,
@@ -25,3 +27,6 @@ case class Work(
   val complete: Boolean = chaptersPlanned match
     case Some(planned) => chaptersWritten >= planned
     case None          => false
+
+object Work:
+  implicit val schema: Schema[Work] = DeriveSchema.gen

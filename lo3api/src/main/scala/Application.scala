@@ -3,9 +3,10 @@ package kapibarabanka.lo3.api
 import ao3scrapper.Ao3
 import controllers.*
 
+import kapibarabanka.lo3.models.openapi.Lo3API
 import zio.*
 import zio.http.*
-import zio.http.endpoint.openapi.{OpenAPIGen, SwaggerUI}
+import zio.http.endpoint.openapi.SwaggerUI
 
 object Application extends ZIOAppDefault {
   private val serve = for {
@@ -14,7 +15,7 @@ object Application extends ZIOAppDefault {
     swaggerRoutes <- ZIO.succeed(
       SwaggerUI.routes(
         "api",
-        OpenAPIGen.fromEndpoints(title = "Library Of Our Own API", version = "1.0", controllers.flatMap(_.endpoints))
+        Lo3API.openAPI
       )
     )
     routes <- ZIO.succeed(

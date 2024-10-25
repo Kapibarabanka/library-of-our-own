@@ -13,6 +13,7 @@ case class UsersService(db: KapibarabotDb):
 
   def addUser(userId: String, userName: Option[String]): IO[String, Unit] = usersRepo.addUser(userId, userName)
 
+  // todo will be internal
   def getKindleEmail(userId: String): IO[String, Option[String]] = usersRepo.getKindleEmail(userId)
 
   def setKindleEmail(userId: String, email: String): IO[String, Unit] = usersRepo.setKindleEmail(userId, email)

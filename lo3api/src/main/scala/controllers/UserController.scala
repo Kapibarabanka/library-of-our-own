@@ -1,29 +1,14 @@
 package kapibarabanka.lo3.api
 package controllers
 
-
-
+import kapibarabanka.lo3.models.openapi.UserClient
 import zio.http.*
-import zio.http.codec.*
-import zio.http.codec.PathCodec.*
-import zio.http.endpoint.*
-import zio.http.endpoint.EndpointMiddleware.None
 
 protected[api] object UserController extends Controller:
-  override protected val path: String = "user"
+  private val add = UserClient.add.implement { (id, username) => db.users.addUser(id, username) }
 
-  private val allIdsEndpoint =
-    Endpoint(RoutePattern.GET / path / "allIds")
-      .out[List[String]]
-      .outError[String](Status.InternalServerError)
-
-  private val allIdsRoute =
-    allIdsEndpoint.implement { case () => db.users.getAllIds }
-
-  private val allIds = create(
-    Endpoint(RoutePattern.GET / path / "allIds")
-      .out[List[String]]
-      .outError[String](Status.InternalServerError)
-  )(Unit => db.users.getAllIds)
+  private val allIds = UserClient.allIds.implement { Unit => db.users.getAllIds }
   
-  val (endpoints, routes) = List(allIds).unzip
+  private val setEmail = UserClient.setEmail.implement { (id, email) => db.users.setKindleEmail(id, email) }
+
+  override val routes: List[Route[Any, Response]] = List(add, allIds, setEmail)

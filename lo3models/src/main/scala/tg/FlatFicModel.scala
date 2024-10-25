@@ -3,6 +3,8 @@ package tg
 
 import ao3.{FicType, Rating}
 
+import zio.schema.{DeriveSchema, Schema}
+
 case class FlatFicModel(
     id: String,
     link: String,
@@ -18,3 +20,6 @@ case class FlatFicModel(
     words: Int,
     complete: Boolean
 )
+
+object FlatFicModel:
+  implicit val schema: Schema[FlatFicModel] = DeriveSchema.gen
