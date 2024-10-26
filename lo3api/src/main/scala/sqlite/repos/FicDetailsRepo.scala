@@ -1,9 +1,8 @@
 package kapibarabanka.lo3.api
 package sqlite.repos
 
-
 import sqlite.docs.FicDetailsDoc
-import sqlite.services.KapibarabotDb
+import sqlite.services.Lo3Db
 import sqlite.tables.FicsDetailsTable
 
 import kapibarabanka.lo3.models.tg.{FicDetails, UserFicKey}
@@ -12,12 +11,15 @@ import zio.{IO, ZIO}
 
 import java.time.LocalDate
 
-class FicDetailsRepo(db: KapibarabotDb):
+class FicDetailsRepo(db: Lo3Db):
   private val ficsDetails = TableQuery[FicsDetailsTable]
 
   def getUserBacklog(userId: String): IO[String, List[UserFicKey]] = for {
     docs <- db.run(ficsDetails.filter(doc => doc.userId === userId && doc.backlog === true).result)
   } yield docs.map(doc => UserFicKey.fromBool(doc.userId, doc.ficId, doc.ficIsSeries)).toList
+
+  def setBacklog(key: UserFicKey, value: Boolean): IO[String, Unit] =
+    db.run(filterDetails(key).map(d => d.backlog).update(value)).unit
 
   def addUserFicRecord(key: UserFicKey): IO[String, FicDetails] = for {
     _ <- db.run(

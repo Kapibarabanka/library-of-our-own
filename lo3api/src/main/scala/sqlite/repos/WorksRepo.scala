@@ -3,7 +3,7 @@ package sqlite.repos
 
 
 import sqlite.docs.*
-import sqlite.services.KapibarabotDb
+import sqlite.services.Lo3Db
 import sqlite.tables.*
 
 import kapibarabanka.lo3.models.ao3.{Fandom, FicType, Rating, Work}
@@ -15,7 +15,7 @@ import zio.{IO, ZIO}
 
 import scala.collection.immutable.Iterable
 
-class WorksRepo(db: KapibarabotDb):
+class WorksRepo(db: Lo3Db):
   private val works             = TableQuery[WorksTable]
   private val tags              = TableQuery[TagsTable]
   private val worksToTags       = TableQuery[WorksToTagsTable]
@@ -26,6 +26,8 @@ class WorksRepo(db: KapibarabotDb):
   private val relationships     = TableQuery[RelationshipsTable]
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
+  
+  def exists(id: String) = db.run(works.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)
 
   def add(work: Work): IO[String, FlatFicModel] =
     db.run(DBIO.sequence(getAddingAction(work)).transactionally).flatMap(_ => getById(work.id).map(_.get))

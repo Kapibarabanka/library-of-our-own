@@ -1,9 +1,8 @@
 package kapibarabanka.lo3.api
 package sqlite.repos
 
-
 import sqlite.docs.{SeriesDoc, SeriesToWorksDoc}
-import sqlite.services.KapibarabotDb
+import sqlite.services.Lo3Db
 import sqlite.tables.{SeriesTable, SeriesToWorksTable}
 
 import kapibarabanka.lo3.models.ao3.{FicType, Series}
@@ -11,22 +10,26 @@ import kapibarabanka.lo3.models.tg.FlatFicModel
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
-class SeriesRepo(db: KapibarabotDb, works: WorksRepo):
-  private val series                    = TableQuery[SeriesTable]
-  private val seriesToWorks             = TableQuery[SeriesToWorksTable]
+class SeriesRepo(db: Lo3Db, works: WorksRepo):
+  private val series        = TableQuery[SeriesTable]
+  private val seriesToWorks = TableQuery[SeriesToWorksTable]
 
   def add(s: Series): IO[String, FlatFicModel] = {
-    db
-      .run(
-        DBIO
-          .seq(
-            series += SeriesDoc.fromModel(s),
-            DBIO.sequence(s.works.flatMap(works.getAddingAction)).transactionally,
-            seriesToWorks ++= (s.works.indices zip s.works).map((idx, work) => SeriesToWorksDoc(None, s.id, work.id, idx + 1))
-          )
-          .transactionally
-      )
-      .flatMap(_ => getById(s.id).map(_.get))
+    for {
+      maybeWorks <- ZIO.collectAll(s.works.map(w => works.exists(w.id).map(exists => if (exists) None else Some(w))))
+      newWorks   <- ZIO.succeed(maybeWorks.flatten)
+      _ <- db
+        .run(
+          DBIO
+            .seq(
+              series += SeriesDoc.fromModel(s),
+              DBIO.sequence(newWorks.flatMap(works.getAddingAction)).transactionally,
+              seriesToWorks ++= (s.works.indices zip s.works).map((idx, work) => SeriesToWorksDoc(None, s.id, work.id, idx + 1))
+            )
+            .transactionally
+        )
+      flatFic <- getById(s.id).map(_.get)
+    } yield flatFic
   }
 
   def getById(id: String): IO[String, Option[FlatFicModel]] = for {

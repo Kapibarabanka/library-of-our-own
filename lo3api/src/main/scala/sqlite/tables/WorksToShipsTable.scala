@@ -2,7 +2,7 @@ package kapibarabanka.lo3.api
 package sqlite.tables
 
 import sqlite.docs.WorksToShipsDoc
-import sqlite.services.KapibarabotDb
+import sqlite.services.Lo3Db
 
 import slick.jdbc.PostgresProfile.api.*
 
@@ -17,7 +17,7 @@ object WorksToShipsTable extends MyTable:
   override val name: String     = "WorksToShips"
   override val keyField: String = "id"
 
-  def createIfNotExists = KapibarabotDb.createManyToManyTableAction(
+  def createIfNotExists = Lo3Db.createManyToManyTableAction(
     name = name,
     leftFieldName = "workId",
     leftTable = WorksTable,

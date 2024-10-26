@@ -9,7 +9,7 @@ import slick.jdbc.JdbcBackend.{Database, JdbcDatabaseDef}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
-class KapibarabotDb(dbWithPath: String):
+class Lo3Db(dbWithPath: String):
   private val config = ConfigFactory.parseString("driver=org.sqlite.JDBC,connectionPool=disabled,keepAliveConnection=true")
 
   val allTables: List[MyTable] = List(
@@ -54,7 +54,7 @@ class KapibarabotDb(dbWithPath: String):
     ZIO.acquireReleaseWith(connectToDb)(close)(use)
   }
 
-object KapibarabotDb:
+object Lo3Db:
   def createManyToManyTableAction(
       name: String,
       leftFieldName: String,

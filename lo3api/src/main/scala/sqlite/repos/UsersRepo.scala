@@ -2,16 +2,16 @@ package kapibarabanka.lo3.api
 package sqlite.repos
 
 
-import sqlite.services.KapibarabotDb
+import sqlite.services.Lo3Db
 import sqlite.tables.UsersTable
 
 import slick.jdbc.PostgresProfile.api.*
 import zio.IO
 
-class UsersRepo(db: KapibarabotDb):
+class UsersRepo(db: Lo3Db):
   private val users = TableQuery[UsersTable]
 
-  def getAllUserIds: IO[String, List[String]] = db.run(users.map(_.chatId).result).map(_.toList)
+  def getAllIds: IO[String, List[String]] = db.run(users.map(_.chatId).result).map(_.toList)
 
   def addUser(userId: String, userName: Option[String]): IO[String, Unit] =
     db.run(

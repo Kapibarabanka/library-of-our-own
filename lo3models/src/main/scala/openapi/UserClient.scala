@@ -5,23 +5,21 @@ import zio.http.*
 import zio.http.codec.HttpCodec
 import zio.http.codec.PathCodec.string
 import zio.http.endpoint.Endpoint
-import zio.http.endpoint.EndpointMiddleware.None
 
 object UserClient extends MyClient:
-  override protected val path = "user"
+  override protected val clientName = "user"
 
-  val add =
-    Endpoint(RoutePattern.POST / path / string("userId"))
-      .query(HttpCodec.query("username").optional)
-      .out[Unit]
-      .outError[String](Status.InternalServerError)
+  val add = endpoint(Method.POST, string("userId"))
+    .query(HttpCodec.query[String]("username").optional)
+    .out[Unit]
+    .outError[String](Status.InternalServerError)
 
-  val allIds = Endpoint(RoutePattern.GET / path / "allIds")
+  val allIds = endpoint(Method.GET, "allIds")
     .out[List[String]]
     .outError[String](Status.InternalServerError)
 
-  val setEmail = Endpoint(RoutePattern.POST / path / string("userId") / "email")
-    .query(HttpCodec.query("email"))
+  val setEmail = endpoint(Method.PATCH, string("userId") / "email")
+    .query(HttpCodec.query[String]("email"))
     .out[Unit]
     .outError[String](Status.InternalServerError)
 

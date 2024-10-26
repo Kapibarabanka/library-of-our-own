@@ -1,6 +1,6 @@
 package kapibarabanka.lo3.api
 
-import sqlite.services.DbService
+import sqlite.services.Lo3DataService
 
 package object controllers:
-  val db: DbService = DbService(s"${AppConfig.dbPath}${AppConfig.dbName}")
+  val data: Lo3DataService = Lo3DataService(s"${AppConfig.dbPath}${AppConfig.dbName}")

@@ -20,7 +20,7 @@ object Dependencies {
 
   val zio       = "dev.zio" %% "zio"              % V.zio
   val zioToCats = "dev.zio" %% "zio-interop-cats" % "23.1.0.2"
-  val zioHttp   = "dev.zio" %% "zio-http"         % "3.0.0-RC9"
+  val zioHttp   = "dev.zio" %% "zio-http"         % "3.0.1"
   val zioJson   = "dev.zio" %% "zio-json"         % "0.7.3"
 
   val telegramium: Seq[ModuleID] = Seq(

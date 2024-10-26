@@ -3,7 +3,7 @@ package sqlite.repos
 
 
 import sqlite.docs.ReadDatesDoc
-import sqlite.services.KapibarabotDb
+import sqlite.services.Lo3Db
 import sqlite.tables.ReadDatesTable
 
 import kapibarabanka.lo3.models.tg.{ReadDatesInfo, UserFicKey}
@@ -12,7 +12,7 @@ import zio.{IO, ZIO}
 
 import java.time.LocalDate
 
-class ReadDatesRepo(db: KapibarabotDb):
+class ReadDatesRepo(db: Lo3Db):
   private val readDates = TableQuery[ReadDatesTable]
 
   def getReadDatesInfo(key: UserFicKey): IO[String, ReadDatesInfo] = for {

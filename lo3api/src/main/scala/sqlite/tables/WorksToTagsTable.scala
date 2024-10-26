@@ -2,7 +2,7 @@ package kapibarabanka.lo3.api
 package sqlite.tables
 
 import sqlite.docs.WorksToTagsDoc
-import sqlite.services.KapibarabotDb
+import sqlite.services.Lo3Db
 
 import slick.jdbc.PostgresProfile.api.*
 
@@ -17,7 +17,7 @@ object WorksToTagsTable extends MyTable:
   override val name: String     = "WorksToTags"
   override val keyField: String = "id"
 
-  def createIfNotExists = KapibarabotDb.createManyToManyTableAction(
+  def createIfNotExists = Lo3Db.createManyToManyTableAction(
     name = name,
     leftFieldName = "workId",
     leftTable = WorksTable,

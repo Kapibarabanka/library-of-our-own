@@ -3,14 +3,14 @@ package sqlite.repos
 
 
 import sqlite.docs.CommentDoc
-import sqlite.services.KapibarabotDb
+import sqlite.services.Lo3Db
 import sqlite.tables.CommentsTable
 
 import kapibarabanka.lo3.models.tg.{FicComment, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.IO
 
-class CommentsRepo(db: KapibarabotDb):
+class CommentsRepo(db: Lo3Db):
   private val comments = TableQuery[CommentsTable]
 
   def addComment(key: UserFicKey, comment: FicComment): IO[String, Unit] = db

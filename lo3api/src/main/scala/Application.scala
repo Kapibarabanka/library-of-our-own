@@ -10,14 +10,9 @@ import zio.http.endpoint.openapi.SwaggerUI
 
 object Application extends ZIOAppDefault {
   private val serve = for {
-    ao3         <- ZIO.service[Ao3]
-    controllers <- ZIO.succeed(List(UserController))
-    swaggerRoutes <- ZIO.succeed(
-      SwaggerUI.routes(
-        "api",
-        Lo3API.openAPI
-      )
-    )
+    ao3           <- ZIO.service[Ao3]
+    controllers   <- ZIO.succeed(List(UserController, FicDetailsController(ao3)))
+    swaggerRoutes <- ZIO.succeed(SwaggerUI.routes("api", Lo3API.openAPI))
     routes <- ZIO.succeed(
       controllers.map(c => c.routes.map(r => Routes(r)).reduce((r1, r2) => r1 ++ r2)).foldRight(swaggerRoutes)((l, r) => l ++ r)
     )
