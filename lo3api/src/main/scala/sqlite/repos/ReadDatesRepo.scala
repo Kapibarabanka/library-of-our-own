@@ -6,7 +6,7 @@ import sqlite.docs.ReadDatesDoc
 import sqlite.services.Lo3Db
 import sqlite.tables.ReadDatesTable
 
-import kapibarabanka.lo3.models.tg.{ReadDatesInfo, UserFicKey}
+import kapibarabanka.lo3.common.models.domain.{ReadDatesInfo, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 

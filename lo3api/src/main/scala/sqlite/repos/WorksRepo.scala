@@ -6,8 +6,8 @@ import sqlite.docs.*
 import sqlite.services.Lo3Db
 import sqlite.tables.*
 
-import kapibarabanka.lo3.models.ao3.{Fandom, FicType, Rating, Work}
-import kapibarabanka.lo3.models.tg.FlatFicModel
+import kapibarabanka.lo3.common.models.ao3.{Fandom, FicType, Rating, Work}
+import kapibarabanka.lo3.common.models.domain.FlatFicModel
 import scalaz.Scalaz.ToIdOps
 import slick.dbio.Effect
 import slick.jdbc.PostgresProfile.api.*

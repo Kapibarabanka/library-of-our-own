@@ -6,6 +6,8 @@ import sqlite.repos.*
 case class Lo3DataService(dbWithPath: String):
   private val db: Lo3Db = Lo3Db(dbWithPath)
 
+  def init = db.init
+
   val works     = WorksRepo(db)
   val series    = SeriesRepo(db, works)
   val details   = FicDetailsRepo(db)

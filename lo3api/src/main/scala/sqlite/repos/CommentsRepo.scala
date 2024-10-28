@@ -6,7 +6,7 @@ import sqlite.docs.CommentDoc
 import sqlite.services.Lo3Db
 import sqlite.tables.CommentsTable
 
-import kapibarabanka.lo3.models.tg.{FicComment, UserFicKey}
+import kapibarabanka.lo3.common.models.domain.{FicComment, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.IO
 

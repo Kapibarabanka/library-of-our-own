@@ -4,8 +4,8 @@ package ao3scrapper
 import ao3scrapper.Ao3Error.*
 import ao3scrapper.internal.*
 
-import kapibarabanka.lo3.models.ao3.*
-import kapibarabanka.lo3.models.ao3.RelationshipType.*
+import kapibarabanka.lo3.common.models.ao3.*
+import kapibarabanka.lo3.common.models.ao3.RelationshipType.*
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.model.Document
 import org.jsoup.HttpStatusException

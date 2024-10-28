@@ -1,10 +1,8 @@
 package kapibarabanka.lo3.api
 package sqlite
 
-import ao3scrapper.Ao3Url
-
-import kapibarabanka.lo3.models.ao3.*
-import kapibarabanka.lo3.models.tg.FicComment
+import kapibarabanka.lo3.common.models.ao3.{Ao3Url, *}
+import kapibarabanka.lo3.common.models.domain.FicComment
 
 import java.time.LocalDate
 

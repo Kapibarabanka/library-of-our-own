@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package sqlite.docs
 
-import kapibarabanka.lo3.models.tg.{FicDetails, Quality}
+import kapibarabanka.lo3.common.models.domain.{FicDetails, Quality}
 
 import java.time.LocalDate
 

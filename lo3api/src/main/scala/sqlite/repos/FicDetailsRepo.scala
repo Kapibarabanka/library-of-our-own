@@ -5,7 +5,7 @@ import sqlite.docs.FicDetailsDoc
 import sqlite.services.Lo3Db
 import sqlite.tables.FicsDetailsTable
 
-import kapibarabanka.lo3.models.tg.{FicDetails, UserFicKey}
+import kapibarabanka.lo3.common.models.domain.{FicDetails, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 

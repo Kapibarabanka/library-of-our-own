@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package sqlite.docs
 
-import kapibarabanka.lo3.models.ao3.*
+import kapibarabanka.lo3.common.models.ao3.*
 
 case class WorkDoc(
     id: String,

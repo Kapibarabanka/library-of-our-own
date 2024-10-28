@@ -1,3 +1,16 @@
 include:
   - lo3bot/docker-compose.yaml
   - lo3api/docker-compose.yaml
+# environment:
+#   - MAIN_BOT=${MAIN_BOT}
+#   - ADMIN_BOT=${ADMIN_BOT}
+#   - AO3_LOGIN=${AO3_LOGIN}
+#   - AO3_PASSWORD=${AO3_PASSWORD}
+#   - ALLOWED_CHATS=${ALLOWED_CHATS}
+#   - MY_CHAT_ID=${MY_CHAT_ID}
+#   - SENDER_EMAIL=${SENDER_EMAIL}
+#   - SENDER_PASSWORD=${SENDER_PASSWORD}
+#   - FICS_TEMP_PATH=/tmp/
+#   - HTML_API=${HTML_API}
+#   - DB_PATH=/home/ao3db/
+#   - DATA_API=http://lo3-api:8080

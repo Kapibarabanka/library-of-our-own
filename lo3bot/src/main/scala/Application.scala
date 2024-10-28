@@ -1,24 +1,23 @@
 package kapibarabanka.lo3.bot
 
-import ao3scrapper.Ao3
-import tg.Kapibarabot
-import tg.services.{MyBotApi, MyBotApiImpl}
+import services.{Lo3Api, Lo3bot}
 
+import kapibarabanka.lo3.common.services.MyBotApi
 import zio.*
 import zio.interop.catz.*
 
 object Application extends ZIOAppDefault {
   private val runBot = for {
     myBotApi <- ZIO.service[MyBotApi]
-    ao3      <- ZIO.service[Ao3]
-    bot      <- ZIO.succeed(new Kapibarabot(myBotApi, ao3))
+    api      <- ZIO.service[Lo3Api]
+    bot      <- ZIO.succeed(new Lo3bot(myBotApi, api))
     _        <- bot.start()
   } yield ()
 
   def run: ZIO[Any, Throwable, Unit] = {
     runBot.provide(
-      Ao3.live(AppConfig.ao3Login, AppConfig.ao3Password),
-      MyBotApiImpl.layer(s"https://api.telegram.org/bot${AppConfig.mainBotToken}"),
+      MyBotApi.layer(s"https://api.telegram.org/bot${AppConfig.mainBotToken}"),
+      Lo3Api.live(AppConfig.dataApi),
       Scope.default
     )
   }

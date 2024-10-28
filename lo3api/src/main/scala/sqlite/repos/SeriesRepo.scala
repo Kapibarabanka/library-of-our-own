@@ -5,8 +5,8 @@ import sqlite.docs.{SeriesDoc, SeriesToWorksDoc}
 import sqlite.services.Lo3Db
 import sqlite.tables.{SeriesTable, SeriesToWorksTable}
 
-import kapibarabanka.lo3.models.ao3.{FicType, Series}
-import kapibarabanka.lo3.models.tg.FlatFicModel
+import kapibarabanka.lo3.common.models.ao3.{FicType, Series}
+import kapibarabanka.lo3.common.models.domain.FlatFicModel
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 

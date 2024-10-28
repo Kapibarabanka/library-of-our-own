@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package sqlite.docs
 
-import kapibarabanka.lo3.models.ao3.{Ao3TagName, Fandom}
+import kapibarabanka.lo3.common.models.ao3.{Ao3TagName, Fandom}
 
 case class FandomDoc(fullName: String, name: String, label: Option[String]):
   def toModel: Fandom = Fandom(name, label)
