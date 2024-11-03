@@ -50,7 +50,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
         fandoms = fandoms.toSet,
         relationships = relationships,
         characters = characters.toSet,
-        freeformTags = freeformTags,
+        freeformTags = freeformTags.distinct,
         link = Ao3Url.work(id),
         date = {
           doc.stats.updated match
