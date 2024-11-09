@@ -1,7 +1,6 @@
 package kapibarabanka.lo3.api
 package sqlite.repos
 
-
 import sqlite.docs.*
 import sqlite.services.Lo3Db
 import sqlite.tables.*
@@ -26,8 +25,11 @@ class WorksRepo(db: Lo3Db):
   private val relationships     = TableQuery[RelationshipsTable]
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
-  
-  def exists(id: String) = db.run(works.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)
+
+  def exists(id: String): ZIO[Any, String, Boolean] =
+    db.run(works.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)
+
+  def title(id: String) = db.run(works.filter(_.id === id).map(_.title).result).map(_.headOption)
 
   def add(work: Work): IO[String, FlatFicModel] =
     db.run(DBIO.sequence(getAddingAction(work)).transactionally).flatMap(_ => getById(work.id).map(_.get))

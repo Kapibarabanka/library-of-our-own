@@ -9,8 +9,10 @@ services:
        - '../.env'
     volumes:
       - ao3-db:/home/ao3db/
+      - downloaded-fics:/home/downloaded-fics/
     ports:
       - "8080:8080"
 volumes:
+  downloaded-fics:
   ao3-db:
     external: true

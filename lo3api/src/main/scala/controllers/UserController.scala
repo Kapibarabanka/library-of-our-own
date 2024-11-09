@@ -1,10 +1,11 @@
 package kapibarabanka.lo3.api
 package controllers
 
+import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3.FicType
 import kapibarabanka.lo3.common.models.domain.{UserFicKey, UserFicRecord}
 import kapibarabanka.lo3.common.openapi.UserClient
-import kapibarabanka.lo3.common.services.{MyBotApi, OptionalLog}
+import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MyBotApi}
 import zio.*
 import zio.http.*
 import zio.json.*
@@ -19,7 +20,7 @@ protected[api] case class UserController(client: Client, bot: MyBotApi) extends 
 
   private val backlog = UserClient.backlog.implement { (userId, needToLog) =>
     (for {
-      log     <- OptionalLog.create("Retrieving backlog...", bot, userId, needToLog)
+      log     <- if (needToLog) LogMessage.create("Retrieving backlog...", bot, userId) else ZIO.succeed(EmptyLog())
       keys    <- data.details.getUserBacklog(userId)
       records <- ZIO.collectAll(keys.map(getUserFicInternal))
       _       <- log.edit("Generating HTML...")

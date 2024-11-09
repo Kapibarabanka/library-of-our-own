@@ -15,6 +15,8 @@ case class BotWithChatId(chatId: String, botApi: MyBotApi):
 
   val editMessage: (Message, MessageData) => UIO[Option[Message]] = botApi.editMessage(chatId)
 
+  val removeMarkup: Message => UIO[Unit] = botApi.removeMarkup(chatId)
+
   def answerCallbackQuery(query: CallbackQuery, text: Option[String] = None): UIO[Unit] = botApi.answerCallbackQuery(query, text)
 
   val getFile: String => UIO[Option[File]] = botApi.getFile

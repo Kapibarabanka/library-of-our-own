@@ -1,5 +1,5 @@
-package kapibarabanka.lo3.bot
-package utils
+package kapibarabanka.lo3.common
+package services
 
 import scalaz.Scalaz.ToIdOps
 import zio.*

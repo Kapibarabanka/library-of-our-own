@@ -1,16 +1,15 @@
 package kapibarabanka.lo3.bot
 package processors
 
-import models.{BotState, CommentBotState, ExistingFicBotState, SendToKindleBotState}
+import models.{BotState, CommentBotState, ExistingFicBotState}
 import services.Lo3Api
 import utils.Buttons.getButtonsForExisting
-import utils.{Buttons, ErrorMessage, MessageText}
+import utils.{Buttons, MessageText}
 
-import kapibarabanka.lo3.common.models.ao3.FicType
 import kapibarabanka.lo3.common.models.domain.{FicDetails, Quality, UserFicKey, UserFicRecord}
 import kapibarabanka.lo3.common.models.tg.MessageData
 import kapibarabanka.lo3.common.models.tg.TgError.*
-import kapibarabanka.lo3.common.openapi.{FicDetailsClient, UserClient}
+import kapibarabanka.lo3.common.openapi.{FicDetailsClient, KindleClient}
 import kapibarabanka.lo3.common.services.BotWithChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
@@ -49,7 +48,10 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
       case Buttons.rateFire.callbackData    => patchDetails(record.details.copy(fire = true), query)
       case Buttons.rateNotFire.callbackData => patchDetails(record.details.copy(fire = false), query)
 
-      case Buttons.addComment.callbackData => bot.answerCallbackQuery(query).map(_ => CommentBotState(record))
+      case Buttons.addComment.callbackData =>
+        for {
+          _ <- bot.answerCallbackQuery(query)
+        } yield CommentBotState(record)
 
       case Buttons.sendToKindle.callbackData => sendToKindle(query)
 
@@ -80,18 +82,9 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
 
   private def sendToKindle(query: CallbackQuery) =
     val action = for {
-      maybeEmail <- Lo3Api.run(UserClient.getEmail(bot.chatId))
-      nextState <- maybeEmail match
-        case None =>
-          bot
-            .answerCallbackQuery(query, text = Some(ErrorMessage.noKindleEmail))
-            .map(_ => currentState.withoutStartup)
-        case Some(email) =>
-          record.fic.ficType match
-            case FicType.Work => bot.answerCallbackQuery(query).map(_ => SendToKindleBotState(record, email))
-            case FicType.Series =>
-              bot
-                .answerCallbackQuery(query, text = Some(ErrorMessage.seriesToKindle))
-                .map(_ => currentState.withoutStartup)
-    } yield nextState
-    action |> sendOnError("getting user Kindle email")
+      _ <- Lo3Api.run(KindleClient.sendToKindle(record.key, true))
+      _ <- bot.sendText("Sent to Kindle! You can check the progress <a href=\"https://www.amazon.com/sendtokindle\">here</a>")
+      updatedRecord <- Lo3Api.run(FicDetailsClient.getUserFicByKey(record.key))
+      _             <- bot.answerCallbackQuery(query)
+    } yield ExistingFicBotState(updatedRecord, true)
+    action |> sendOnError("sending fic to email")

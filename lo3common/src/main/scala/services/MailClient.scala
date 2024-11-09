@@ -1,5 +1,5 @@
-package kapibarabanka.lo3.bot
-package utils
+package kapibarabanka.lo3.common
+package services
 
 import java.io.File
 import java.util.Properties

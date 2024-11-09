@@ -64,9 +64,8 @@ class Lo3bot(bot: MyBotApi, api: Lo3Api)(implicit
   private def getStateProcessor(currentState: BotState, chatId: String) =
     val botWithChatId = BotWithChatId(chatId, bot)
     currentState match
-      case state: CommentBotState      => CommentStateProcessor(state, botWithChatId)
-      case state: ExistingFicBotState  => ExistingFicStateProcessor(state, botWithChatId)
-      case state: SendToKindleBotState => SendToKindleStateProcessor(state, botWithChatId)
-      case state: StartBotState        => StartStateProcessor(state, botWithChatId)
-      case state: SetEmailBotState     => SetEmailStateProcessor(state, botWithChatId)
-      case state: FeedbackBotState     => FeedbackStateProcessor(state, botWithChatId)
+      case state: CommentBotState     => CommentStateProcessor(state, botWithChatId)
+      case state: ExistingFicBotState => ExistingFicStateProcessor(state, botWithChatId)
+      case state: StartBotState       => StartStateProcessor(state, botWithChatId)
+      case state: SetEmailBotState    => SetEmailStateProcessor(state, botWithChatId)
+      case state: FeedbackBotState    => FeedbackStateProcessor(state, botWithChatId)

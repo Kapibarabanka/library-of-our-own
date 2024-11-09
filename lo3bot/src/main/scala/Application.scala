@@ -2,6 +2,7 @@ package kapibarabanka.lo3.bot
 
 import services.{Lo3Api, Lo3bot}
 
+import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.services.MyBotApi
 import zio.*
 import zio.interop.catz.*

@@ -1,6 +1,7 @@
 package kapibarabanka.lo3.bot
 package services
 
+import kapibarabanka.lo3.common.AppConfig
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.middleware.Logger
 import telegramium.bots.*

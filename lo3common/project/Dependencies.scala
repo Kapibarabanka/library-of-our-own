@@ -14,15 +14,17 @@ object Dependencies {
   }
 
   object zio {
-    val zio       = "dev.zio" %% "zio"              % "2.1.6"
-    val zioToCats = "dev.zio" %% "zio-interop-cats" % "23.1.0.2"
-    val zioHttp   = "dev.zio" %% "zio-http"         % "3.0.1"
-    val zioJson   = "dev.zio" %% "zio-json"         % "0.7.3"
+    val zio        = "dev.zio" %% "zio"              % "2.1.6"
+    val zioToCats  = "dev.zio" %% "zio-interop-cats" % "23.1.0.2"
+    val zioHttp    = "dev.zio" %% "zio-http"         % "3.0.1"
+    val zioJson    = "dev.zio" %% "zio-json"         % "0.7.3"
+    val zioProcess = "dev.zio" %% "zio-process"      % "0.7.2"
+
     val zioSchema: Seq[ModuleID] = Seq(
       "dev.zio" %% "zio-schema"            % V.zioSchema,
       "dev.zio" %% "zio-schema-derivation" % V.zioSchema
     )
-    val all: Seq[ModuleID] = Seq(zio, zioToCats, zioHttp, zioJson) ++ zioSchema
+    val all: Seq[ModuleID] = Seq(zio, zioToCats, zioHttp, zioJson, zioProcess) ++ zioSchema
   }
 
   object sqlite {

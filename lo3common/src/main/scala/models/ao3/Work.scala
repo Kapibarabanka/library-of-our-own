@@ -22,7 +22,7 @@ case class Work(
     comments: Option[Int],
     kudos: Option[Int],
     hits: Option[Int],
-    bookmarks: Option[Int]
+    bookmarks: Option[Int],
 ):
   val complete: Boolean = chaptersPlanned match
     case Some(planned) => chaptersWritten >= planned

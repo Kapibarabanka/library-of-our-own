@@ -4,12 +4,21 @@ package services
 import telegramium.bots.Message
 import zio.{UIO, ZIO}
 
-case class OptionalLog(api: MyBotApi, chatId: String, needToLog: Boolean, message: Option[Message]):
-  def edit(logText: String): UIO[Unit] = if (needToLog) api.editLogText(chatId)(message, logText).unit else ZIO.unit
+sealed trait OptionalLog:
+  def edit(logText: String): UIO[Unit]
+  def delete: UIO[Unit]
 
-  def delete: UIO[Unit] = if (needToLog && message.nonEmpty) api.deleteMessage(chatId)(message.get) else ZIO.unit
+case class LogMessage(api: MyBotApi, chatId: String, message: Option[Message]) extends OptionalLog:
+  def edit(logText: String): UIO[Unit] = api.editLogText(chatId)(message, logText).unit
 
-object OptionalLog:
-  def create(logText: String, api: MyBotApi, chatId: String, needToLog: Boolean): UIO[OptionalLog] = for {
-    message <- if (needToLog) api.sendText(chatId)(logText) else ZIO.succeed(None)
-  } yield OptionalLog(api, chatId, needToLog, message)
+  def delete: UIO[Unit] = if (message.nonEmpty) api.deleteMessage(chatId)(message.get) else ZIO.unit
+
+object LogMessage:
+  def create(logText: String, api: MyBotApi, chatId: String): UIO[OptionalLog] = for {
+    message <- api.sendText(chatId)(logText)
+  } yield LogMessage(api, chatId, message)
+
+case class EmptyLog() extends OptionalLog:
+  override def edit(logText: String): UIO[Unit] = ZIO.unit
+
+  override def delete: UIO[Unit] = ZIO.unit

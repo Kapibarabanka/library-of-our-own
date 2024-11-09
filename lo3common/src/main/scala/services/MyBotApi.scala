@@ -23,6 +23,7 @@ trait MyBotApi:
   def answerCallbackQuery(query: CallbackQuery, text: Option[String] = None): UIO[Unit]
   def getFile(id: String): UIO[Option[File]]
   def sendDocument(chatId: String)(file: IFile): IO[CantSendDocument, Message]
+  def removeMarkup(chatId: String)(message: Message): UIO[Unit]
 
 case class MyBotApiImpl(baseApi: Api[Task]) extends MyBotApi:
   implicit val botImplicit: Api[Task] = baseApi
@@ -50,6 +51,13 @@ case class MyBotApiImpl(baseApi: Api[Task]) extends MyBotApi:
   override def editLogText(chatId: String)(startMsg: Option[Message], text: String): UIO[Option[Message]] = startMsg match
     case Some(msg) => editMessage(chatId)(msg, MessageData(text))
     case None      => sendText(chatId)(text)
+
+  override def removeMarkup(chatId: String)(message: Message): UIO[Unit] =
+    telegramium.bots.high.Methods
+      .editMessageReplyMarkup(chatId = Some(ChatStrId(chatId)), messageId = Some(message.messageId))
+      .exec |> logCritical(
+      "REMOVING MESSAGE MARKUP "
+    ) map (_ => ())
 
   override def editMessage(chatId: String)(startMsg: Message, msg: MessageData): UIO[Option[Message]] =
     telegramium.bots.high.Methods

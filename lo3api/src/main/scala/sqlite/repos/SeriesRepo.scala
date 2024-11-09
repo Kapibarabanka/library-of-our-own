@@ -14,6 +14,9 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
   private val series        = TableQuery[SeriesTable]
   private val seriesToWorks = TableQuery[SeriesToWorksTable]
 
+  def exists(id: String): ZIO[Any, String, Boolean] =
+    db.run(series.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)
+
   def add(s: Series): IO[String, FlatFicModel] = {
     for {
       maybeWorks <- ZIO.collectAll(s.works.map(w => works.exists(w.id).map(exists => if (exists) None else Some(w))))
@@ -31,6 +34,13 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
       flatFic <- getById(s.id).map(_.get)
     } yield flatFic
   }
+
+  def workIds(id: String) = for {
+    workIdsWithPositions <- db.run(seriesToWorks.filter(_.seriesId === id).map(d => (d.workId, d.positionInSeries)).result)
+    workIds              <- ZIO.succeed(workIdsWithPositions.sortBy(_._2).map(_._1))
+  } yield workIds.toList
+
+  def title(id: String) = db.run(series.filter(_.id === id).map(_.title).result).map(_.headOption)
 
   def getById(id: String): IO[String, Option[FlatFicModel]] = for {
     docs <- db.run(series.filter(_.id === id).result)

@@ -1,5 +1,35 @@
 FROM sbtscala/scala-sbt:eclipse-temurin-jammy-17.0.10_7_1.10.1_3.4.2
 
+# Install prerequisites
+RUN apt update && \
+    apt install -y --no-install-recommends \
+                  # Calibre deps
+                  ca-certificates \
+                  curl \
+                  gnupg2 \
+                  xz-utils \
+                  python2 \
+                  # QTWebEngine deps
+                  libxdamage-dev libxrandr-dev libxtst6 \
+                  # for kindle support
+                  xvfb \
+                  libegl1 \
+                  libopengl0 \
+                  libxkbcommon-x11-0 \
+                  libxcomposite-dev \
+                  # calibre 7
+                  libxcb-cursor0 \
+                  && rm -rf /var/lib/apt/lists/*
+
+# Install calibre
+RUN curl -s https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin
+
+# Install EpubMerge
+RUN curl -s -O https://plugins.calibre-ebook.com/169744.zip \
+    && calibre-customize -a 169744.zip \
+    && rm *.zip
+
+
 WORKDIR /app/lo3common
 
 COPY ../lo3common/build.sbt ./

@@ -4,6 +4,7 @@ package ao3scrapper
 import ao3scrapper.Ao3Error.*
 import ao3scrapper.internal.*
 
+import kapibarabanka.lo3.common.models.ao3
 import kapibarabanka.lo3.common.models.ao3.*
 import kapibarabanka.lo3.common.models.ao3.RelationshipType.*
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
@@ -22,6 +23,8 @@ trait Ao3:
   def freeformTag(nameInWork: String): IO[Ao3Error, FreeformTag]
   def getCanonicalTagName(tagName: String): IO[Ao3Error, Option[String]]
   def downloadLink(workId: String): IO[Ao3Error, String]
+  def seriesWorks(seriesId: String): IO[Ao3Error, List[String]]
+  def ficName(ficId: String, ficType: FicType): IO[Ao3Error, String]
 
 case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
   private val getTagsFromClient = true
@@ -68,6 +71,12 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
     )
     _ <- ZIO.log(s"Parsed work: $work")
   } yield work
+
+  override def seriesWorks(seriesId: String): IO[Ao3Error, List[String]] = for {
+    _        <- ZIO.log(s"Parsing works ids of series with id '$seriesId'")
+    pageDocs <- getSeriesPageDocs(seriesId)
+    workDocs <- ZIO.succeed(pageDocs.flatMap(_.works))
+  } yield workDocs.map(_.id)
 
   override def series(id: String): IO[Ao3Error, Series] = for {
     _               <- ZIO.log(s"Parsing series with id '$id'")
@@ -183,6 +192,10 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
     doc  <- getWorkDoc(workId)
     link <- doc.mobiLink.fold[IO[Ao3Error, String]](ZIO.fail(DownloadLinkNotFound(workId)))(s => ZIO.succeed(s))
   } yield Ao3Url.download(link)
+
+  override def ficName(ficId: String, ficType: FicType): IO[Ao3Error, String] = ficType match
+    case FicType.Work   => getWorkDoc(ficId).map(doc => doc.title)
+    case FicType.Series => getSeriesPageDocs(ficId).map(docs => docs.head.title)
 
   private def canonize[TTag](tagNames: Seq[String])(
       canonize: String => IO[Ao3Error, TTag]

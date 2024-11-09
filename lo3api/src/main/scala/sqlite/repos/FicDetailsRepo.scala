@@ -21,6 +21,9 @@ class FicDetailsRepo(db: Lo3Db):
   def setBacklog(key: UserFicKey, value: Boolean): IO[String, Unit] =
     db.run(filterDetails(key).map(d => d.backlog).update(value)).unit
 
+  def setOnKindle(key: UserFicKey, value: Boolean): IO[String, Unit] =
+    db.run(filterDetails(key).map(d => d.isOnKindle).update(value)).unit
+
   def addUserFicRecord(key: UserFicKey): IO[String, FicDetails] = for {
     _ <- db.run(
       ficsDetails += FicDetailsDoc(
