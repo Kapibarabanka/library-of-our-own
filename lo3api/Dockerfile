@@ -8,7 +8,7 @@ RUN apt update && \
                   curl \
                   gnupg2 \
                   xz-utils \
-                  python2 \
+                  python3 \
                   # QTWebEngine deps
                   libxdamage-dev libxrandr-dev libxtst6 \
                   # for kindle support
