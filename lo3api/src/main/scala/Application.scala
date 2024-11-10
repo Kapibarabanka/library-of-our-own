@@ -28,7 +28,7 @@ object Application extends ZIOAppDefault {
 
   def run: ZIO[Any, Throwable, Unit] = serve.provide(
     Ao3.live(AppConfig.ao3Login, AppConfig.ao3Password),
-    Server.default,
+    Server.defaultWithPort(8090),
     Client.default,
     Scope.default,
     MyBotApi.layer(s"https://api.telegram.org/bot${AppConfig.mainBotToken}")
