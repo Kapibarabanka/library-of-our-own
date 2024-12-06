@@ -10,6 +10,7 @@ object AppConfig:
 
   val senderEmail: String    = sys.env("SENDER_EMAIL")
   val senderPassword: String = sys.env("SENDER_PASSWORD")
+  val tempDir: String        = sys.env("FICS_TEMP_PATH")
 
   val dbPath: String   = sys.env("DB_PATH")
   val ficsPath: String = sys.env("DOWNLOADED_FICS")
