@@ -7,12 +7,17 @@ import zio.http.netty.NettyConfig
 import zio.*
 
 trait Lo3Api:
-  def run[P, I, TOutput](endpoint: Invocation[P, I, String, TOutput, zio.http.endpoint.AuthType.None]): IO[Throwable, TOutput]
+  def run[P, I, TOutput, TError](
+      endpoint: Invocation[P, I, TError, TOutput, zio.http.endpoint.AuthType.None]
+  ): IO[TError, TOutput]
 
 case class Lo3ApiImpl(url: String, client: Client) extends Lo3Api:
   private val executor = EndpointExecutor(client, EndpointLocator.fromURL(URL.decode(url).getOrElse(URL.empty)))
-  def run[P, I, TOutput](endpoint: Invocation[P, I, String, TOutput, zio.http.endpoint.AuthType.None]): IO[Throwable, TOutput] =
-    executor(endpoint).provide(Scope.default).mapError(s => Exception(s))
+
+  def run[P, I, TOutput, TError](
+      endpoint: Invocation[P, I, TError, TOutput, zio.http.endpoint.AuthType.None]
+  ): IO[TError, TOutput] =
+    executor(endpoint).provide(Scope.default)
 
 object Lo3Api:
   private val clientConfig = ZClient.Config.default.idleTimeout(5.minutes)
@@ -28,9 +33,9 @@ object Lo3Api:
     ZLayer.succeed(NettyConfig.default),
     DnsResolver.default
   )
-  def run[P, I, TOutput](
-      endpoint: Invocation[P, I, String, TOutput, zio.http.endpoint.AuthType.None]
-  ): ZIO[Lo3Api, Throwable, TOutput] =
+  def run[P, I, TOutput, TError](
+      endpoint: Invocation[P, I, TError, TOutput, zio.http.endpoint.AuthType.None]
+  ): ZIO[Lo3Api, TError, TOutput] =
     ZIO.serviceWithZIO[Lo3Api](_.run(endpoint))
 
 end Lo3Api

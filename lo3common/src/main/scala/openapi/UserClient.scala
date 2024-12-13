@@ -1,6 +1,8 @@
 package kapibarabanka.lo3.common
 package openapi
 
+import models.domain.Lo3Error
+
 import scalaz.Scalaz.ToIdOps
 import zio.http.*
 import zio.http.codec.HttpCodec
@@ -13,24 +15,24 @@ object UserClient extends MyClient:
   val add = endpoint(Method.POST, string("userId"))
     .query(HttpCodec.query[String]("username").optional)
     .out[Unit]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
 
   val allIds = endpoint(Method.GET, "allIds")
     .out[List[String]]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
 
   val setEmail = endpoint(Method.PATCH, string("userId") / "email")
     .query(HttpCodec.query[String]("email"))
     .out[Unit]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
 
   val getEmail = endpoint(Method.GET, string("userId") / "email")
     .out[Option[String]]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
   
   val backlog = (endpoint(Method.GET, string("userId") / "backlog")
     .query(HttpCodec.query[Boolean]("needToLog"))
     .out[String]
-    |> withStringError)
+    .outError[Lo3Error](Status.InternalServerError))
 
   override val allEndpoints = List(add, allIds, setEmail, getEmail, backlog)

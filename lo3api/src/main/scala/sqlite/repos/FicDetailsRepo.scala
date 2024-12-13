@@ -5,7 +5,7 @@ import sqlite.docs.FicDetailsDoc
 import sqlite.services.Lo3Db
 import sqlite.tables.FicsDetailsTable
 
-import kapibarabanka.lo3.common.models.domain.{FicDetails, UserFicKey}
+import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
@@ -14,17 +14,17 @@ import java.time.LocalDate
 class FicDetailsRepo(db: Lo3Db):
   private val ficsDetails = TableQuery[FicsDetailsTable]
 
-  def getUserBacklog(userId: String): IO[String, List[UserFicKey]] = for {
+  def getUserBacklog(userId: String): IO[DbError, List[UserFicKey]] = for {
     docs <- db.run(ficsDetails.filter(doc => doc.userId === userId && doc.backlog === true).result)
   } yield docs.map(doc => UserFicKey.fromBool(doc.userId, doc.ficId, doc.ficIsSeries)).toList
 
-  def setBacklog(key: UserFicKey, value: Boolean): IO[String, Unit] =
+  def setBacklog(key: UserFicKey, value: Boolean): IO[DbError, Unit] =
     db.run(filterDetails(key).map(d => d.backlog).update(value)).unit
 
-  def setOnKindle(key: UserFicKey, value: Boolean): IO[String, Unit] =
+  def setOnKindle(key: UserFicKey, value: Boolean): IO[DbError, Unit] =
     db.run(filterDetails(key).map(d => d.isOnKindle).update(value)).unit
 
-  def addUserFicRecord(key: UserFicKey): IO[String, FicDetails] = for {
+  def addUserFicRecord(key: UserFicKey): IO[DbError, FicDetails] = for {
     _ <- db.run(
       ficsDetails += FicDetailsDoc(
         id = None,
@@ -41,11 +41,11 @@ class FicDetailsRepo(db: Lo3Db):
     maybeDetails <- getDetailsOption(key)
   } yield maybeDetails.get
 
-  def getDetailsOption(key: UserFicKey): IO[String, Option[FicDetails]] = for {
+  def getDetailsOption(key: UserFicKey): IO[DbError, Option[FicDetails]] = for {
     docs <- db.run(filterDetails(key).result)
   } yield docs.headOption.map(_.toModel)
 
-  def getOrCreateDetails(key: UserFicKey): IO[String, FicDetails] = for {
+  def getOrCreateDetails(key: UserFicKey): IO[DbError, FicDetails] = for {
     maybeDetails <- getDetailsOption(key)
     details <- maybeDetails match
       case Some(value) => ZIO.succeed(value)

@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package ao3scrapper
 
-import ao3scrapper.Ao3Error.*
+import kapibarabanka.lo3.common.models.ao3.Ao3Error.*
 import ao3scrapper.internal.*
 
 import kapibarabanka.lo3.common.models.ao3

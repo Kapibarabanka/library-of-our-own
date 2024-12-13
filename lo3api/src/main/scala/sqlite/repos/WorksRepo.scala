@@ -6,7 +6,7 @@ import sqlite.services.Lo3Db
 import sqlite.tables.*
 
 import kapibarabanka.lo3.common.models.ao3.{Fandom, FicType, Rating, Work}
-import kapibarabanka.lo3.common.models.domain.FlatFicModel
+import kapibarabanka.lo3.common.models.domain.{DbError, FlatFicModel}
 import scalaz.Scalaz.ToIdOps
 import slick.dbio.Effect
 import slick.jdbc.PostgresProfile.api.*
@@ -26,12 +26,12 @@ class WorksRepo(db: Lo3Db):
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
 
-  def exists(id: String): ZIO[Any, String, Boolean] =
+  def exists(id: String): IO[DbError, Boolean] =
     db.run(works.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)
 
   def title(id: String) = db.run(works.filter(_.id === id).map(_.title).result).map(_.headOption)
 
-  def add(work: Work): IO[String, FlatFicModel] =
+  def add(work: Work): IO[DbError, FlatFicModel] =
     db.run(DBIO.sequence(getAddingAction(work)).transactionally).flatMap(_ => getById(work.id).map(_.get))
 
   def getAddingAction(work: Work): List[DBIOAction[Any, NoStream, Effect.Write & Effect.Read]] = {
@@ -57,14 +57,14 @@ class WorksRepo(db: Lo3Db):
     )
   }
 
-  def getById(workId: String): IO[String, Option[FlatFicModel]] = for {
+  def getById(workId: String): IO[DbError, Option[FlatFicModel]] = for {
     docs <- db.run(works.filter(_.id === workId).result)
     maybeDisplayModel <- docs.headOption match
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
-  def getAll: IO[String, List[FlatFicModel]] = for {
+  def getAll: IO[DbError, List[FlatFicModel]] = for {
     docs   <- db.run(works.result)
     models <- ZIO.collectAll(docs.map(docToModel))
   } yield models.toList

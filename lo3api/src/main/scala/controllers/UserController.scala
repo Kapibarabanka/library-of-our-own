@@ -3,7 +3,7 @@ package controllers
 
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3.FicType
-import kapibarabanka.lo3.common.models.domain.{UserFicKey, UserFicRecord}
+import kapibarabanka.lo3.common.models.domain.{Lo3Error, UnspecifiedError, UserFicKey, UserFicRecord}
 import kapibarabanka.lo3.common.openapi.UserClient
 import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MyBotApi}
 import zio.*
@@ -28,19 +28,19 @@ protected[api] case class UserController(client: Client, bot: MyBotApi) extends 
         .request(
           Request.post(AppConfig.htmlApi, Body.fromString(BacklogRequest.fromRecords(records).toJson))
         )
-        .mapError(e => e.getMessage)
-      result <- response.body.asString.mapError(e => e.getMessage)
+        .mapError(e => UnspecifiedError(e.getMessage))
+      result <- response.body.asString.mapError(e => UnspecifiedError(e.getMessage))
       _      <- log.delete
     } yield result).provide(Scope.default)
   }
 
-  private def getUserFicInternal(key: UserFicKey): IO[String, UserFicRecord] = for {
+  private def getUserFicInternal(key: UserFicKey): IO[Lo3Error, UserFicRecord] = for {
     maybeFic <- key.ficType match
       case FicType.Work   => data.works.getById(key.ficId)
       case FicType.Series => data.series.getById(key.ficId)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
-      case None      => ZIO.fail("")
+      case None      => ZIO.fail(UnspecifiedError("Shouldn't be possible :)"))
     details       <- data.details.getOrCreateDetails(key)
     readDatesInfo <- data.readDates.getReadDatesInfo(key)
     comments      <- data.comments.getAllComments(key)

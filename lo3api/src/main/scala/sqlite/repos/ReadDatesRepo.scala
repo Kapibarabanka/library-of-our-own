@@ -6,7 +6,7 @@ import sqlite.docs.ReadDatesDoc
 import sqlite.services.Lo3Db
 import sqlite.tables.ReadDatesTable
 
-import kapibarabanka.lo3.common.models.domain.{ReadDatesInfo, UserFicKey}
+import kapibarabanka.lo3.common.models.domain.{DbError, ReadDatesInfo, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
@@ -15,7 +15,7 @@ import java.time.LocalDate
 class ReadDatesRepo(db: Lo3Db):
   private val readDates = TableQuery[ReadDatesTable]
 
-  def getReadDatesInfo(key: UserFicKey): IO[String, ReadDatesInfo] = for {
+  def getReadDatesInfo(key: UserFicKey): IO[DbError, ReadDatesInfo] = for {
     dates     <- db.run(filterDates(key).sortBy(_.id).result)
     maybeLast <- ZIO.succeed[Option[ReadDatesDoc]](dates.lastOption)
   } yield ReadDatesInfo(
@@ -26,11 +26,11 @@ class ReadDatesRepo(db: Lo3Db):
     canCancelFinish = canCancelFinish(maybeLast)
   )
 
-  def addStartDate(key: UserFicKey, startDate: String): IO[String, Unit] = for {
+  def addStartDate(key: UserFicKey, startDate: String): IO[DbError, Unit] = for {
     _ <- db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, Some(startDate), None))
   } yield ()
 
-  def addFinishDate(key: UserFicKey, endDate: String): IO[String, Unit] =
+  def addFinishDate(key: UserFicKey, endDate: String): IO[DbError, Unit] =
     for {
       startDates <- db.run(
         filterDates(key)
@@ -43,12 +43,12 @@ class ReadDatesRepo(db: Lo3Db):
         case None => db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, None, Some(endDate)))
     } yield ()
 
-  def cancelStartedToday(key: UserFicKey): IO[String, Unit] = for {
+  def cancelStartedToday(key: UserFicKey): IO[DbError, Unit] = for {
     maybeLast <- db.run(lastDatesRecord(key).result).map(_.headOption)
     _         <- if (canCancelStart(maybeLast)) db.run(readDates.filter(d => d.id === maybeLast.get.id).delete).unit else ZIO.unit
   } yield ()
 
-  def cancelFinishedToday(key: UserFicKey): IO[String, Unit] = for {
+  def cancelFinishedToday(key: UserFicKey): IO[DbError, Unit] = for {
     maybeLast <- db.run(lastDatesRecord(key).result).map(_.headOption)
     _ <-
       if (canCancelFinish(maybeLast))

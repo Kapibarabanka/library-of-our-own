@@ -6,7 +6,7 @@ import sqlite.services.Lo3Db
 import sqlite.tables.{SeriesTable, SeriesToWorksTable}
 
 import kapibarabanka.lo3.common.models.ao3.{FicType, Series}
-import kapibarabanka.lo3.common.models.domain.FlatFicModel
+import kapibarabanka.lo3.common.models.domain.{DbError, FlatFicModel}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
@@ -14,10 +14,10 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
   private val series        = TableQuery[SeriesTable]
   private val seriesToWorks = TableQuery[SeriesToWorksTable]
 
-  def exists(id: String): ZIO[Any, String, Boolean] =
+  def exists(id: String): IO[DbError, Boolean] =
     db.run(series.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)
 
-  def add(s: Series): IO[String, FlatFicModel] = {
+  def add(s: Series): IO[DbError, FlatFicModel] = {
     for {
       maybeWorks <- ZIO.collectAll(s.works.map(w => works.exists(w.id).map(exists => if (exists) None else Some(w))))
       newWorks   <- ZIO.succeed(maybeWorks.flatten)
@@ -42,14 +42,14 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
 
   def title(id: String) = db.run(series.filter(_.id === id).map(_.title).result).map(_.headOption)
 
-  def getById(id: String): IO[String, Option[FlatFicModel]] = for {
+  def getById(id: String): IO[DbError, Option[FlatFicModel]] = for {
     docs <- db.run(series.filter(_.id === id).result)
     maybeDisplayModel <- docs.headOption match
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
-  def getAll: IO[String, List[FlatFicModel]] = for {
+  def getAll: IO[DbError, List[FlatFicModel]] = for {
     docs   <- db.run(series.result)
     models <- ZIO.collectAll(docs.map(docToModel))
   } yield models.toList

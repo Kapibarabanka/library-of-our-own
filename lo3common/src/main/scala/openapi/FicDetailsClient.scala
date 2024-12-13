@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.common
 package openapi
 
-import models.domain.{FicComment, FicDetails, UserFicRecord}
+import models.domain.{FicComment, FicDetails, Lo3Error, UserFicRecord}
 
 import scalaz.Scalaz.ToIdOps
 import zio.http.*
@@ -16,40 +16,41 @@ object FicDetailsClient extends MyClient:
     .query(HttpCodec.query[String]("userId"))
     .query(HttpCodec.query[Boolean]("needToLog"))
     .out[UserFicRecord]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
 
   val getUserFicByKey = endpoint(Method.GET, "user-details-by-key")
     .out[UserFicRecord]
-    |> withStringError |> withKey
+    .outError[Lo3Error](Status.InternalServerError)
+    |> withKey
 
   val patchDetails = (endpoint(Method.PATCH, "patch-details")
     .out[UserFicRecord]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
     |> withKey).in[FicDetails]
 
   val addComment = (endpoint(Method.PATCH, "add-comment")
     .out[UserFicRecord]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
     |> withKey).in[FicComment]
 
   val startedToday = endpoint(Method.PATCH, "started-today")
     .out[UserFicRecord]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
   val finishedToday = endpoint(Method.PATCH, "finished-today")
     .out[UserFicRecord]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
   val cancelStartedToday = endpoint(Method.PATCH, "cancel-started-today")
     .out[UserFicRecord]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
   val cancelFinishedToday = endpoint(Method.PATCH, "cancel-finished-today")
     .out[UserFicRecord]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
   override val allEndpoints =

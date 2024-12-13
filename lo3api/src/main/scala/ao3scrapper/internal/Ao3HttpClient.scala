@@ -1,9 +1,7 @@
 package kapibarabanka.lo3.api
 package ao3scrapper.internal
 
-import ao3scrapper.Ao3Error
-import ao3scrapper.Ao3Error.*
-
+import kapibarabanka.lo3.common.models.ao3.*
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*

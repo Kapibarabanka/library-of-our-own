@@ -5,7 +5,7 @@ import ao3scrapper.Ao3
 
 import kapibarabanka.lo3.common.models.ao3
 import kapibarabanka.lo3.common.models.ao3.{Ao3Url, FicType, Series, Work}
-import kapibarabanka.lo3.common.models.domain.{FlatFicModel, UserFicKey, UserFicRecord}
+import kapibarabanka.lo3.common.models.domain.{DbError, FlatFicModel, Lo3Error, NotAo3Link, UserFicKey, UserFicRecord}
 import kapibarabanka.lo3.common.openapi.FicDetailsClient
 import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MyBotApi, OptionalLog}
 import zio.*
@@ -16,7 +16,7 @@ import java.time.LocalDate
 protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends Controller:
   val getUserFic = FicDetailsClient.getUserFic.implement { (ficLink, userId, needToLog) =>
     Ao3Url.tryParseFicLink(ficLink) match
-      case None => ZIO.fail(s"$ficLink is not a parsable AO3 link")
+      case None => ZIO.fail(NotAo3Link(ficLink))
       case Some((ficId, ficType)) =>
         for {
           log    <- if (needToLog) LogMessage.create("Working on it...", bot, userId) else ZIO.succeed(EmptyLog())
@@ -70,7 +70,7 @@ protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends 
     } yield patchedRecord
   }
 
-  private def getUserFicInternal(key: UserFicKey, log: OptionalLog = EmptyLog()): IO[String, UserFicRecord] = for {
+  private def getUserFicInternal(key: UserFicKey, log: OptionalLog = EmptyLog()): IO[Lo3Error, UserFicRecord] = for {
     maybeFic <- key.ficType match
       case FicType.Work   => data.works.getById(key.ficId)
       case FicType.Series => data.series.getById(key.ficId)
@@ -88,7 +88,7 @@ protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends 
     details = details
   )
 
-  private def parseFicAndSave(ficId: String, ficType: FicType, log: OptionalLog): IO[String, FlatFicModel] =
+  private def parseFicAndSave(ficId: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, FlatFicModel] =
     for {
       _            <- log.edit("Parsing AO3...")
       workOrSeries <- parseFic(ficId, ficType)
@@ -98,9 +98,9 @@ protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends 
         case series: Series => data.series.add(series)
     } yield fic
 
-  private def parseFic(ficId: String, ficType: FicType): IO[String, Work | Series] = ficType match
-    case FicType.Work   => ao3.work(ficId).mapError(e => e.getMessage)
-    case FicType.Series => ao3.series(ficId).mapError(e => e.getMessage)
+  private def parseFic(ficId: String, ficType: FicType): IO[Lo3Error, Work | Series] = ficType match
+    case FicType.Work   => ao3.work(ficId).mapError(e => Lo3Error.fromAo3Error(e))
+    case FicType.Series => ao3.series(ficId).mapError(e => Lo3Error.fromAo3Error(e))
 
   override val routes: List[Route[Any, Response]] =
     List(

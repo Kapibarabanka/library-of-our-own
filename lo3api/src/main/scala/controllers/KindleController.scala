@@ -6,6 +6,7 @@ import ao3scrapper.Ao3
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3
 import kapibarabanka.lo3.common.models.ao3.FicType
+import kapibarabanka.lo3.common.models.domain.{EmailError, KindleEmailNotSet, Lo3Error, UnspecifiedError}
 import kapibarabanka.lo3.common.openapi.KindleClient
 import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MailClient, MyBotApi, OptionalLog}
 import zio.http.*
@@ -26,13 +27,13 @@ case class KindleController(ao3: Ao3, bot: MyBotApi) extends Controller:
     for {
       log        <- if (needToLog) LogMessage.create("Working on it...", bot, key.userId) else ZIO.succeed(EmptyLog())
       ficTitle   <- getTitle(key.ficId, key.ficType)
-      fileName   <- saveFic(key.ficId, key.ficType, ficTitle, log).mapError(e => e.getMessage)
+      fileName   <- saveFic(key.ficId, key.ficType, ficTitle, log)
       _          <- log.edit("Sending to Kindle...")
       maybeEmail <- data.users.getKindleEmail(key.userId)
       email <- maybeEmail match
         case Some(value) => ZIO.succeed(value)
-        case None        => ZIO.fail("Kindle email is not set")
-      _ <- ZIO.attempt(MailClient.sendFile(File(fileName), ficTitle + ".epub", email)).mapError(e => e.getMessage)
+        case None        => ZIO.fail(KindleEmailNotSet())
+      _ <- ZIO.attempt(MailClient.sendFile(File(fileName), ficTitle + ".epub", email)).mapError(e => EmailError(e.getMessage))
       _ <- data.details.setOnKindle(key, true)
       _ <- log.delete
     } yield ()
@@ -42,11 +43,11 @@ case class KindleController(ao3: Ao3, bot: MyBotApi) extends Controller:
     for {
       ficTypeMapped <- ZIO.succeed(FicType.valueOf(ficType.toLowerCase.capitalize))
       ficTitle      <- getTitle(ficId, ficTypeMapped)
-      result        <- saveFic(ficId, ficTypeMapped, ficTitle, EmptyLog()).mapError(e => e.getMessage)
+      result        <- saveFic(ficId, ficTypeMapped, ficTitle, EmptyLog())
     } yield result
   }
 
-  private def saveFic(id: String, ficType: FicType, ficTitle: String, log: OptionalLog): IO[Throwable, String] =
+  private def saveFic(id: String, ficType: FicType, ficTitle: String, log: OptionalLog): IO[Lo3Error, String] =
     val (_, epubFileName) = fileNames(id, ficType)
     val action =
       if (!File(epubFileName).exists())
@@ -55,7 +56,7 @@ case class KindleController(ao3: Ao3, bot: MyBotApi) extends Controller:
           case FicType.Series => saveSeries(id, log, ficTitle)
       else
         ZIO.unit
-    action.map(_ => epubFileName)
+    action.map(_ => epubFileName).mapError(e => UnspecifiedError(e.getMessage))
 
   private def saveWork(id: String, log: OptionalLog): IO[Throwable, Unit] =
     val (mobi, epub) = fileNames(id, FicType.Work)
@@ -98,7 +99,7 @@ case class KindleController(ao3: Ao3, bot: MyBotApi) extends Controller:
       case FicType.Series => data.series.title(ficId)
     title <- maybeTitle match
       case Some(value) => ZIO.succeed(value)
-      case None        => ao3.ficName(ficId, ficType).mapError(e => e.getMessage)
+      case None        => ao3.ficName(ficId, ficType).mapError(e => Lo3Error.fromAo3Error(e))
   } yield title
 
   override val routes: List[Route[Any, Response]] = List(saveToFile, sendToKindle)

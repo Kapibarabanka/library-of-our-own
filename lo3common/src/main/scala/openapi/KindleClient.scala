@@ -1,8 +1,10 @@
 package kapibarabanka.lo3.common
 package openapi
 
+import models.domain.Lo3Error
+
 import scalaz.Scalaz.ToIdOps
-import zio.http.Method
+import zio.http.*
 import zio.http.codec.HttpCodec
 
 object KindleClient extends MyClient:
@@ -10,7 +12,7 @@ object KindleClient extends MyClient:
 
   val sendToKindle = (endpoint(Method.POST, "send-to-kindle")
     .out[Unit]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
     |> withKey)
     .query(HttpCodec.query[Boolean]("needToLog"))
 
@@ -18,6 +20,6 @@ object KindleClient extends MyClient:
     .query(HttpCodec.query[String]("ficId"))
     .query(HttpCodec.query[String]("ficType"))
     .out[String]
-    |> withStringError
+    .outError[Lo3Error](Status.InternalServerError)
 
   override val allEndpoints = List(sendToKindle, saveToFile)

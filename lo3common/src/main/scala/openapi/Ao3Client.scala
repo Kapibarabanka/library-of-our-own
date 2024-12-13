@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.common
 package openapi
 
-import models.ao3.{Series, Work}
+import models.ao3.{Ao3Error, Series, Work}
 
 import scalaz.Scalaz.ToIdOps
 import zio.http.*
@@ -13,21 +13,21 @@ object Ao3Client extends MyClient:
 
   val workById = endpoint(Method.POST, "work" / string("workId"))
     .out[Work]
-    |> withStringError
+    .outError[Ao3Error](Status.InternalServerError)
 
   val seriesById = endpoint(Method.POST, "series" / string("seriesId"))
     .out[Series]
-    |> withStringError
+    .outError[Ao3Error](Status.InternalServerError)
 
   val ficByLink = endpoint(Method.POST, "fic")
     .in[String]
     .out[Work]
     .out[Series]
-    |> withStringError
+    .outError[Ao3Error](Status.InternalServerError)
 
   val downloadLink = endpoint(Method.GET, "download-link")
     .query(HttpCodec.query[String]("workId"))
     .out[String]
-    |> withStringError
+    .outError[Ao3Error](Status.InternalServerError)
 
   override val allEndpoints = List(ficByLink, workById, seriesById, downloadLink)
