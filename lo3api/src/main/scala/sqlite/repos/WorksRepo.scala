@@ -6,7 +6,8 @@ import sqlite.services.Lo3Db
 import sqlite.tables.*
 
 import kapibarabanka.lo3.common.models.ao3.{Fandom, FicType, Rating, Work}
-import kapibarabanka.lo3.common.models.domain.{DbError, FlatFicModel}
+import kapibarabanka.lo3.common.models.api.FicCard
+import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, FlatFicModel}
 import scalaz.Scalaz.ToIdOps
 import slick.dbio.Effect
 import slick.jdbc.PostgresProfile.api.*
@@ -25,6 +26,7 @@ class WorksRepo(db: Lo3Db):
   private val relationships     = TableQuery[RelationshipsTable]
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
+  private val ficDetails        = TableQuery[FicsDetailsTable]
 
   def exists(id: String): IO[DbError, Boolean] =
     db.run(works.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)
@@ -36,7 +38,7 @@ class WorksRepo(db: Lo3Db):
 
   def getAddingAction(work: Work): List[DBIOAction[Any, NoStream, Effect.Write & Effect.Read]] = {
     val fandomDocs = work.fandoms.map(FandomDoc.fromModel)
-    val tagDocs    = work.freeformTags.map(TagDoc.fromModel)
+    val tagDocs    = work.freeformTags.distinct.map(TagDoc.fromModel)
     val shipsWithCharacters =
       work.relationships.map(r => (RelationshipDoc.fromModel(r), r.characters.map(CharacterDoc.fromModel)))
     val relationshipDocs = shipsWithCharacters.map((r, _) => r)
@@ -64,6 +66,62 @@ class WorksRepo(db: Lo3Db):
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
+  def getAllForUser(userId: String): IO[DbError, List[(FicDetails, FlatFicModel)]] =
+    val detailsQuery = ficDetails.filter(d => d.ficIsSeries === false && d.userId === userId)
+    for {
+      worksWithDetails <- db.run((for {
+        details <- detailsQuery
+        work    <- works if (work.id === details.ficId)
+      } yield (details, work)).result)
+      fandomsByWork <- db
+        .run((for {
+          details <- detailsQuery
+          fandom  <- worksToFandoms if (fandom.workId === details.ficId)
+        } yield (details, fandom)).result)
+        .map(seq => seq.groupMap((d, _) => d.ficId)((_, f) => f.fandom))
+      charactersByWork <- db
+        .run((for {
+          details   <- detailsQuery
+          character <- worksToCharacters if (character.workId === details.ficId)
+        } yield (details, character)).result)
+        .map(seq => seq.groupMap((d, _) => d.ficId)((_, c) => c.character))
+      shipsByWork <- db
+        .run((for {
+          details   <- detailsQuery
+          character <- worksToShips if (character.workId === details.ficId)
+        } yield (details, character)).result)
+        .map(seq => seq.groupMap((d, _) => d.ficId)((_, s) => s.shipName))
+      tagsByWork <- db
+        .run((for {
+          details <- detailsQuery
+          tag     <- worksToTags if (tag.workId === details.ficId)
+        } yield (details, tag)).result)
+        .map(seq => seq.groupMap((d, _) => d.ficId)((_, t) => t.tagName))
+      fics <- ZIO.succeed(
+        worksWithDetails.map((details, work) =>
+          (
+            details.toModel,
+            FlatFicModel(
+              id = work.id,
+              ficType = FicType.Work,
+              link = work.link,
+              title = work.title,
+              authors = work.authors.split(", ").toList,
+              rating = Rating.withName(work.rating),
+              categories = work.categories.split(", ").toSet,
+              warnings = work.warnings.split(", ").toSet,
+              fandoms = fandomsByWork.getOrElse(work.id, Seq()).toSet,
+              characters = charactersByWork.getOrElse(work.id, Seq()).toSet,
+              relationships = shipsByWork.getOrElse(work.id, Seq()).toList,
+              tags = tagsByWork.getOrElse(work.id, Seq()).toList.distinct,
+              words = work.words,
+              complete = work.complete
+            )
+          )
+        )
+      )
+    } yield fics.toList
+
   def getAll: IO[DbError, List[FlatFicModel]] = for {
     docs   <- db.run(works.result)
     models <- ZIO.collectAll(docs.map(docToModel))
@@ -82,10 +140,11 @@ class WorksRepo(db: Lo3Db):
     authors = doc.authors.split(", ").toList,
     rating = Rating.withName(doc.rating),
     categories = doc.categories.split(", ").toSet,
+    warnings = doc.warnings.split(", ").toSet,
     fandoms = fandoms.toSet,
     characters = characters.toSet,
     relationships = relationships.toList,
-    tags = tags.toList,
+    tags = tags.toList.distinct,
     words = doc.words,
     complete = doc.complete
   )

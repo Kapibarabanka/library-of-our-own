@@ -1,6 +1,7 @@
 package kapibarabanka.lo3.common
 package openapi
 
+import models.api.{FicsPage, FicsPageRequest}
 import models.domain.{FicComment, FicDetails, Lo3Error, UserFicRecord}
 
 import scalaz.Scalaz.ToIdOps
@@ -17,7 +18,7 @@ object FicDetailsClient extends MyClient:
     .query(HttpCodec.query[Boolean]("needToLog"))
     .out[UserFicRecord]
     .outError[Lo3Error](Status.InternalServerError)
-
+  
   val getUserFicByKey = endpoint(Method.GET, "user-details-by-key")
     .out[UserFicRecord]
     .outError[Lo3Error](Status.InternalServerError)

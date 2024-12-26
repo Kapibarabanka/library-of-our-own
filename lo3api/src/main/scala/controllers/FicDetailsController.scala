@@ -76,7 +76,11 @@ protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends 
       case FicType.Series => data.series.getById(key.ficId)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
-      case None      => parseFicAndSave(key.ficId, key.ficType, log)
+      case None =>
+        for {
+          f <- parseFicAndSave(key.ficId, key.ficType, log)
+          _ <- if (key.ficIsSeries) createDetailsForSeriesParts(key) else ZIO.unit
+        } yield f
     details       <- data.details.getOrCreateDetails(key)
     readDatesInfo <- data.readDates.getReadDatesInfo(key)
     comments      <- data.comments.getAllComments(key)
@@ -87,6 +91,11 @@ protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends 
     comments = comments,
     details = details
   )
+
+  private def createDetailsForSeriesParts(key: UserFicKey) = for {
+    ids <- data.series.workIds(key.ficId)
+    _   <- ZIO.collectAll(ids.map(id => data.details.getOrCreateDetails(UserFicKey(key.userId, id, FicType.Work))))
+  } yield ()
 
   private def parseFicAndSave(ficId: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, FlatFicModel] =
     for {

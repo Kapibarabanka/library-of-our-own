@@ -14,6 +14,12 @@ import java.time.LocalDate
 class FicDetailsRepo(db: Lo3Db):
   private val ficsDetails = TableQuery[FicsDetailsTable]
 
+  def getAllSeries(): IO[DbError, Seq[FicDetailsDoc]]  = db.run(ficsDetails.filter(_.ficIsSeries === true).result)
+
+  def getAllUserKeys(userId: String): IO[DbError, List[UserFicKey]] = for {
+    docs <- db.run(ficsDetails.result)
+  } yield docs.map(doc => UserFicKey.fromBool(doc.userId, doc.ficId, doc.ficIsSeries)).toList
+
   def getUserBacklog(userId: String): IO[DbError, List[UserFicKey]] = for {
     docs <- db.run(ficsDetails.filter(doc => doc.userId === userId && doc.backlog === true).result)
   } yield docs.map(doc => UserFicKey.fromBool(doc.userId, doc.ficId, doc.ficIsSeries)).toList

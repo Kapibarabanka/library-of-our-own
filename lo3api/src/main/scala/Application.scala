@@ -17,7 +17,13 @@ object Application extends ZIOAppDefault {
     bot    <- ZIO.service[MyBotApi]
     client <- ZIO.service[Client]
     controllers <- ZIO.succeed(
-      List(UserController(client, bot), FicDetailsController(ao3, bot), Ao3Controller(ao3), KindleController(ao3, bot))
+      List(
+        CardsController(),
+        UserController(client, bot),
+        FicDetailsController(ao3, bot),
+        Ao3Controller(ao3),
+        KindleController(ao3, bot)
+      )
     )
     swaggerRoutes <- ZIO.succeed(SwaggerUI.routes("api", Lo3API.openAPI))
     routes <- ZIO.succeed(

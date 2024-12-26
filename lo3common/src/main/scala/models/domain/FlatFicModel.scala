@@ -13,6 +13,7 @@ case class FlatFicModel(
     authors: List[String] = List(),
     rating: Rating.Value,
     categories: Set[String] = Set(),
+    warnings: Set[String] = Set(),
     fandoms: Set[String] = Set(),
     characters: Set[String] = Set(),
     relationships: List[String] = List(),

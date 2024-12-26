@@ -13,8 +13,6 @@ object ErrorMessage:
       case TooManyRequests()   => rateLimit
       case KindleEmailNotSet() => noKindleEmail
       case AuthFailed()        => authFailed
-//      case AuthFailed()      => authFailed
-//      case TooManyRequests() => rateLimit
       case _ => defaultMessage(error, actionName)
 
   private def defaultMessage(error: Throwable, actionName: String) = s"\nError happened while $actionName: ${error.getMessage}"

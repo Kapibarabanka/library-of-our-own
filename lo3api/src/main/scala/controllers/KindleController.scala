@@ -86,7 +86,7 @@ case class KindleController(ao3: Ao3, bot: MyBotApi) extends Controller:
       mergeProcess <- command.run
       output       <- mergeProcess.stdout.string
       _            <- mergeProcess.successfulExitCode.mapError(_ => Exception(output))
-      _            <- log.edit("Generating cover fot merged file...")
+      _            <- log.edit("Generating cover for merged file...")
       coverProcess <- Command("ebook-convert", mergedEpub, epub).run
       output       <- coverProcess.stdout.string
       _            <- coverProcess.successfulExitCode.mapError(_ => Exception(output))

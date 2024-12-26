@@ -3,16 +3,17 @@ package sqlite.repos
 
 import sqlite.docs.{SeriesDoc, SeriesToWorksDoc}
 import sqlite.services.Lo3Db
-import sqlite.tables.{SeriesTable, SeriesToWorksTable}
+import sqlite.tables.{FicsDetailsTable, SeriesTable, SeriesToWorksTable}
 
 import kapibarabanka.lo3.common.models.ao3.{FicType, Series}
-import kapibarabanka.lo3.common.models.domain.{DbError, FlatFicModel}
+import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, FlatFicModel}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
 class SeriesRepo(db: Lo3Db, works: WorksRepo):
   private val series        = TableQuery[SeriesTable]
   private val seriesToWorks = TableQuery[SeriesToWorksTable]
+  private val ficDetails    = TableQuery[FicsDetailsTable]
 
   def exists(id: String): IO[DbError, Boolean] =
     db.run(series.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)
@@ -49,6 +50,18 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
+  def getAllForUser(userId: String): IO[DbError, List[(FicDetails, FlatFicModel)]] = db
+    .run(
+      (for {
+        details <- ficDetails if (details.ficIsSeries === true && details.userId === userId)
+        s       <- series if (s.id === details.ficId)
+        // doctOModel can be modified to return all works together with series
+      } yield (details, s)).result
+    )
+    .flatMap(seq =>
+      ZIO.collectAll(seq.map((detailsDoc, seriesDoc) => docToModel(seriesDoc).map(work => (detailsDoc.toModel, work))).toList)
+    )
+
   def getAll: IO[DbError, List[FlatFicModel]] = for {
     docs   <- db.run(series.result)
     models <- ZIO.collectAll(docs.map(docToModel))
@@ -68,6 +81,7 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
     authors = doc.authors.split(", ").toList,
     rating = works.map(_.rating).maxBy(_.id),
     categories = works.flatMap(_.categories).toSet,
+    warnings = works.flatMap(_.warnings).toSet,
     fandoms = works.flatMap(_.fandoms).toSet,
     characters = works.flatMap(_.characters).toSet,
     relationships = works.flatMap(_.relationships).toList.distinct,
