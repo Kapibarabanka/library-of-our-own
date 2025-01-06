@@ -108,7 +108,8 @@ protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends 
     } yield fic
 
   private def parseFic(ficId: String, ficType: FicType): IO[Lo3Error, Work | Series] = ficType match
-    case FicType.Work   => ao3.work(ficId).mapError(e => Lo3Error.fromAo3Error(e))
+    case FicType.Work => ao3.work(ficId).mapError(e => Lo3Error.fromAo3Error(e))
+    // todo: first parse series with only work ids not whole works, if all works are already parsed don't parse them again
     case FicType.Series => ao3.series(ficId).mapError(e => Lo3Error.fromAo3Error(e))
 
   override val routes: List[Route[Any, Response]] =

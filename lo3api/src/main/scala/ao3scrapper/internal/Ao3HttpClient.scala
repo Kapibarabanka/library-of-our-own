@@ -94,7 +94,7 @@ protected[ao3scrapper] object Ao3HttpClientImpl {
       ownLayer(username, password),
       ZLayer.succeed(clientConfig),
       Client.live,
-      ZLayer.succeed(NettyConfig.default),
+      ZLayer.succeed(NettyConfig.default.copy(shutdownTimeoutDuration = Duration.fromSeconds(60))),
       DnsResolver.default
     )
 }

@@ -40,7 +40,7 @@ class WorksRepo(db: Lo3Db):
     val fandomDocs = work.fandoms.map(FandomDoc.fromModel)
     val tagDocs    = work.freeformTags.distinct.map(TagDoc.fromModel)
     val shipsWithCharacters =
-      work.relationships.map(r => (RelationshipDoc.fromModel(r), r.characters.map(CharacterDoc.fromModel)))
+      work.relationships.distinct.map(r => (RelationshipDoc.fromModel(r), r.characters.map(CharacterDoc.fromModel)))
     val relationshipDocs = shipsWithCharacters.map((r, _) => r)
     val characterDocs    = work.characters.map(CharacterDoc.fromModel) ++ shipsWithCharacters.flatMap((_, c) => c)
     List(
@@ -112,7 +112,7 @@ class WorksRepo(db: Lo3Db):
               warnings = work.warnings.split(", ").toSet,
               fandoms = fandomsByWork.getOrElse(work.id, Seq()).toSet,
               characters = charactersByWork.getOrElse(work.id, Seq()).toSet,
-              relationships = shipsByWork.getOrElse(work.id, Seq()).toList,
+              relationships = shipsByWork.getOrElse(work.id, Seq()).toList.distinct,
               tags = tagsByWork.getOrElse(work.id, Seq()).toList.distinct,
               words = work.words,
               complete = work.complete
@@ -143,7 +143,7 @@ class WorksRepo(db: Lo3Db):
     warnings = doc.warnings.split(", ").toSet,
     fandoms = fandoms.toSet,
     characters = characters.toSet,
-    relationships = relationships.toList,
+    relationships = relationships.distinct.toList,
     tags = tags.toList.distinct,
     words = doc.words,
     complete = doc.complete
