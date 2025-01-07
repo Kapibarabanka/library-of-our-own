@@ -19,17 +19,23 @@ protected[ao3scrapper] case class Ao3HttpClientImpl(
     password: String,
     client: Client
 ) extends Ao3HttpClient:
-  private val loginUrl = "https://archiveofourown.org/users/login"
+  private val loginUrl                         = "https://archiveofourown.org/users/login"
+  private var authedResponse: Option[Response] = None
 
   private val followRedirects     = ZClientAspect.followRedirects(2)((resp, message) => ZIO.logInfo(message).as(resp))
   private val clientWithRedirects = client @@ followRedirects
 
   override def get(url: String): ZIO[Any, Ao3Error, String] = for {
-    (_, body) <- getResponseAndBody(Request.get(url))
+    request <- ZIO.succeed(authedResponse match
+      case Some(response) => populateCookies(Request.get(url), response)
+      case None           => Request.get(url)
+    )
+    (_, body) <- getResponseAndBody(request)
   } yield body
 
   override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {
     authedResponse   <- getAuthedResponse
+    _                <- ZIO.succeed(this.authedResponse = Some(authedResponse))
     request          <- ZIO.succeed(populateCookies(Request.get(url), authedResponse))
     (response, body) <- getResponseAndBody(request)
   } yield body
@@ -51,7 +57,6 @@ protected[ao3scrapper] case class Ao3HttpClientImpl(
       else ZIO.succeed(authedResponse)
   } yield res
 
-  /// TODO: add delays in case of 429
   private def getResponseAndBody(request: Request, allowRedirects: Boolean = true) = ZIO.scoped {
     for {
       entityName <- ZIO.succeed(s"response from ${request.url.host.getOrElse("") + request.url.path}")

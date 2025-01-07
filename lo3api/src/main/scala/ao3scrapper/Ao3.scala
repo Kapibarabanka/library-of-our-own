@@ -151,7 +151,7 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
         ZIO.succeed(characters(nameWithLabel))
       if (characters.contains(name))
         ZIO.succeed(characters(name))
-      tagExists(nameWithLabel)
+      tagExistsClient(nameWithLabel)
         .map(exists => if (exists) nameWithLabel else name)
         .flatMap(resultName => character(resultName))
 
@@ -244,12 +244,14 @@ case class Ao3Impl(http: Ao3HttpClient) extends Ao3:
     case otherWarnings                    => otherWarnings.map(ArchiveWarning(_)).toSet
   }
 
-  private def tagExists(tag: String) = Try(jsoupBrowser.get(Ao3Url.tag(tag))) match
+  private def tagExistsJsoup(tag: String) = Try(jsoupBrowser.get(Ao3Url.tag(tag))) match
     case Failure(exception: HttpStatusException) =>
       if (exception.getStatusCode == 404) ZIO.succeed(false)
       else ZIO.fail(HttpError(exception.getStatusCode, s"checking if tag '$tag' exists"))
     case Failure(exception) => ZIO.fail(UnspecifiedError(exception.getMessage))
     case Success(_)         => ZIO.succeed(true)
+
+  private def tagExistsClient(tag: String) = http.get(Ao3Url.tag(tag)).map(_ => true).catchSome({ case NotFound(_) => ZIO.succeed(false)})
 
   private def getDoc[TDoc](url: String, authed: Boolean, entityName: String)(htmlToDoc: Document => TDoc) = for {
     body <- (if (authed) http.getAuthed(url) else http.get(url)).mapError {
