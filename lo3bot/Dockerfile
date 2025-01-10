@@ -17,4 +17,4 @@ COPY ../lo3bot/project/plugins.sbt ./project/
 
 RUN sbt clean compile
 
-ENTRYPOINT ["sbt", "runMain kapibarabanka.lo3.bot.Application"]
+ENTRYPOINT ["sbt", "runMain kapibarabanka.lo3.bot.BotApplication"]

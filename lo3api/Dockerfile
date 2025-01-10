@@ -47,4 +47,4 @@ COPY ../lo3api/project/plugins.sbt ./project/
 
 RUN sbt clean compile
 
-ENTRYPOINT ["sbt", "runMain kapibarabanka.lo3.api.Application"]
+ENTRYPOINT ["sbt", "runMain kapibarabanka.lo3.api.ApiApplication"]
