@@ -1,5 +1,5 @@
 package kapibarabanka.lo3.api
-package ao3scrapper.internal
+package ficService.internal
 
 import kapibarabanka.lo3.common.models.ao3.*
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
@@ -10,11 +10,11 @@ import zio.http.*
 import zio.http.Header.SetCookie
 import zio.http.netty.NettyConfig
 
-protected[ao3scrapper] trait Ao3HttpClient:
+trait Ao3HttpClient:
   def get(url: String): ZIO[Any, Ao3Error, String]
   def getAuthed(url: String): ZIO[Any, Ao3Error, String]
 
-protected[ao3scrapper] case class Ao3HttpClientImpl(
+case class Ao3HttpClientImpl(
     username: String,
     password: String,
     client: Client
@@ -87,7 +87,7 @@ protected[ao3scrapper] case class Ao3HttpClientImpl(
       case None          => request
   }
 
-protected[ao3scrapper] object Ao3HttpClientImpl {
+protected[ficService] object Ao3HttpClientImpl {
   private val clientConfig = ZClient.Config.default.idleTimeout(5.minutes)
 
   private def ownLayer(username: String, password: String) = ZLayer {

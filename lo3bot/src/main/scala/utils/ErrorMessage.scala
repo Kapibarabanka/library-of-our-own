@@ -23,4 +23,8 @@ object ErrorMessage:
     s"Failed to log in to the Ao3. Please try again in a couple of minutes or check <a href=\"https://x.com/ao3_status\">Ao3 status twitter</a>"
 
   private val rateLimit =
-    "The bot has sent too many requests to the Ao3 and is now being rate-limited. Please try again in a couple of minutes."
+    """
+      |The bot has sent too many requests to the Ao3 and is now being rate-limited. Please try again in a couple of minutes.
+      |
+      |If you were parsing a series, please try to parse its works one by one and then try parsing the series again.
+      |""".stripMargin

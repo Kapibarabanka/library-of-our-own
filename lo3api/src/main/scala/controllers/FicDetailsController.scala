@@ -1,11 +1,11 @@
 package kapibarabanka.lo3.api
 package controllers
 
-import ao3scrapper.Ao3
+import ficService.FicService
 
 import kapibarabanka.lo3.common.models.ao3
-import kapibarabanka.lo3.common.models.ao3.{Ao3Url, FicType, Series, Work}
-import kapibarabanka.lo3.common.models.domain.{DbError, FlatFicModel, Lo3Error, NotAo3Link, UserFicKey, UserFicRecord}
+import kapibarabanka.lo3.common.models.ao3.{Ao3Url, FicType}
+import kapibarabanka.lo3.common.models.domain.{Lo3Error, NotAo3Link, UserFicKey, UserFicRecord}
 import kapibarabanka.lo3.common.openapi.FicDetailsClient
 import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MyBotApi, OptionalLog}
 import zio.*
@@ -13,7 +13,7 @@ import zio.http.*
 
 import java.time.LocalDate
 
-protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends Controller:
+protected[api] case class FicDetailsController(ficService: FicService, bot: MyBotApi) extends Controller:
   val getUserFic = FicDetailsClient.getUserFic.implement { (ficLink, userId, needToLog) =>
     Ao3Url.tryParseFicLink(ficLink) match
       case None => ZIO.fail(NotAo3Link(ficLink))
@@ -71,16 +71,8 @@ protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends 
   }
 
   private def getUserFicInternal(key: UserFicKey, log: OptionalLog = EmptyLog()): IO[Lo3Error, UserFicRecord] = for {
-    maybeFic <- key.ficType match
-      case FicType.Work   => data.works.getById(key.ficId)
-      case FicType.Series => data.series.getById(key.ficId)
-    fic <- maybeFic match
-      case Some(fic) => ZIO.succeed(fic)
-      case None =>
-        for {
-          f <- parseFicAndSave(key.ficId, key.ficType, log)
-          _ <- if (key.ficIsSeries) createDetailsForSeriesParts(key) else ZIO.unit
-        } yield f
+    fic           <- ficService.getFic(key.ficId, key.ficType, log)
+    _             <- if (key.ficIsSeries) createDetailsForSeriesParts(key) else ZIO.unit
     details       <- data.details.getOrCreateDetails(key)
     readDatesInfo <- data.readDates.getReadDatesInfo(key)
     comments      <- data.comments.getAllComments(key)
@@ -96,21 +88,6 @@ protected[api] case class FicDetailsController(ao3: Ao3, bot: MyBotApi) extends 
     ids <- data.series.workIds(key.ficId)
     _   <- ZIO.collectAll(ids.map(id => data.details.getOrCreateDetails(UserFicKey(key.userId, id, FicType.Work))))
   } yield ()
-
-  private def parseFicAndSave(ficId: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, FlatFicModel] =
-    for {
-      _            <- log.edit("Parsing AO3...")
-      workOrSeries <- parseFic(ficId, ficType)
-      _            <- log.edit("Saving to database...")
-      fic <- workOrSeries match
-        case work: Work     => data.works.add(work)
-        case series: Series => data.series.add(series)
-    } yield fic
-
-  private def parseFic(ficId: String, ficType: FicType): IO[Lo3Error, Work | Series] = ficType match
-    case FicType.Work => ao3.work(ficId).mapError(e => Lo3Error.fromAo3Error(e))
-    // todo: first parse series with only work ids not whole works, if all works are already parsed don't parse them again
-    case FicType.Series => ao3.series(ficId).mapError(e => Lo3Error.fromAo3Error(e))
 
   override val routes: List[Route[Any, Response]] =
     List(

@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package controllers
 
-import ao3scrapper.Ao3
+import ficService.FicService
 
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3
@@ -18,7 +18,7 @@ import java.net.URL
 import scala.language.postfixOps
 import scala.sys.process.*
 
-case class KindleController(ao3: Ao3, bot: MyBotApi) extends Controller:
+case class KindleController(ficService: FicService, bot: MyBotApi) extends Controller:
   private def fileNames(id: String, ficType: FicType) =
     val fileName = AppConfig.ficsPath + ficType.toString + id
     (fileName + ".mobi", fileName + ".epub")
@@ -61,7 +61,7 @@ case class KindleController(ao3: Ao3, bot: MyBotApi) extends Controller:
   private def saveWork(id: String, log: OptionalLog): IO[Throwable, Unit] =
     val (mobi, epub) = fileNames(id, FicType.Work)
     for {
-      link    <- ao3.downloadLink(id)
+      link    <- ficService.downloadLink(id)
       _       <- log.edit("Downloading work...")
       _       <- ZIO.attempt(new URL(link) #> File(mobi) !!)
       _       <- log.edit("Converting work to epub...")
@@ -76,8 +76,9 @@ case class KindleController(ao3: Ao3, bot: MyBotApi) extends Controller:
     val (_, epub)       = fileNames(id, FicType.Series)
     for {
       _            <- log.edit("Getting series' works list...")
-      seriesExists <- data.series.exists(id).mapError(Exception(_))
-      workIds      <- if (seriesExists) data.series.workIds(id).mapError(Exception(_)) else ao3.seriesWorks(id)
+      seriesExists <- data.series.exists(id)
+      workIds      <- if (seriesExists) data.series.workIds(id) else ficService.seriesWorks(id)
+      _            <- log.edit("Downloading works...")
       workFiles    <- ZIO.collectAll(workIds.map(id => saveFic(id, FicType.Work, epub, log)))
       _            <- log.edit("Merging works in a single file...")
       command <- ZIO.succeed(
@@ -99,7 +100,7 @@ case class KindleController(ao3: Ao3, bot: MyBotApi) extends Controller:
       case FicType.Series => data.series.title(ficId)
     title <- maybeTitle match
       case Some(value) => ZIO.succeed(value)
-      case None        => ao3.ficName(ficId, ficType).mapError(e => Lo3Error.fromAo3Error(e))
+      case None        => ficService.ficName(ficId, ficType)
   } yield title
 
   override val routes: List[Route[Any, Response]] = List(saveToFile, sendToKindle)

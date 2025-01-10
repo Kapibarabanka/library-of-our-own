@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
-package ao3scrapper.internal
+package ficService.internal
 
-import ao3scrapper.internal.StringUtils.commaStyleToInt
+import ficService.internal.StringUtils.commaStyleToInt
 
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
@@ -10,7 +10,7 @@ import net.ruippeixotog.scalascraper.model.Element
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-protected[ao3scrapper] case class WorkInSeriesDoc(doc: Element, seriesId: String):
+protected[ficService] case class WorkInSeriesHtml(doc: Element, seriesId: String):
   val id: String = (doc >> attr("id")).replace("work_", "")
 
   private val seriesParts = doc >> element("ul.series") >> elementList("li")

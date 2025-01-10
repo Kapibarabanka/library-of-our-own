@@ -35,7 +35,7 @@ object MessageText {
       |""".stripMargin
 
   private def info(fic: FlatFicModel) =
-    s"""<b>${fic.title}</b>
+    val withTags = s"""<b>${fic.title}</b>
        |<i>${fic.authors.mkString(", ")}</i>
        |
        |${fic.relationships.map(formatShip).mkString("\n")}
@@ -44,6 +44,18 @@ object MessageText {
        |
        |${f"${fic.words}%,d"} words
        |""".stripMargin
+    if (withTags.length <= 3500)
+      withTags
+    else
+      s"""<b>${fic.title}</b>
+         |<i>${fic.authors.mkString(", ")}</i>
+         |
+         |${fic.relationships.map(formatShip).mkString("\n")}
+         |
+         |<i>Tags don't fit into Telegram character limit</i>
+         |
+         |${f"${fic.words}%,d"} words
+         |""".stripMargin
 
   private def displayStats(record: UserFicRecord) =
     s"""${if (record.details.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}

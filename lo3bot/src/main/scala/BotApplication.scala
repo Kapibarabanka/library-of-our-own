@@ -7,7 +7,7 @@ import kapibarabanka.lo3.common.services.MyBotApi
 import zio.*
 import zio.interop.catz.*
 
-object Application extends ZIOAppDefault {
+object BotApplication extends ZIOAppDefault {
   private val runBot = for {
     myBotApi <- ZIO.service[MyBotApi]
     api      <- ZIO.service[Lo3Api]

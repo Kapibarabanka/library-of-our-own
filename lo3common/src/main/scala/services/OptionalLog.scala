@@ -9,7 +9,10 @@ sealed trait OptionalLog:
   def delete: UIO[Unit]
 
 case class LogMessage(api: MyBotApi, chatId: String, message: Option[Message]) extends OptionalLog:
-  def edit(logText: String): UIO[Unit] = api.editLogText(chatId)(message, logText).unit
+  def edit(logText: String): UIO[Unit] = for {
+    _ <- ZIO.log(logText)
+    _ <- api.editLogText(chatId)(message, logText).unit
+  } yield ()
 
   def delete: UIO[Unit] = if (message.nonEmpty) api.deleteMessage(chatId)(message.get) else ZIO.unit
 

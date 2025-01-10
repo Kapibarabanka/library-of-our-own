@@ -20,7 +20,7 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
 
   def add(s: Series): IO[DbError, FlatFicModel] = {
     for {
-      maybeWorks <- ZIO.collectAll(s.works.map(w => works.exists(w.id).map(exists => if (exists) None else Some(w))))
+      maybeWorks <- ZIO.collectAll(s.unsavedWorks.map(w => works.exists(w.id).map(exists => if (exists) None else Some(w))))
       newWorks   <- ZIO.succeed(maybeWorks.flatten)
       _ <- db
         .run(
@@ -28,7 +28,7 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
             .seq(
               series += SeriesDoc.fromModel(s),
               DBIO.sequence(newWorks.flatMap(works.getAddingAction)).transactionally,
-              seriesToWorks ++= (s.works.indices zip s.works).map((idx, work) => SeriesToWorksDoc(None, s.id, work.id, idx + 1))
+              seriesToWorks ++= (s.workIds.indices zip s.workIds).map((idx, workId) => SeriesToWorksDoc(None, s.id, workId, idx + 1))
             )
             .transactionally
         )

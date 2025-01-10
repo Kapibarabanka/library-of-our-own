@@ -109,7 +109,7 @@ object TestData:
     complete = false,
     bookmarks = None,
     description = None,
-    works = List(friendly, angstyZoSan)
+    unsavedWorks = List(friendly, angstyZoSan)
   )
 
   val comment = FicComment(commentDate = "2024-08-30", comment = "Some comment")

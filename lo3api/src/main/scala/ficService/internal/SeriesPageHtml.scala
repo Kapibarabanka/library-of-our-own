@@ -1,14 +1,14 @@
 package kapibarabanka.lo3.api
-package ao3scrapper.internal
+package ficService.internal
 
-import ao3scrapper.internal.StringUtils.{commaStyleToInt, parseDate}
+import ficService.internal.StringUtils.{commaStyleToInt, parseDate}
 
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Document
 
 import scala.language.postfixOps
-protected[ao3scrapper] case class SeriesPageDoc(doc: Document, seriesId: String, page: Int):
+protected[ficService] case class SeriesPageHtml(doc: Document, seriesId: String, page: Int):
   val title                   = doc >> text("h2.heading")
   private val metaDataElement = doc >> element("dl.series")
   private val labels          = (metaDataElement >> texts("dt")).map(_.replace(":", ""))
@@ -23,7 +23,7 @@ protected[ao3scrapper] case class SeriesPageDoc(doc: Document, seriesId: String,
   val bookmarks               = metadata.get("Bookmarks").map(commaStyleToInt)
   val pageCount               = (doc >?> element(".pagination") >> texts("li")).map(_.flatMap(_.toIntOption).max)
   val workElements            = doc >> elementList("li.work")
-  val works                   = workElements.map(WorkInSeriesDoc(_, seriesId))
+  val works                   = workElements.map(WorkInSeriesHtml(_, seriesId))
   val squareTags              = workElements >> element("ul.required-tags") >> texts("li")
 
   val (ratings, allWarnings, allCategories) = squareTags.flatMap {
