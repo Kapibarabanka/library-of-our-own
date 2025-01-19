@@ -19,7 +19,8 @@ case class FlatFicModel(
     relationships: List[String] = List(),
     tags: List[String] = List(),
     words: Int,
-    complete: Boolean
+    complete: Boolean,
+    partsWritten: Int
 )
 
 object FlatFicModel:

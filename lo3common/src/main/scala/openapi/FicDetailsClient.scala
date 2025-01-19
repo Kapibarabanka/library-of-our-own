@@ -1,15 +1,21 @@
 package kapibarabanka.lo3.common
 package openapi
 
-import models.domain.{FicComment, FicDetails, Lo3Error, UserFicRecord}
+import models.domain.{FicComment, FicDetails, FlatFicModel, Lo3Error, UserFicRecord}
 
 import scalaz.Scalaz.ToIdOps
 import zio.http.*
+import zio.http.Method.GET
 import zio.http.codec.*
 import zio.http.endpoint.Endpoint
 
 object FicDetailsClient extends MyClient:
   override protected val clientName = "fic"
+
+  val updateFic = endpoint(GET, "update-fic")
+    .out[FlatFicModel]
+    .outError[Lo3Error](Status.InternalServerError)
+    |> withKey
 
   val getUserFic = endpoint(Method.GET, "user-details")
     .query(HttpCodec.query[String]("ficLink"))
@@ -56,6 +62,7 @@ object FicDetailsClient extends MyClient:
   override val allEndpoints =
     List(
       getUserFic,
+      updateFic,
       getUserFicByKey,
       patchDetails,
       addComment,

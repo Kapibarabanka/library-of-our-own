@@ -34,17 +34,46 @@ class WorksRepo(db: Lo3Db):
   def title(id: String) = db.run(works.filter(_.id === id).map(_.title).result).map(_.headOption)
 
   def add(work: Work): IO[DbError, FlatFicModel] =
-    db.run(DBIO.sequence(getAddingAction(work)).transactionally).flatMap(_ => getById(work.id).map(_.get))
+    db.run(DBIO.sequence(getAddingAction(work, true)).transactionally).flatMap(_ => getById(work.id).map(_.get))
 
-  def getAddingAction(work: Work): List[DBIOAction[Any, NoStream, Effect.Write & Effect.Read]] = {
+  def updateWork(work: Work): IO[DbError, FlatFicModel] = for {
+    maybeExisting <- getById(work.id)
+    updated <- maybeExisting match
+      case None => add(work)
+      case Some(existing) =>
+        for {
+          newTagsOnly <- ZIO.succeed(
+            work.copy(
+              fandoms = work.fandoms.filterNot(f => existing.fandoms.contains(f.fullName)),
+              freeformTags = work.freeformTags.filterNot(t => existing.tags.contains(t.name)),
+              characters = work.characters.filterNot(c => existing.characters.contains(c.fullName)),
+              relationships = work.relationships.filterNot(r => existing.relationships.contains(r.fullName))
+            )
+          )
+          updatedFic <- db
+            .run(
+              DBIO
+                .sequence(
+                  Seq(works.filter(_.id === work.id).update(WorkDoc.fromModel(newTagsOnly))) ++ getAddingAction(
+                    newTagsOnly,
+                    false
+                  )
+                )
+                .transactionally
+            )
+            .flatMap(_ => getById(work.id).map(_.get))
+        } yield updatedFic
+  } yield updated
+
+  def getAddingAction(work: Work, insertWork: Boolean): List[DBIOAction[Any, NoStream, Effect.Write & Effect.Read]] = {
     val fandomDocs = work.fandoms.map(FandomDoc.fromModel)
     val tagDocs    = work.freeformTags.distinct.map(TagDoc.fromModel)
     val shipsWithCharacters =
       work.relationships.distinct.map(r => (RelationshipDoc.fromModel(r), r.characters.map(CharacterDoc.fromModel)))
     val relationshipDocs = shipsWithCharacters.map((r, _) => r)
     val characterDocs    = work.characters.map(CharacterDoc.fromModel) ++ shipsWithCharacters.flatMap((_, c) => c)
-    List(
-      works += WorkDoc.fromModel(work),
+    val initial          = if (insertWork) List(works += WorkDoc.fromModel(work)) else List()
+    val result = initial ++ List(
       addTags(tagDocs),
       worksToTags ++= work.freeformTags.map(tag => WorksToTagsDoc(None, work.id, tag.name)),
       addFandoms(fandomDocs),
@@ -57,6 +86,7 @@ class WorksRepo(db: Lo3Db):
       ),
       worksToShips ++= relationshipDocs.map(r => WorksToShipsDoc(None, work.id, r.name))
     )
+    result
   }
 
   def getById(workId: String): IO[DbError, Option[FlatFicModel]] = for {
@@ -115,7 +145,8 @@ class WorksRepo(db: Lo3Db):
               relationships = shipsByWork.getOrElse(work.id, Seq()).toList.distinct,
               tags = tagsByWork.getOrElse(work.id, Seq()).toList.distinct,
               words = work.words,
-              complete = work.complete
+              complete = work.complete,
+              partsWritten = work.partsWritten
             )
           )
         )
@@ -146,7 +177,8 @@ class WorksRepo(db: Lo3Db):
     relationships = relationships.distinct.toList,
     tags = tags.toList.distinct,
     words = doc.words,
-    complete = doc.complete
+    complete = doc.complete,
+    partsWritten = doc.partsWritten
   )
 
   private def addTags(tags: Iterable[TagDoc]) =

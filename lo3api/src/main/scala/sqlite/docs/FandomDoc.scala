@@ -8,4 +8,4 @@ case class FandomDoc(fullName: String, name: String, label: Option[String]):
 
 object FandomDoc:
   def fromModel(model: Fandom): FandomDoc =
-    FandomDoc(Ao3TagName.combineWithLabel(model.name, model.label), model.name, model.label)
+    FandomDoc(model.fullName, model.name, model.label)

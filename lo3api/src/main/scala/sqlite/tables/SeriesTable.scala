@@ -12,7 +12,6 @@ class SeriesTable(tag: Tag) extends Table[SeriesDoc](tag, SeriesTable.name):
   def link     = column[String]("link")
   def started  = column[String]("started")
   def updated  = column[Option[String]]("updated")
-  def words    = column[Int]("words")
   def complete = column[Boolean]("complete")
 
   def * = (
@@ -22,7 +21,6 @@ class SeriesTable(tag: Tag) extends Table[SeriesDoc](tag, SeriesTable.name):
     link,
     started,
     updated,
-    words,
     complete
   ).mapTo[SeriesDoc]
 

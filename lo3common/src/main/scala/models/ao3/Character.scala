@@ -5,6 +5,7 @@ import zio.schema.{DeriveSchema, Schema}
 
 case class Character(name: String, label: Option[String]) extends Tag:
   val category: TagCategory = TagCategory.Character
+  val fullName: String = Ao3TagName.combineWithLabel(name, label)
 
 object Character:
   def fromNameInWork(nameInWork: String): Character =

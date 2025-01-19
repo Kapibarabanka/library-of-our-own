@@ -18,7 +18,7 @@ object MessageText {
 
   def existingFic(record: UserFicRecord): String =
     s"""
-       |${info(record.fic)}
+       |${info(record.fic, record.key.ficIsSeries)}
        |${record |> displayMyRating}
        |${record |> displayStats}
        |""".stripMargin
@@ -29,33 +29,47 @@ object MessageText {
       |
       |After that you can mark and track when you started/finished reading that fic, rate it, leave comments (visible only to you), and mark if the fic has fire (he-he)
       |
-      |If you provide your Kindle email with /setKindleEmail command you can send a work to your Kindle library. This feature currently doesn't work for series so please send them one work at a time.
+      |If you provide your Kindle email with /setKindleEmail command you can send a work to your Kindle library.
       |
       |You can also add fics to the backlog and get a filterable HTML file with full backlog with /backlog command
       |""".stripMargin
 
-  private def info(fic: FlatFicModel) =
-    val withTags = s"""<b>${fic.title}</b>
-       |<i>${fic.authors.mkString(", ")}</i>
-       |
-       |${fic.relationships.map(formatShip).mkString("\n")}
-       |
-       |${fic.tags.mkString(",   ")}
-       |
-       |${f"${fic.words}%,d"} words
-       |""".stripMargin
+  val kindleSteps =
+    """
+      |<b>Step 1</b>
+      |Add ao3bot@gmx.com to your <i>Approved Personal Document E-mail List</i> (<a href="https://www.amazon.com/hz/mycd/myx#/home/settings/payment">Preferences</a> -> Personal Document Settings)
+      |
+      |<b>Step 2</b>
+      |In the same Preferences section, enable <i>Personal Document Archiving</i> so that your reading progress and bookmarks were saved to your amazon account and could be synced between devices.
+      |
+      |<b>Step 3</b>
+      |Send me your Kindle email address. To find your Kindle email address, visit the <a href="https://www.amazon.com/mn/dcw/myx.html#/home/devices/1">Manage your Devices page</a>. Then select your primary reading device (it can be Kindle or a Kindle app on your phone/tablet) and copy its email.
+      |
+      |Example: myemail@kindle.com
+      |""".stripMargin
+
+  private def info(fic: FlatFicModel, isSeries: Boolean) =
+    val header = s"""<b>${fic.title}</b>
+                    |<i>${fic.authors.mkString(", ")}</i>
+                    |
+                    |${fic.relationships.map(formatShip).mkString("\n")}""".stripMargin
+    val tags   = fic.tags.mkString(",   ")
+    val s      = if (fic.partsWritten.toString.last == '1' && fic.partsWritten != 11) "" else "s"
+    val footer = s"${f"${fic.partsWritten}%,d"} ${if (isSeries) "work" else "chapter"}$s, ${f"${fic.words}%,d"} words"
+    val withTags =
+      s"""$header
+         |
+         |$tags
+         |
+         |$footer
+         ||""".stripMargin
     if (withTags.length <= 3500)
       withTags
     else
-      s"""<b>${fic.title}</b>
-         |<i>${fic.authors.mkString(", ")}</i>
+      s"""$header
          |
-         |${fic.relationships.map(formatShip).mkString("\n")}
-         |
-         |<i>Tags don't fit into Telegram character limit</i>
-         |
-         |${f"${fic.words}%,d"} words
-         |""".stripMargin
+         |$footer
+         ||""".stripMargin
 
   private def displayStats(record: UserFicRecord) =
     s"""${if (record.details.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}

@@ -11,6 +11,7 @@ import zio.{IO, ZIO, ZLayer}
 
 trait FicService:
   def getFic(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, FlatFicModel]
+  def updateFic(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, FlatFicModel]
   def downloadLink(workId: String): IO[Lo3Error, String]
   def seriesWorks(seriesId: String): IO[Lo3Error, List[String]]
   def ficName(id: String, ficType: FicType): IO[Lo3Error, String]
@@ -35,18 +36,35 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
     link <- doc.mobiLink.fold[IO[Lo3Error, String]](ZIO.fail(DownloadLinkNotFound(workId)))(s => ZIO.succeed(s))
   } yield Ao3Url.download(link)
 
+  override def updateFic(id: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, FlatFicModel] = ficType match
+    case FicType.Work =>
+      for {
+        updatedWork <- parseWork(id, log)
+        updatedFic  <- data.works.updateWork(updatedWork)
+      } yield updatedFic
+    case FicType.Series =>
+      for {
+        updatedSeries <- parseSeries(id, log)
+        updatedFic    <- data.series.update(updatedSeries)
+      } yield updatedFic
+
   override def getFic(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, FlatFicModel] = ficType match
-    case FicType.Work => getWork(id, log)
+    case FicType.Work   => getWork(id, log)
     case FicType.Series => getSeries(id, log)
 
   private def getWork(id: String, log: OptionalLog): IO[Lo3Error, FlatFicModel] = for {
     maybeFic <- data.works.getById(id)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
-      case None      => parseAndSaveWork(id, log)
+      case None =>
+        for {
+          work    <- parseWork(id, log)
+          _       <- log.edit(s"Work parsed, saving to database...")
+          flatFic <- data.works.add(work)
+        } yield flatFic
   } yield fic
 
-  private def parseAndSaveWork(id: String, log: OptionalLog): IO[Lo3Error, FlatFicModel] = for {
+  private def parseWork(id: String, log: OptionalLog): IO[Lo3Error, Work] = for {
     _             <- log.edit(s"Parsing work with id '$id'...")
     doc           <- htmlService.work(id)
     _             <- log.edit(s"Parsing fandoms...")
@@ -84,19 +102,22 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
         bookmarks = doc.stats.bookmarks
       )
     )
-    _       <- ZIO.log(s"Parsed work: $work")
-    _       <- log.edit(s"Work parsed, saving to database...")
-    flatFic <- data.works.add(work)
-  } yield flatFic
+    _ <- ZIO.log(s"Parsed work: $work")
+  } yield work
 
   def getSeries(id: String, log: OptionalLog): IO[Lo3Error, FlatFicModel] = for {
     maybeFic <- data.series.getById(id)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
-      case None      => parseAndSaveSeries(id, log)
+      case None =>
+        for {
+          series  <- parseSeries(id, log)
+          _       <- log.edit(s"Series parsed, saving to database...")
+          flatFic <- data.series.add(series)
+        } yield flatFic
   } yield fic
 
-  private def parseAndSaveSeries(id: String, log: OptionalLog) = for {
+  private def parseSeries(id: String, log: OptionalLog) = for {
     _           <- log.edit(s"Parsing series with id '$id'...")
     pageDocs    <- htmlService.seriesAllPages(id)
     allWorkDocs <- ZIO.succeed(pageDocs.flatMap(_.works))
@@ -104,13 +125,14 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
       .collectAll(allWorkDocs.map(wd => data.works.exists(wd.id).map(exists => if (exists) None else Some(wd))))
       .map(_.flatten)
     _               <- log.edit(s"Parsing fandoms...")
-    allFandoms      <- tagService.canonize(newWorkDocs.flatMap(_.fandoms))(tagService.fandom)
+    allFandoms      <- tagService.canonize(newWorkDocs.flatMap(_.fandoms).distinct)(tagService.fandom)
     _               <- log.edit(s"Parsing freeform tags...")
-    allFreeformTags <- tagService.canonize(newWorkDocs.flatMap(_.freeformTags))(tagService.freeformTag)
+    allFreeformTags <- tagService.canonize(newWorkDocs.flatMap(_.freeformTags).distinct)(tagService.freeformTag)
     _               <- log.edit(s"Parsing characters...")
-    allCharacters   <- tagService.canonize(newWorkDocs.flatMap(_.characters))(tagService.character)
+    allCharacters   <- tagService.canonize(newWorkDocs.flatMap(_.characters).distinct)(tagService.character)
     _               <- log.edit(s"Parsing relationships...")
-    allShips <- tagService.canonize(newWorkDocs.flatMap(_.relationships))(tagService.relationship(_: String, allCharacters))
+    allShips <- tagService
+      .canonize(newWorkDocs.flatMap(_.relationships).distinct)(tagService.relationship(_: String, allCharacters))
     works <- ZIO.succeed(
       newWorkDocs
         .map(doc =>
@@ -154,10 +176,8 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
         workIds = allWorkDocs.sortBy(_.indexInSeries).map(_.id)
       )
     )
-    _       <- ZIO.log(s"Parsed series: $series")
-    _       <- log.edit(s"Series parsed, saving to database...")
-    flatFic <- data.series.add(series)
-  } yield flatFic
+    _ <- ZIO.log(s"Parsed series: $series")
+  } yield series
 
   private def getWarnings(warnings: Seq[String]): Set[ArchiveWarning] = warnings match {
     case Seq("No Archive Warnings Apply") => Set()

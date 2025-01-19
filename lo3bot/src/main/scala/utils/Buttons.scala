@@ -15,7 +15,7 @@ object Buttons:
         ).flatten,
         getDatesButtons(fic.readDatesInfo),
         List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant),
-        List(addComment, if (fic.details.fire) rateNotFire else rateFire)
+        List(addComment, update, if (fic.details.fire) rateNotFire else rateFire)
       )
     )
   )
@@ -41,7 +41,8 @@ object Buttons:
   val removeFromBacklog = InlineKeyboardButton(s"${Emoji.cross} Remove from backlog", callbackData = Some("removeFromBacklog"))
   val sendToKindle      = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
 
-  val addComment = InlineKeyboardButton(s"${Emoji.comment} Add comment", callbackData = Some("addComment"))
+  val addComment = InlineKeyboardButton(s"${Emoji.comment} Add note", callbackData = Some("addComment"))
+  val update = InlineKeyboardButton(s"${Emoji.refresh} Update", callbackData = Some("update"))
 
   // read dates
   val markAsRead          = InlineKeyboardButton(s"${Emoji.question} Read some time ago", callbackData = Some("markAsRead"))

@@ -8,4 +8,4 @@ case class CharacterDoc(fullName: String, name: String, label: Option[String]):
 
 object CharacterDoc:
   def fromModel(model: Character): CharacterDoc =
-    CharacterDoc(Ao3TagName.combineWithLabel(model.name, model.label), model.name, model.label)
+    CharacterDoc(model.fullName, model.name, model.label)

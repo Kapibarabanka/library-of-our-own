@@ -8,6 +8,7 @@ object Emoji {
   val start     = "\uD83D\uDCD6"
   val finish    = "✅"
   val comment   = "✍\uFE0F"
+  val refresh   = "\uD83D\uDD04"
   val romantic  = "\uD83D\uDC96"
   val platonic  = "\uD83E\uDD1D"
   val airtable  = "\uD83D\uDDC3\uFE0F"

@@ -25,6 +25,14 @@ protected[api] case class FicDetailsController(ficService: FicService, bot: MyBo
         } yield result
   }
 
+  val updateFic = FicDetailsClient.updateFic.implement { key =>
+    for {
+      log <- if (key.userId.nonEmpty) LogMessage.create("Working on it...", bot, key.userId) else ZIO.succeed(EmptyLog())
+      result <- ficService.updateFic(key.ficId, key.ficType, log)
+      _ <- log.delete
+    } yield result
+  }
+
   val getUserFicByKey = FicDetailsClient.getUserFicByKey.implement { key => getUserFicInternal(key) }
 
   val patchDetails = FicDetailsClient.patchDetails.implement { (key, details) =>
@@ -92,6 +100,7 @@ protected[api] case class FicDetailsController(ficService: FicService, bot: MyBo
   override val routes: List[Route[Any, Response]] =
     List(
       getUserFic,
+      updateFic,
       getUserFicByKey,
       patchDetails,
       addComment,

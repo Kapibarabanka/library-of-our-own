@@ -20,21 +20,44 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
 
   def add(s: Series): IO[DbError, FlatFicModel] = {
     for {
-      maybeWorks <- ZIO.collectAll(s.unsavedWorks.map(w => works.exists(w.id).map(exists => if (exists) None else Some(w))))
-      newWorks   <- ZIO.succeed(maybeWorks.flatten)
       _ <- db
         .run(
           DBIO
             .seq(
               series += SeriesDoc.fromModel(s),
-              DBIO.sequence(newWorks.flatMap(works.getAddingAction)).transactionally,
-              seriesToWorks ++= (s.workIds.indices zip s.workIds).map((idx, workId) => SeriesToWorksDoc(None, s.id, workId, idx + 1))
+              DBIO.sequence(s.unsavedWorks.flatMap(w => works.getAddingAction(w, true))).transactionally,
+              seriesToWorks ++= (s.workIds.indices zip s.workIds).map((idx, workId) =>
+                SeriesToWorksDoc(None, s.id, workId, idx + 1)
+              )
             )
             .transactionally
         )
       flatFic <- getById(s.id).map(_.get)
     } yield flatFic
   }
+
+  def update(s: Series): IO[DbError, FlatFicModel] = for {
+    maybeExisting <- getById(s.id)
+    updated <- maybeExisting match
+      case None => add(s)
+      case Some(_) =>
+        for {
+          _ <- db
+            .run(
+              DBIO
+                .seq(
+                  seriesToWorks.filter(_.seriesId === s.id).delete,
+                  series.filter(_.id === s.id).update(SeriesDoc.fromModel(s)),
+                  DBIO.sequence(s.unsavedWorks.flatMap(w => works.getAddingAction(w, true))).transactionally,
+                  seriesToWorks ++= (s.workIds.indices zip s.workIds).map((idx, workId) =>
+                    SeriesToWorksDoc(None, s.id, workId, idx + 1)
+                  )
+                )
+                .transactionally
+            )
+          flatFic <- getById(s.id).map(_.get)
+        } yield flatFic
+  } yield updated
 
   def workIds(id: String) = for {
     workIdsWithPositions <- db.run(seriesToWorks.filter(_.seriesId === id).map(d => (d.workId, d.positionInSeries)).result)
@@ -86,6 +109,7 @@ class SeriesRepo(db: Lo3Db, works: WorksRepo):
     characters = works.flatMap(_.characters).toSet,
     relationships = works.flatMap(_.relationships).toList.distinct,
     tags = works.flatMap(_.tags).toList.distinct,
-    words = doc.words,
-    complete = doc.complete
+    words = works.map(_.words).sum,
+    complete = doc.complete,
+    partsWritten = works.length
   )

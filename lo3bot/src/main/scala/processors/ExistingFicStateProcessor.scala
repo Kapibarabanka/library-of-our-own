@@ -48,11 +48,9 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
       case Buttons.rateFire.callbackData    => patchDetails(record.details.copy(fire = true), query)
       case Buttons.rateNotFire.callbackData => patchDetails(record.details.copy(fire = false), query)
 
-      case Buttons.addComment.callbackData =>
-        for {
-          _ <- bot.answerCallbackQuery(query)
-        } yield CommentBotState(record)
+      case Buttons.addComment.callbackData => bot.answerCallbackQuery(query).map(_ => CommentBotState(record))
 
+      case Buttons.update.callbackData       => updateFic(query)
       case Buttons.sendToKindle.callbackData => sendToKindle(query)
 
       case _ => unknownCallbackQuery(query).map(_ => currentState.withoutStartup)
@@ -88,3 +86,10 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
       _             <- bot.answerCallbackQuery(query)
     } yield ExistingFicBotState(updatedRecord, true)
     action |> sendOnError("sending fic to email")
+
+  private def updateFic(query: CallbackQuery) =
+    val action = for {
+      updatedFic <- Lo3Api.run(FicDetailsClient.updateFic(record.key))
+      _          <- bot.answerCallbackQuery(query)
+    } yield ExistingFicBotState(record.copy(fic = updatedFic), true)
+    action |> sendOnError("updating fic data")

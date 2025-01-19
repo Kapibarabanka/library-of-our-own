@@ -9,4 +9,4 @@ case class RelationshipDoc(name: String, relationshipType: String, nameInFic: Op
 
 object RelationshipDoc:
   def fromModel(model: Relationship): RelationshipDoc =
-    RelationshipDoc(model.nameInFic.getOrElse(model.name), model.shipType.toString, model.nameInFic)
+    RelationshipDoc(model.fullName, model.shipType.toString, model.nameInFic)

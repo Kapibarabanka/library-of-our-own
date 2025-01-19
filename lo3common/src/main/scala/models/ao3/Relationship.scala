@@ -10,6 +10,7 @@ case class Relationship(
 ) extends Tag:
   val name: String          = getShipName
   val category: TagCategory = TagCategory.Relationship
+  val fullName: String      = nameInFic.getOrElse(name)
   private def getShipName =
     val separator = shipType match
       case RelationshipType.Platonic => " & "

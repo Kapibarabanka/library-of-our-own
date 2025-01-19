@@ -10,7 +10,6 @@ case class SeriesDoc(
     link: String,
     started: String,
     updated: Option[String],
-    words: Int,
     complete: Boolean
 )
 
@@ -22,6 +21,5 @@ object SeriesDoc:
     authors = series.authors.mkString(", "),
     started = series.started.toString,
     updated = series.updated.map(_.toString),
-    words = series.words,
     complete = series.complete
   )
