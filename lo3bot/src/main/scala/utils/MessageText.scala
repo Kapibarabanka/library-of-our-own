@@ -66,6 +66,8 @@ object MessageText {
     else
       s"""$header
          |
+         |<i>Tags don't fit into Telegram character limit</i>
+         |
          |$footer
          ||""".stripMargin
 

@@ -6,6 +6,7 @@ object AppConfig:
 
   val mainBotToken: String  = sys.env("MAIN_BOT")
   val adminBotToken: String = sys.env("ADMIN_BOT")
+  val announceBotToken: String = sys.env("ANNOUNCE_BOT")
   val myChatId: String      = sys.env("MY_CHAT_ID")
 
   val senderEmail: String    = sys.env("SENDER_EMAIL")
