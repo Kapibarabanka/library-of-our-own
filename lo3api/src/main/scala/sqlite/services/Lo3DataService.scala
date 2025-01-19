@@ -8,7 +8,8 @@ case class Lo3DataService(dbWithPath: String):
 
   def init = db.init
 
-  val works     = WorksRepo(db)
+  val tags      = TagsRepo(db)
+  val works     = WorksRepo(db, tags)
   val series    = SeriesRepo(db, works)
   val details   = FicDetailsRepo(db)
   val comments  = CommentsRepo(db)

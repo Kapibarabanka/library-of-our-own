@@ -6,7 +6,6 @@ import sqlite.services.Lo3Db
 import sqlite.tables.*
 
 import kapibarabanka.lo3.common.models.ao3.{Fandom, FicType, Rating, Work}
-import kapibarabanka.lo3.common.models.api.FicCard
 import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, FlatFicModel}
 import scalaz.Scalaz.ToIdOps
 import slick.dbio.Effect
@@ -15,15 +14,11 @@ import zio.{IO, ZIO}
 
 import scala.collection.immutable.Iterable
 
-class WorksRepo(db: Lo3Db):
+class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
   private val works             = TableQuery[WorksTable]
-  private val tags              = TableQuery[TagsTable]
   private val worksToTags       = TableQuery[WorksToTagsTable]
-  private val fandoms           = TableQuery[FandomsTable]
   private val worksToFandoms    = TableQuery[WorksToFandomsTable]
-  private val characters        = TableQuery[CharactersTable]
   private val worksToCharacters = TableQuery[WorksToCharactersTable]
-  private val relationships     = TableQuery[RelationshipsTable]
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
   private val ficDetails        = TableQuery[FicsDetailsTable]
@@ -74,13 +69,13 @@ class WorksRepo(db: Lo3Db):
     val characterDocs    = work.characters.map(CharacterDoc.fromModel) ++ shipsWithCharacters.flatMap((_, c) => c)
     val initial          = if (insertWork) List(works += WorkDoc.fromModel(work)) else List()
     val result = initial ++ List(
-      addTags(tagDocs),
+      tagsRepo.addTags(tagDocs),
       worksToTags ++= work.freeformTags.map(tag => WorksToTagsDoc(None, work.id, tag.name)),
-      addFandoms(fandomDocs),
+      tagsRepo.addFandoms(fandomDocs),
       worksToFandoms ++= fandomDocs.map(f => WorksToFandomsDoc(None, work.id, f.fullName)),
-      addCharacters(characterDocs),
+      tagsRepo.addCharacters(characterDocs),
       worksToCharacters ++= characterDocs.map(c => WorksToCharactersDoc(None, work.id, c.fullName)),
-      addRelationships(relationshipDocs),
+      tagsRepo.addRelationships(relationshipDocs),
       shipsToCharacters ++= shipsWithCharacters.flatMap((ship, characters) =>
         characters.map(c => ShipsToCharactersDoc(None, ship.name, c.fullName))
       ),
@@ -180,44 +175,3 @@ class WorksRepo(db: Lo3Db):
     complete = doc.complete,
     partsWritten = doc.partsWritten
   )
-
-  private def addTags(tags: Iterable[TagDoc]) =
-    if (tags.isEmpty) DBIO.successful({})
-    else
-      val values = tags.map(t => s"(\"${t.name |> formatForSql}\", NULL, ${t.filterable})").mkString(", ")
-      sqlu"INSERT OR IGNORE INTO #${TagsTable.name} (name, category, filterable) VALUES #$values"
-
-  private def addFandoms(fandoms: Iterable[FandomDoc]) =
-    if (fandoms.isEmpty) DBIO.successful({})
-    else
-      val values = fandoms
-        .map(f =>
-          s"(\"${f.fullName |> formatForSql}\", \"${f.name}\", ${f.label.fold("NULL")(l => s"\"${l |> formatForSql}\"")})"
-        )
-        .mkString(", ")
-      sqlu"INSERT OR IGNORE INTO #${FandomsTable.name} (fullName, name, label) VALUES #$values"
-
-  private def addCharacters(characters: Iterable[CharacterDoc]) =
-    if (characters.isEmpty) DBIO.successful({})
-    else
-      val values =
-        characters
-          .map(c =>
-            s"(\"${c.fullName |> formatForSql}\", \"${c.name |> formatForSql}\", ${c.label
-                .fold("NULL")(l => s"\"${l |> formatForSql}\"")})"
-          )
-          .mkString(", ")
-      sqlu"INSERT OR IGNORE INTO #${CharactersTable.name} (fullName, name, label) VALUES #$values"
-
-  private def addRelationships(ships: Iterable[RelationshipDoc]) =
-    if (ships.isEmpty) DBIO.successful({})
-    else
-      val values =
-        ships
-          .map(r =>
-            s"(\"${r.name |> formatForSql}\", \"${r.relationshipType}\", ${r.nameInFic.fold("NULL")(l => s"\"${l |> formatForSql}\"")})"
-          )
-          .mkString(", ")
-      sqlu"INSERT OR IGNORE INTO #${RelationshipsTable.name} (name, relationshipType, nameInFic) VALUES #$values"
-
-  private def formatForSql(str: String) = str.replace("\"", "\"\"")

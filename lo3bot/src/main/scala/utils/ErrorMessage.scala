@@ -13,7 +13,7 @@ object ErrorMessage:
       case TooManyRequests()   => rateLimit
       case KindleEmailNotSet() => noKindleEmail
       case AuthFailed()        => authFailed
-      case _ => defaultMessage(error, actionName)
+      case _                   => defaultMessage(error, actionName)
 
   private def defaultMessage(error: Throwable, actionName: String) = s"\nError happened while $actionName: ${error.getMessage}"
 
@@ -24,7 +24,7 @@ object ErrorMessage:
 
   private val rateLimit =
     """
-      |The bot has sent too many requests to the Ao3 and is now being rate-limited. Please try again in a couple of minutes.
+      |The bot has sent too many requests to the Ao3 and is now being rate-limited. Please try again in a couple of minutes. Parsing progress is saved, so even if you get this message again, after some number of attempts fic will be fully parsed.
       |
       |If you were parsing a series, please try to parse its works one by one and then try parsing the series again.
       |""".stripMargin

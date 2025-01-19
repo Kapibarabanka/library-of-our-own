@@ -126,7 +126,7 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
       .map(_.flatten)
     _               <- log.edit(s"Parsing fandoms...")
     allFandoms      <- tagService.canonize(newWorkDocs.flatMap(_.fandoms).distinct)(tagService.fandom)
-    _               <- log.edit(s"Parsing freeform tags...")
+    _               <- log.edit(s"Parsing tags...")
     allFreeformTags <- tagService.canonize(newWorkDocs.flatMap(_.freeformTags).distinct)(tagService.freeformTag)
     _               <- log.edit(s"Parsing characters...")
     allCharacters   <- tagService.canonize(newWorkDocs.flatMap(_.characters).distinct)(tagService.character)

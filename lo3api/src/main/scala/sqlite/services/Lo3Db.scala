@@ -29,7 +29,8 @@ class Lo3Db(dbWithPath: String):
     TagsTable,
     WorksToTagsTable,
     CommentsTable,
-    ReadDatesTable
+    ReadDatesTable,
+    CanonicalTagsTable
   )
 
   def init: IO[DbError, Unit] = for {

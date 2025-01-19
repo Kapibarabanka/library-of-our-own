@@ -1,7 +1,6 @@
 package kapibarabanka.lo3.api
 package sqlite.repos
 
-
 import sqlite.services.Lo3Db
 import sqlite.tables.UsersTable
 

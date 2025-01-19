@@ -6,11 +6,10 @@ import sqlite.docs.TagDoc
 import slick.jdbc.PostgresProfile.api.*
 
 class TagsTable(tag: Tag) extends Table[TagDoc](tag, TagsTable.name):
-  def name       = column[String]("name", O.PrimaryKey, O.Unique)
-  def category   = column[Option[String]]("category")
-  def filterable = column[Boolean]("filterable")
+  def name     = column[String]("name", O.PrimaryKey, O.Unique)
+  def category = column[Option[String]]("category")
 
-  def * = (name, category, filterable).mapTo[TagDoc]
+  def * = (name, category).mapTo[TagDoc]
 
 object TagsTable extends MyTable:
   override val name: String     = "Tags"

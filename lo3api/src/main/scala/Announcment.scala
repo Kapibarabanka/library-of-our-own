@@ -16,7 +16,7 @@ object Announcment extends ZIOAppDefault {
     allUsers <- data.users.getAllIds
     bot      <- ZIO.service[MyBotApi]
     _ <- Console.printLine(allUsers)
-//    _        <- ZIO.collectAll(allUsers.map(id => bot.sendText(id)("")))
+    _        <- ZIO.collectAll(allUsers.map(id => bot.sendText(id)("")))
   } yield ()
 
   def run: ZIO[Any, Throwable, Unit] = announceToAll.provide(

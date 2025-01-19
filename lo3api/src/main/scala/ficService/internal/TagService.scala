@@ -9,7 +9,7 @@ import zio.*
 class TagService(html: HtmlService):
   def character(nameInWork: String): IO[Lo3Error, Character] = for {
     canonicalName <- getCanonicalTagName(nameInWork)
-  } yield Character.fromNameInWork(canonicalName.getOrElse(nameInWork))
+  } yield Character.fromNameInWork(canonicalName)
 
   def relationship(nameInWork: String, characters: Map[String, Character] = Map()): IO[Lo3Error, Relationship] = {
     def characterWithLabel(name: String, label: Option[String]): IO[Lo3Error, Character] =
@@ -27,7 +27,7 @@ class TagService(html: HtmlService):
     val separator  = if (isRomantic) "/" else " & "
     val shipType   = if (isRomantic) Romantic else Platonic
     for {
-      canonicalShipName <- getCanonicalTagName(nameInWork).map(n => n.getOrElse(nameInWork))
+      canonicalShipName <- getCanonicalTagName(nameInWork)
       (ship, label)     <- ZIO.succeed(Ao3TagName.trySeparateLabel(canonicalShipName))
       characterNames    <- ZIO.succeed(ship.split(separator))
       characters        <- ZIO.collectAll(characterNames.toSet.map(name => characterWithLabel(name, label)))
@@ -41,13 +41,11 @@ class TagService(html: HtmlService):
 
   def fandom(nameInWork: String): IO[Lo3Error, Fandom] = for {
     canonicalName <- getCanonicalTagName(nameInWork)
-  } yield Fandom.fromNameInWork(canonicalName.getOrElse(nameInWork))
+  } yield Fandom.fromNameInWork(canonicalName)
 
   def freeformTag(nameInWork: String): IO[Lo3Error, FreeformTag] = for {
-    _   <- ZIO.log(s"Getting canonical name for tag '$nameInWork'")
-    doc <- html.tag(nameInWork)
-    _   <- ZIO.log(s"Canonical name for'$nameInWork' is '${doc.canonicalName.getOrElse(nameInWork)}'")
-  } yield FreeformTag(doc.canonicalName.getOrElse(nameInWork), Some(doc.isFilterable))
+    canonicalName <- getCanonicalTagName(nameInWork)
+  } yield FreeformTag(canonicalName)
 
   def canonize[TTag](tagNames: Seq[String])(
       canonize: String => IO[Lo3Error, TTag]
@@ -64,8 +62,16 @@ class TagService(html: HtmlService):
       } yield newMap
     )
 
-  private def getCanonicalTagName(tagName: String): IO[Lo3Error, Option[String]] = for {
-    _   <- ZIO.log(s"Getting canonical name for tag '$tagName'")
-    doc <- html.tag(tagName)
-    _   <- ZIO.log(s"Canonical name for'$tagName' is '${doc.canonicalName.getOrElse(tagName)}'")
-  } yield doc.canonicalName
+  private def getCanonicalTagName(tagName: String): IO[Lo3Error, String] = for {
+    _              <- ZIO.log(s"Getting canonical name for tag '$tagName'")
+    maybeCanonical <- data.tags.tryGetCanonical(tagName)
+    canonicalName <- maybeCanonical match
+      case Some(name) => ZIO.succeed(name)
+      case None =>
+        for {
+          doc       <- html.tag(tagName)
+          canonical <- ZIO.succeed(doc.canonicalName.getOrElse(tagName))
+          _         <- ZIO.log(s"Canonical name for'$tagName' is '${canonical}'")
+          _         <- data.tags.addCanonical(tagName, canonical, doc.isFilterable)
+        } yield canonical
+  } yield canonicalName

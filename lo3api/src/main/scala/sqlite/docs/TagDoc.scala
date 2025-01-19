@@ -3,8 +3,8 @@ package sqlite.docs
 
 import kapibarabanka.lo3.common.models.ao3.FreeformTag
 
-case class TagDoc(name: String, category: Option[String], filterable: Boolean):
-  val toModel: FreeformTag = FreeformTag(name, Some(filterable))
+case class TagDoc(name: String, category: Option[String]):
+  val toModel: FreeformTag = FreeformTag(name)
 
 object TagDoc:
-  def fromModel(model: FreeformTag): TagDoc = TagDoc(model.name, None, model.isFilterable.getOrElse(false))
+  def fromModel(model: FreeformTag): TagDoc = TagDoc(model.name, None)
