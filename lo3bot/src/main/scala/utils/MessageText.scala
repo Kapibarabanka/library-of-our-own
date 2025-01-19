@@ -25,11 +25,9 @@ object MessageText {
 
   val help: String =
     """
-      |Send me a link to a work or series on Ao3. If it is not in my fic database (shared between all users) you can ask me to parse and save it.
+      |Send me a link to a fic (it can be a single work or a series) on Ao3. If it is not in my database yet, I will parse its info (title, author, ships, tags, word count etc.) from AO3. After that you can mark and track when you started/finished reading that fic, rate it and leave notes (visible only to you).
       |
-      |After that you can mark and track when you started/finished reading that fic, rate it, leave comments (visible only to you), and mark if the fic has fire (he-he)
-      |
-      |If you provide your Kindle email with /setKindleEmail command you can send a work to your Kindle library.
+      |If you provide your Kindle email with /setKindleEmail command you can send a fic to your Kindle library. If you send a series to Kindle, I will compose all its works into a single document
       |
       |You can also add fics to the backlog and get a filterable HTML file with full backlog with /backlog command
       |""".stripMargin
