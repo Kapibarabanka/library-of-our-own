@@ -1,6 +1,8 @@
 package kapibarabanka.lo3.api
 package ficService.internal
 
+import sqlite.services.Lo3Data
+
 import kapibarabanka.lo3.common.models.ao3.*
 import kapibarabanka.lo3.common.models.ao3.RelationshipType.*
 import kapibarabanka.lo3.common.models.domain.Lo3Error
@@ -64,7 +66,7 @@ class TagService(html: HtmlService):
 
   private def getCanonicalTagName(tagName: String): IO[Lo3Error, String] = for {
     _              <- ZIO.log(s"Getting canonical name for tag '$tagName'")
-    maybeCanonical <- data.tags.tryGetCanonical(tagName)
+    maybeCanonical <- Lo3Data.tags.tryGetCanonical(tagName)
     canonicalName <- maybeCanonical match
       case Some(name) => ZIO.succeed(name)
       case None =>
@@ -72,6 +74,6 @@ class TagService(html: HtmlService):
           doc       <- html.tag(tagName)
           canonical <- ZIO.succeed(doc.canonicalName.getOrElse(tagName))
           _         <- ZIO.log(s"Canonical name for'$tagName' is '${canonical}'")
-          _         <- data.tags.addCanonical(tagName, canonical, doc.isFilterable)
+          _         <- Lo3Data.tags.addCanonical(tagName, canonical, doc.isFilterable)
         } yield canonical
   } yield canonicalName

@@ -2,6 +2,7 @@ package kapibarabanka.lo3.api
 
 import controllers.*
 import ficService.FicService
+import sqlite.services.Lo3Data
 
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.openapi.Lo3API
@@ -12,7 +13,7 @@ import zio.http.endpoint.openapi.SwaggerUI
 
 object ApiApplication extends ZIOAppDefault {
   private val serve = for {
-    _          <- data.init.mapError(e => Exception(e))
+    _          <- Lo3Data.init.mapError(e => Exception(e))
     ficService <- ZIO.service[FicService]
     bot        <- ZIO.service[MyBotApi]
     client     <- ZIO.service[Client]

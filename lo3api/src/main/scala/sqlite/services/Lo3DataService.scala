@@ -3,7 +3,11 @@ package sqlite.services
 
 import sqlite.repos.*
 
-case class Lo3DataService(dbWithPath: String):
+import kapibarabanka.lo3.common.AppConfig
+
+object Lo3Data:
+  private val dbWithPath = s"${AppConfig.dbPath}${AppConfig.dbName}"
+
   private val db: Lo3Db = Lo3Db(dbWithPath)
 
   def init = db.init

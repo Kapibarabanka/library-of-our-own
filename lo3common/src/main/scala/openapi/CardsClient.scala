@@ -4,7 +4,7 @@ package openapi
 import models.api.{FicsPage, FicsPageRequest}
 import models.domain.Lo3Error
 import openapi.FicDetailsClient.endpoint
-
+import zio.http.codec.PathCodec.string
 import zio.http.endpoint.Endpoint
 import zio.http.{Method, Status}
 
@@ -16,4 +16,8 @@ object CardsClient extends MyClient:
     .out[FicsPage]
     .outError[Lo3Error](Status.InternalServerError)
 
-  override val allEndpoints: List[Endpoint[_, _, _, _, _]] = List(getFicsPage)
+  val getAllFics = endpoint(Method.GET, string("userId") / "all-fics")
+    .out[FicsPage]
+    .outError[Lo3Error](Status.InternalServerError)
+
+  override val allEndpoints: List[Endpoint[_, _, _, _, _]] = List(getAllFics, getFicsPage)

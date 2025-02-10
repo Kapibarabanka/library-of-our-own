@@ -2,13 +2,14 @@ package kapibarabanka.lo3.api
 package controllers
 
 import ficService.FicService
+import sqlite.services.Lo3Data
 
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3
 import kapibarabanka.lo3.common.models.ao3.FicType
 import kapibarabanka.lo3.common.models.domain.{EmailError, KindleEmailNotSet, Lo3Error, UnspecifiedError}
 import kapibarabanka.lo3.common.openapi.KindleClient
-import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MailClient, MyBotApi, OptionalLog}
+import kapibarabanka.lo3.common.services.*
 import zio.http.*
 import zio.process.Command
 import zio.{IO, ZIO}
@@ -29,12 +30,12 @@ case class KindleController(ficService: FicService, bot: MyBotApi) extends Contr
       ficTitle   <- getTitle(key.ficId, key.ficType)
       fileName   <- saveFic(key.ficId, key.ficType, ficTitle, log)
       _          <- log.edit("Sending to Kindle...")
-      maybeEmail <- data.users.getKindleEmail(key.userId)
+      maybeEmail <- Lo3Data.users.getKindleEmail(key.userId)
       email <- maybeEmail match
         case Some(value) => ZIO.succeed(value)
         case None        => ZIO.fail(KindleEmailNotSet())
       _ <- ZIO.attempt(MailClient.sendFile(File(fileName), ficTitle + ".epub", email)).mapError(e => EmailError(e.getMessage))
-      _ <- data.details.setOnKindle(key, true)
+      _ <- Lo3Data.details.setOnKindle(key, true)
       _ <- log.delete
     } yield ()
   }
@@ -76,8 +77,8 @@ case class KindleController(ficService: FicService, bot: MyBotApi) extends Contr
     val (_, epub)       = fileNames(id, FicType.Series)
     for {
       _            <- log.edit("Getting series' works list...")
-      seriesExists <- data.series.exists(id)
-      workIds      <- if (seriesExists) data.series.workIds(id) else ficService.seriesWorks(id)
+      seriesExists <- Lo3Data.series.exists(id)
+      workIds      <- if (seriesExists) Lo3Data.series.workIds(id) else ficService.seriesWorks(id)
       _            <- log.edit("Downloading works...")
       workFiles    <- ZIO.collectAll(workIds.map(id => saveFic(id, FicType.Work, epub, log)))
       _            <- log.edit("Merging works in a single file...")
@@ -96,8 +97,8 @@ case class KindleController(ficService: FicService, bot: MyBotApi) extends Contr
 
   private def getTitle(ficId: String, ficType: FicType) = for {
     maybeTitle <- ficType match
-      case FicType.Work   => data.works.title(ficId)
-      case FicType.Series => data.series.title(ficId)
+      case FicType.Work   => Lo3Data.works.title(ficId)
+      case FicType.Series => Lo3Data.series.title(ficId)
     title <- maybeTitle match
       case Some(value) => ZIO.succeed(value)
       case None        => ficService.ficName(ficId, ficType)

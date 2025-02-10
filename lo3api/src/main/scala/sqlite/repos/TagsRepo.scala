@@ -6,8 +6,8 @@ import sqlite.services.Lo3Db
 import sqlite.tables.*
 
 import kapibarabanka.lo3.common.models.domain.DbError
-import slick.jdbc.PostgresProfile.api.*
 import scalaz.Scalaz.ToIdOps
+import slick.jdbc.PostgresProfile.api.*
 import zio.ZIO
 
 import scala.collection.immutable.Iterable

@@ -78,7 +78,7 @@ object MessageText {
        |""".stripMargin
 
   private def displayMyRating(record: UserFicRecord) =
-    (if (record.details.fire) s"${Emoji.fire}<b>It has fire!</b>${Emoji.fire}\n" else "")
+    (if (record.details.fire) s"${Emoji.fire}<b>It's spicy!</b>${Emoji.fire}\n" else "")
       + record.details.quality.fold("")(q => s"You rated it ${formatQuality(q)}\n")
       + (if (record.comments.isEmpty) ""
          else

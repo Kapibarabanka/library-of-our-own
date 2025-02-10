@@ -1,6 +1,8 @@
 package kapibarabanka.lo3.api
 package controllers
 
+import sqlite.services.Lo3Data
+
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3.FicType
 import kapibarabanka.lo3.common.models.domain.{Lo3Error, UnspecifiedError, UserFicKey, UserFicRecord}
@@ -11,17 +13,17 @@ import zio.http.*
 import zio.json.*
 
 protected[api] case class UserController(client: Client, bot: MyBotApi) extends Controller:
-  private val add = UserClient.add.implement { (id, username) => data.users.addUser(id, username) }
+  private val add = UserClient.add.implement { (id, username) => Lo3Data.users.addUser(id, username) }
 
-  private val allIds = UserClient.allIds.implement { Unit => data.users.getAllIds }
+  private val allIds = UserClient.allIds.implement { Unit => Lo3Data.users.getAllIds }
 
-  private val setEmail = UserClient.setEmail.implement { (id, email) => data.users.setKindleEmail(id, email) }
-  private val getEmail = UserClient.getEmail.implement { id => data.users.getKindleEmail(id) }
+  private val setEmail = UserClient.setEmail.implement { (id, email) => Lo3Data.users.setKindleEmail(id, email) }
+  private val getEmail = UserClient.getEmail.implement { id => Lo3Data.users.getKindleEmail(id) }
 
   private val backlog = UserClient.backlog.implement { (userId, needToLog) =>
     (for {
       log     <- if (needToLog) LogMessage.create("Retrieving backlog...", bot, userId) else ZIO.succeed(EmptyLog())
-      keys    <- data.details.getUserBacklog(userId)
+      keys    <- Lo3Data.details.getUserBacklog(userId)
       records <- ZIO.collectAll(keys.map(getUserFicInternal))
       _       <- log.edit("Generating HTML...")
       response <- client
@@ -36,14 +38,14 @@ protected[api] case class UserController(client: Client, bot: MyBotApi) extends 
 
   private def getUserFicInternal(key: UserFicKey): IO[Lo3Error, UserFicRecord] = for {
     maybeFic <- key.ficType match
-      case FicType.Work   => data.works.getById(key.ficId)
-      case FicType.Series => data.series.getById(key.ficId)
+      case FicType.Work   => Lo3Data.works.getById(key.ficId)
+      case FicType.Series => Lo3Data.series.getById(key.ficId)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
       case None      => ZIO.fail(UnspecifiedError("Shouldn't be possible :)"))
-    details       <- data.details.getOrCreateDetails(key)
-    readDatesInfo <- data.readDates.getReadDatesInfo(key)
-    comments      <- data.comments.getAllComments(key)
+    details       <- Lo3Data.details.getOrCreateDetails(key)
+    readDatesInfo <- Lo3Data.readDates.getReadDatesInfo(key)
+    comments      <- Lo3Data.comments.getAllComments(key)
   } yield UserFicRecord(
     userId = key.userId,
     fic = fic,

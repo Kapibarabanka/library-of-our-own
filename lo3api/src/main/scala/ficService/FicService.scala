@@ -2,6 +2,7 @@ package kapibarabanka.lo3.api
 package ficService
 
 import ficService.internal.*
+import sqlite.services.Lo3Data
 
 import kapibarabanka.lo3.common.models.ao3
 import kapibarabanka.lo3.common.models.ao3.*
@@ -25,9 +26,9 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
     case FicType.Series => htmlService.seriesFirstPage(id).map(doc => doc.title)
 
   override def seriesWorks(seriesId: String): IO[Lo3Error, List[String]] = for {
-    seriesExists <- data.series.exists(seriesId)
+    seriesExists <- Lo3Data.series.exists(seriesId)
     workIds <-
-      if (seriesExists) data.series.workIds(seriesId)
+      if (seriesExists) Lo3Data.series.workIds(seriesId)
       else htmlService.seriesAllPages(seriesId).map(pages => pages.flatMap(page => page.works).map(_.id))
   } yield workIds
 
@@ -40,12 +41,12 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
     case FicType.Work =>
       for {
         updatedWork <- parseWork(id, log)
-        updatedFic  <- data.works.updateWork(updatedWork)
+        updatedFic  <- Lo3Data.works.updateWork(updatedWork)
       } yield updatedFic
     case FicType.Series =>
       for {
         updatedSeries <- parseSeries(id, log)
-        updatedFic    <- data.series.update(updatedSeries)
+        updatedFic    <- Lo3Data.series.update(updatedSeries)
       } yield updatedFic
 
   override def getFic(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, FlatFicModel] = ficType match
@@ -53,14 +54,14 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
     case FicType.Series => getSeries(id, log)
 
   private def getWork(id: String, log: OptionalLog): IO[Lo3Error, FlatFicModel] = for {
-    maybeFic <- data.works.getById(id)
+    maybeFic <- Lo3Data.works.getById(id)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
       case None =>
         for {
           work    <- parseWork(id, log)
           _       <- log.edit(s"Work parsed, saving to database...")
-          flatFic <- data.works.add(work)
+          flatFic <- Lo3Data.works.add(work)
         } yield flatFic
   } yield fic
 
@@ -106,14 +107,14 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
   } yield work
 
   def getSeries(id: String, log: OptionalLog): IO[Lo3Error, FlatFicModel] = for {
-    maybeFic <- data.series.getById(id)
+    maybeFic <- Lo3Data.series.getById(id)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
       case None =>
         for {
           series  <- parseSeries(id, log)
           _       <- log.edit(s"Series parsed, saving to database...")
-          flatFic <- data.series.add(series)
+          flatFic <- Lo3Data.series.add(series)
         } yield flatFic
   } yield fic
 
@@ -122,7 +123,7 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
     pageDocs    <- htmlService.seriesAllPages(id)
     allWorkDocs <- ZIO.succeed(pageDocs.flatMap(_.works))
     newWorkDocs <- ZIO
-      .collectAll(allWorkDocs.map(wd => data.works.exists(wd.id).map(exists => if (exists) None else Some(wd))))
+      .collectAll(allWorkDocs.map(wd => Lo3Data.works.exists(wd.id).map(exists => if (exists) None else Some(wd))))
       .map(_.flatten)
     _               <- log.edit(s"Parsing fandoms...")
     allFandoms      <- tagService.canonize(newWorkDocs.flatMap(_.fandoms).distinct)(tagService.fandom)

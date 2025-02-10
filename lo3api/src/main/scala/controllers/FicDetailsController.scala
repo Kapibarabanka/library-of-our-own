@@ -2,6 +2,7 @@ package kapibarabanka.lo3.api
 package controllers
 
 import ficService.FicService
+import sqlite.services.Lo3Data
 
 import kapibarabanka.lo3.common.models.ao3
 import kapibarabanka.lo3.common.models.ao3.{Ao3Url, FicType}
@@ -37,43 +38,43 @@ protected[api] case class FicDetailsController(ficService: FicService, bot: MyBo
 
   val patchDetails = FicDetailsClient.patchDetails.implement { (key, details) =>
     for {
-      _             <- data.details.patchDetails(key, details)
+      _             <- Lo3Data.details.patchDetails(key, details)
       patchedRecord <- getUserFicInternal(key)
     } yield patchedRecord
   }
 
   val addComment = FicDetailsClient.addComment.implement { (key, comment) =>
     for {
-      _             <- data.comments.addComment(key, comment)
+      _             <- Lo3Data.comments.addComment(key, comment)
       patchedRecord <- getUserFicInternal(key)
     } yield patchedRecord
   }
 
   val startedToday = FicDetailsClient.startedToday.implement { key =>
     for {
-      _             <- data.readDates.addStartDate(key, LocalDate.now().toString)
+      _             <- Lo3Data.readDates.addStartDate(key, LocalDate.now().toString)
       patchedRecord <- getUserFicInternal(key)
     } yield patchedRecord
   }
 
   val finishedToday = FicDetailsClient.finishedToday.implement { key =>
     for {
-      _             <- data.readDates.addFinishDate(key, LocalDate.now().toString)
-      _             <- data.details.setBacklog(key, false)
+      _             <- Lo3Data.readDates.addFinishDate(key, LocalDate.now().toString)
+      _             <- Lo3Data.details.setBacklog(key, false)
       patchedRecord <- getUserFicInternal(key)
     } yield patchedRecord
   }
 
   val cancelStartedToday = FicDetailsClient.cancelStartedToday.implement { key =>
     for {
-      _             <- data.readDates.cancelStartedToday(key)
+      _             <- Lo3Data.readDates.cancelStartedToday(key)
       patchedRecord <- getUserFicInternal(key)
     } yield patchedRecord
   }
 
   val cancelFinishedToday = FicDetailsClient.cancelFinishedToday.implement { key =>
     for {
-      _             <- data.readDates.cancelFinishedToday(key)
+      _             <- Lo3Data.readDates.cancelFinishedToday(key)
       patchedRecord <- getUserFicInternal(key)
     } yield patchedRecord
   }
@@ -81,9 +82,9 @@ protected[api] case class FicDetailsController(ficService: FicService, bot: MyBo
   private def getUserFicInternal(key: UserFicKey, log: OptionalLog = EmptyLog()): IO[Lo3Error, UserFicRecord] = for {
     fic           <- ficService.getFic(key.ficId, key.ficType, log)
     _             <- if (key.ficIsSeries) createDetailsForSeriesParts(key) else ZIO.unit
-    details       <- data.details.getOrCreateDetails(key)
-    readDatesInfo <- data.readDates.getReadDatesInfo(key)
-    comments      <- data.comments.getAllComments(key)
+    details       <- Lo3Data.details.getOrCreateDetails(key)
+    readDatesInfo <- Lo3Data.readDates.getReadDatesInfo(key)
+    comments      <- Lo3Data.comments.getAllComments(key)
   } yield UserFicRecord(
     userId = key.userId,
     fic = fic,
@@ -93,8 +94,8 @@ protected[api] case class FicDetailsController(ficService: FicService, bot: MyBo
   )
 
   private def createDetailsForSeriesParts(key: UserFicKey) = for {
-    ids <- data.series.workIds(key.ficId)
-    _   <- ZIO.collectAll(ids.map(id => data.details.getOrCreateDetails(UserFicKey(key.userId, id, FicType.Work))))
+    ids <- Lo3Data.series.workIds(key.ficId)
+    _   <- ZIO.collectAll(ids.map(id => Lo3Data.details.getOrCreateDetails(UserFicKey(key.userId, id, FicType.Work))))
   } yield ()
 
   override val routes: List[Route[Any, Response]] =
