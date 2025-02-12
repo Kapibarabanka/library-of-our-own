@@ -20,6 +20,6 @@ case class FicDetailsDoc(
     backlog = backlog,
     isOnKindle = isOnKindle,
     quality = quality.map(Quality.withName),
-    fire = fire,
+    spicy = fire,
     recordCreated = LocalDate.parse(recordCreated)
   )

@@ -9,7 +9,7 @@ case class FicDetails(
     backlog: Boolean,
     isOnKindle: Boolean,
     quality: Option[Quality.Value],
-    fire: Boolean,
+    spicy: Boolean,
     recordCreated: LocalDate
 )
 object FicDetails:

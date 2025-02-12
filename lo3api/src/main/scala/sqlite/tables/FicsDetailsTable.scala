@@ -14,7 +14,7 @@ class FicsDetailsTable(tag: Tag) extends Table[FicDetailsDoc](tag, FicsDetailsTa
   def backlog       = column[Boolean]("backlog")
   def isOnKindle    = column[Boolean]("isOnKindle")
   def quality       = column[Option[String]]("quality")
-  def fire          = column[Boolean]("fire")
+  def fire          = column[Boolean]("spicy")
   def recordCreated = column[String]("recordCreated")
 
   def * = (id.?, userId, ficId, ficIsSeries, backlog, isOnKindle, quality, fire, recordCreated).mapTo[FicDetailsDoc]

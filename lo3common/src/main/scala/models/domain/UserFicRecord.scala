@@ -14,7 +14,7 @@ case class UserFicRecord(
   val specialTags: List[String] = List(
     if (details.isOnKindle) Some("On Kindle") else None,
     if (readDatesInfo.finishedReading) Some("Already Read") else None,
-    if (details.fire) Some("Has Fire") else None
+    if (details.spicy) Some("Has Fire") else None
   ).flatten
 
 object UserFicRecord:

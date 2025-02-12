@@ -15,7 +15,7 @@ object Buttons:
         ).flatten,
         getDatesButtons(fic.readDatesInfo),
         List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant),
-        List(addComment, update, if (fic.details.fire) rateNotFire else rateFire)
+        List(addComment, update, if (fic.details.spicy) rateNotSpicy else rateSpicy)
       )
     )
   )
@@ -42,7 +42,7 @@ object Buttons:
   val sendToKindle      = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
 
   val addComment = InlineKeyboardButton(s"${Emoji.comment} Add note", callbackData = Some("addComment"))
-  val update = InlineKeyboardButton(s"${Emoji.refresh} Update", callbackData = Some("update"))
+  val update     = InlineKeyboardButton(s"${Emoji.refresh} Update", callbackData = Some("update"))
 
   // read dates
   val markAsRead          = InlineKeyboardButton(s"${Emoji.question} Read some time ago", callbackData = Some("markAsRead"))
@@ -57,8 +57,8 @@ object Buttons:
   val rateOk        = InlineKeyboardButton(s"${Emoji.ok}", callbackData = Some("rateOk"))
   val rateNice      = InlineKeyboardButton(s"${Emoji.nice}", callbackData = Some("rateNice"))
   val rateBrilliant = InlineKeyboardButton(s"${Emoji.brilliant}", callbackData = Some("rateBrilliant"))
-  val rateFire      = InlineKeyboardButton(s"${Emoji.fire}", callbackData = Some("rateFire"))
-  val rateNotFire   = InlineKeyboardButton(s"${Emoji.notFire}", callbackData = Some("rateNotFire"))
+  val rateSpicy     = InlineKeyboardButton(s"${Emoji.fire}", callbackData = Some("rateSpicy"))
+  val rateNotSpicy  = InlineKeyboardButton(s"${Emoji.notFire}", callbackData = Some("rateNotSpicy"))
 
   // for new
   val parseAndSave = InlineKeyboardButton(s"${Emoji.airtable} Parse and save to db", callbackData = Some("parseAndSave"))

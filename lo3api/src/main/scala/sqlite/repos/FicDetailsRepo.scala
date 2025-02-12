@@ -68,7 +68,7 @@ class FicDetailsRepo(db: Lo3Db):
             details.backlog,
             details.isOnKindle,
             details.quality.map(_.toString),
-            details.fire
+            details.spicy
           )
         )
     )

@@ -45,8 +45,8 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
       case Buttons.rateNice.callbackData      => patchDetails(record.details.copy(quality = Some(Quality.Nice)), query)
       case Buttons.rateBrilliant.callbackData => patchDetails(record.details.copy(quality = Some(Quality.Brilliant)), query)
 
-      case Buttons.rateFire.callbackData    => patchDetails(record.details.copy(fire = true), query)
-      case Buttons.rateNotFire.callbackData => patchDetails(record.details.copy(fire = false), query)
+      case Buttons.rateSpicy.callbackData    => patchDetails(record.details.copy(spicy = true), query)
+      case Buttons.rateNotSpicy.callbackData => patchDetails(record.details.copy(spicy = false), query)
 
       case Buttons.addComment.callbackData => bot.answerCallbackQuery(query).map(_ => CommentBotState(record))
 
