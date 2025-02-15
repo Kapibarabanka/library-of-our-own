@@ -134,7 +134,7 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
               authors = work.authors.split(", ").toList,
               rating = Rating.withName(work.rating),
               categories = work.categories.split(", ").toSet,
-              warnings = work.warnings.split(", ").toSet,
+              warnings = if (work.warnings.isBlank) Set() else work.warnings.split(", ").toSet,
               fandoms = fandomsByWork.getOrElse(work.id, Seq()).toSet,
               characters = charactersByWork.getOrElse(work.id, Seq()).toSet,
               relationships = shipsByWork.getOrElse(work.id, Seq()).toList.distinct,
