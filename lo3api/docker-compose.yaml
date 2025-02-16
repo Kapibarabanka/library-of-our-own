@@ -1,18 +1,18 @@
 services:
-  lo3-api:
-    container_name: lo3-api
-    restart: unless-stopped
-    build:
-      context: ./..
-      dockerfile: ./lo3api/Dockerfile
-    env_file:
-       - '../.env'
-    volumes:
-      - ao3-db:/home/ao3db/
-      - downloaded-fics:/home/downloaded-fics/
-    ports:
-      - "8090:8090"
+    lo3-api:
+        container_name: lo3-api
+        restart: unless-stopped
+        build:
+            context: ./..
+            dockerfile: ./lo3api/Dockerfile
+        env_file:
+            - '../.env'
+        volumes:
+            - ao3-db:/home/ao3db/
+            - downloaded-fics:/home/downloaded-fics/
+        ports:
+            - '8090:8090'
 volumes:
-  downloaded-fics:
-  ao3-db:
-    external: true
+    downloaded-fics:
+    ao3-db:
+        external: true

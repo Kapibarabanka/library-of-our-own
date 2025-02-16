@@ -1,0 +1,11 @@
+services:
+    lo3-web:
+        container_name: lo3-web
+        restart: unless-stopped
+        build:
+            context: ./..
+            dockerfile: ./lo3web/Dockerfile
+        env_file:
+            - '../.env'
+        ports:
+            - '3000:3000'
