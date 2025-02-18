@@ -34,3 +34,4 @@ classes/
 /.worksheet/
 
 .env
+.env*
