@@ -42,7 +42,7 @@ export function Filters({
                         select
                         className='flex-1'
                         value={tagType}
-                        onChange={e => setTagType(e.target.value)}>
+                        onChange={e => setTagType(e.target.value as TagFilterType)}>
                         {filterTypes.map(filterType => (
                             <MenuItem key={filterType} value={filterType}>
                                 {filterType}
@@ -55,7 +55,7 @@ export function Filters({
                         size='small'
                         select
                         value={filterInclusion}
-                        onChange={e => setFilterInclusion(e.target.value)}>
+                        onChange={e => setFilterInclusion(e.target.value as FilterInclusion)}>
                         {Object.values(FilterInclusion).map(filterType => (
                             <MenuItem key={filterType} value={filterType}>
                                 {filterType}
