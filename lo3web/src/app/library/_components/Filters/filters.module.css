@@ -1,0 +1,13 @@
+.dropdownMenu {
+    padding: 16px;
+    min-width: 300px;
+}
+.itemsList {
+    max-height: 500px;
+    overflow-y: scroll;
+}
+.dropdownItem {
+    padding-left: 0px;
+    padding-right: 0px;
+    text-wrap: wrap;
+}

@@ -1,0 +1,11 @@
+.wrap {
+    display: inline;
+    &:not(:last-child) {
+        &::after {
+            content: ',   ';
+        }
+    }
+}
+.text {
+    border-bottom: 1px dotted grey;
+}
