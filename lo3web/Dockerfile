@@ -46,7 +46,7 @@ COPY ../.env ./
 COPY --from=builder --chown=nextjs:nodejs /app/lo3web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/lo3web/.next/static ./.next/static
 
-USER nextjs
+# USER nextjs
 
 EXPOSE 3000
 
