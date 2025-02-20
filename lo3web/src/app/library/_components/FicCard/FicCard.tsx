@@ -2,26 +2,18 @@
 
 import { FicCardData } from '@/types/domain-models';
 import styles from './card.module.css';
-import { getTagsByType } from '@/app/library/_utils/utils';
+import { getTagsByField } from '@/app/library/_utils/filter-utils';
 import Tag from '../Tag/Tag';
-// import Tabs from 'react-bootstrap/Tabs';
-// import Tab from 'react-bootstrap/Tab';
-import { TagFilterType } from '@/app/library/_types/filter-enums';
+import { TagFiled } from '@/app/library/_types/filter-enums';
 
 export default function FicCard({
     data,
     onTagClicked,
 }: {
     data: FicCardData;
-    onTagClicked: (tagType: TagFilterType, tag: string) => void;
+    onTagClicked: (tagType: TagFiled, tag: string) => void;
 }) {
-    const tagTypes = [
-        TagFilterType.Warning,
-        TagFilterType.Fandom,
-        TagFilterType.Ship,
-        TagFilterType.Character,
-        TagFilterType.Tag,
-    ];
+    const tagTypes = [TagFiled.Warning, TagFiled.Fandom, TagFiled.Ship, TagFiled.Character, TagFiled.Tag];
     const authors = data.fic.authors ?? ['Anonymous'];
     const rating = data.fic.rating[0];
     const complete = data.fic.complete ? '✅' : '❌';
@@ -33,17 +25,20 @@ export default function FicCard({
                 <div className={`${styles.title} text-base`}>
                     <div>
                         <a href={data.fic.link}>{data.fic.title}</a> by{' '}
-                        {authors.map(a => (
-                            <Tag key={a} tag={a} onTagClicked={tag => onTagClicked(TagFilterType.Author, tag)}></Tag>
+                        {authors.map(author => (
+                            <Tag
+                                key={author}
+                                label={author}
+                                onTagClicked={() => onTagClicked(TagFiled.Author, author)}></Tag>
                         ))}
                     </div>
                 </div>
             </div>
             <div>
                 {tagTypes.map(tagType => {
-                    const tags = getTagsByType(data.fic, tagType);
+                    const tags = getTagsByField(data.fic, tagType);
                     return !!tags?.length ? (
-                        <TagsBlok key={tagType} tagType={tagType} tags={getTagsByType(data.fic, tagType)}></TagsBlok>
+                        <TagsBlok key={tagType} tagType={tagType} tags={getTagsByField(data.fic, tagType)}></TagsBlok>
                     ) : null;
                 })}
                 <span>
@@ -53,15 +48,14 @@ export default function FicCard({
             </div>
         </div>
     );
-    function TagsBlok({ tagType, tags }: { tagType: TagFilterType; tags: string[] }) {
-        const onClick = (t: string) => onTagClicked(tagType, t);
+    function TagsBlok({ tagType, tags }: { tagType: TagFiled; tags: string[] }) {
         return (
             <div>
                 <span>
                     <strong>{tagType + 's: '}</strong>
                 </span>
                 {tags?.map(tag => (
-                    <Tag key={tag} tag={tag} onTagClicked={onClick} withCross={false}></Tag>
+                    <Tag key={tag} label={tag} onTagClicked={() => onTagClicked(tagType, tag)} withCross={false}></Tag>
                 ))}
             </div>
         );

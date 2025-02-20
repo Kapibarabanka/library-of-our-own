@@ -50,7 +50,7 @@ export type FicDetails = {
     backlog: boolean;
     isOnKindle: boolean;
     quality?: Quality;
-    fire: boolean;
+    spicy: boolean;
 };
 
 export type UserFicKey = {

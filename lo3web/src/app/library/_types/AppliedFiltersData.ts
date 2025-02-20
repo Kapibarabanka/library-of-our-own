@@ -1,25 +1,31 @@
 import { Rating } from '@/types/domain-models';
-import { FilterInclusion, TagFilterType } from './filter-enums';
+import { TagInclusion, TagFiled, BoolField } from './filter-enums';
 
 export type TagFilter = {
-    filterInclusion: FilterInclusion;
-    tagType: TagFilterType;
+    filterInclusion: TagInclusion;
+    tagType: TagFiled;
     tag: string;
 };
 
 export class AppliedFiltersData {
-    public includedTagFilters: Map<TagFilterType, Set<string>>;
-    public excludedTagFilters: Map<TagFilterType, Set<string>>;
+    public includedTagFilters: Map<TagFiled, Set<string>>;
+    public excludedTagFilters: Map<TagFiled, Set<string>>;
     public allowedRatings: Set<Rating>;
+    public boolFilters: Map<BoolField, boolean>;
 
     constructor(filters: Partial<AppliedFiltersData>) {
         this.includedTagFilters =
             filters.includedTagFilters ??
-            new Map<TagFilterType, Set<string>>(Object.values(TagFilterType).map(tagType => [tagType, new Set()]));
+            new Map<TagFiled, Set<string>>(Object.values(TagFiled).map(tagType => [tagType, new Set()]));
         this.excludedTagFilters =
             filters.excludedTagFilters ??
-            new Map<TagFilterType, Set<string>>(Object.values(TagFilterType).map(tagType => [tagType, new Set()]));
+            new Map<TagFiled, Set<string>>(Object.values(TagFiled).map(tagType => [tagType, new Set()]));
         this.allowedRatings = filters.allowedRatings ?? new Set<Rating>();
+        this.boolFilters = filters.boolFilters ?? new Map<BoolField, boolean>();
+    }
+
+    public get HasFilter() {
+        return this.HasIncluded || this.HasExcluded || this.allowedRatings.size || this.boolFilters.size;
     }
 
     public get HasIncluded() {
@@ -32,15 +38,23 @@ export class AppliedFiltersData {
         return ![...this.excludedTagFilters].every(([_, values]) => ![...values].length);
     }
 
-    public get HasAllowedRatings() {
-        return !!this.allowedRatings.size;
-    }
-
     public withTagFilter(filter: TagFilter) {
         return this.tagFilterAction(filter, true);
     }
     public withoutTagFilter(filter: TagFilter) {
         return this.tagFilterAction(filter, false);
+    }
+
+    public withBoolFilter(field: BoolField, value: boolean) {
+        const copy = new AppliedFiltersData(this);
+        copy.boolFilters.set(field, value);
+        return copy;
+    }
+
+    public withoutBoolFilter(field: BoolField) {
+        const copy = new AppliedFiltersData(this);
+        copy.boolFilters.delete(field);
+        return copy;
     }
 
     public withRating(rating: Rating) {
@@ -58,7 +72,7 @@ export class AppliedFiltersData {
     private tagFilterAction(filter: TagFilter, isAdd: boolean) {
         const copy = new AppliedFiltersData(this);
         const filterMap =
-            filter.filterInclusion === FilterInclusion.Include ? copy.includedTagFilters : copy.excludedTagFilters;
+            filter.filterInclusion === TagInclusion.Include ? copy.includedTagFilters : copy.excludedTagFilters;
         const filterSet = filterMap.get(filter.tagType) ?? new Set<string>();
         if (isAdd) {
             filterSet.add(filter.tag);

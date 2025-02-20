@@ -1,18 +1,18 @@
 import styles from './tag.module.css';
 
 export default function Tag({
-    tag,
+    label,
     withCross = false,
     onTagClicked,
 }: {
-    tag: string;
+    label: string;
     withCross?: boolean;
-    onTagClicked: (tag: string) => void;
+    onTagClicked: () => void;
 }) {
     return (
         <li className={styles.wrap}>
-            <span className={styles.text} onClick={() => onTagClicked(tag)}>
-                {tag + (withCross ? ' X' : '')}
+            <span className={styles.text} onClick={() => onTagClicked()}>
+                {label + (withCross ? ' X' : '')}
             </span>
         </li>
     );

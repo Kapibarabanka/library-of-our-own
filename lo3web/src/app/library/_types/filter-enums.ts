@@ -1,9 +1,9 @@
-export enum FilterInclusion {
+export enum TagInclusion {
     Include = 'Include',
     Exclude = 'Exclude',
 }
 
-export enum TagFilterType {
+export enum TagFiled {
     Ship = 'Ship',
     Tag = 'Tag',
     Fandom = 'Fandom',
@@ -12,23 +12,34 @@ export enum TagFilterType {
     Warning = 'Warning',
 }
 
-export enum BoolFilterType {
-    // Reading = 'Backlog', no need to make it a filter, because I plan to add a separate tab "Reading List"
+export enum BoolField {
+    Backlog = 'Backlog',
     OnKindle = 'Is on Kindle',
     Spicy = 'Spicy',
-    Read = 'Already read',
 }
 
-export enum CustomFilterType {
+export enum CustomField {
     Words = 'Word Count',
     Rating = 'Rating',
     Quality = 'Your Rating',
 }
 
-export type FilterType = TagFilterType | BoolFilterType | CustomFilterType;
-export const filterTypes = [
-    ...Object.values(TagFilterType),
+export enum FilterType {
+    Tag = 'Tag',
+    Bool = 'Bool',
+    Custom = 'Custom',
+}
+
+export function getFilterType(filteredField: FilterableField): FilterType {
+    if (Object.values(TagFiled).includes(filteredField as TagFiled)) return FilterType.Tag;
+    if (Object.values(BoolField).includes(filteredField as BoolField)) return FilterType.Bool;
+    return FilterType.Custom;
+}
+
+export type FilterableField = TagFiled | BoolField | CustomField;
+export const filterableFields = [
+    ...Object.values(TagFiled),
     // TODO
-    // ...Object.values(BoolFilterType),
+    ...Object.values(BoolField),
     // ...Object.values(CustomFilterType),
 ];

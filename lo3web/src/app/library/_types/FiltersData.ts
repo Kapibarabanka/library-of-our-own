@@ -1,7 +1,7 @@
 import { FicCardData } from '@/types/domain-models';
 import { AppliedFiltersData } from './AppliedFiltersData';
-import { TagFilterType } from './filter-enums';
-import { getTagsByType } from '../_utils/utils';
+import { TagFiled } from './filter-enums';
+import { getTagsByField } from '../_utils/filter-utils';
 
 export type TagFilterItem = {
     value: string;
@@ -10,26 +10,22 @@ export type TagFilterItem = {
 };
 
 export class FiltersData {
-    public tagFilters: Map<TagFilterType, TagFilterItem[]>;
+    public tagFilters: Map<TagFiled, TagFilterItem[]>;
     constructor(cards: FicCardData[], appliedFilters: AppliedFiltersData) {
-        const tagFilters: Iterable<[TagFilterType, TagFilterItem[]]> = Object.values(TagFilterType).map(tagType => [
+        const tagFilters: Iterable<[TagFiled, TagFilterItem[]]> = Object.values(TagFiled).map(tagType => [
             tagType,
             this.toFilterItems(
-                cards.flatMap(c => getTagsByType(c.fic, tagType)),
+                cards.flatMap(c => getTagsByField(c.fic, tagType)),
                 appliedFilters,
                 tagType
             ),
         ]);
         this.tagFilters = new Map(tagFilters);
     }
-    public getTagFilterItems(tagType: TagFilterType): TagFilterItem[] {
+    public getTagFilterItems(tagType: TagFiled): TagFilterItem[] {
         return this.tagFilters.get(tagType) ?? [];
     }
-    private toFilterItems(
-        values: string[],
-        appliedFilters: AppliedFiltersData,
-        tagType: TagFilterType
-    ): TagFilterItem[] {
+    private toFilterItems(values: string[], appliedFilters: AppliedFiltersData, tagType: TagFiled): TagFilterItem[] {
         const includedApplied = appliedFilters.includedTagFilters.get(tagType);
         const excludedApplied = appliedFilters.excludedTagFilters.get(tagType);
         return [
