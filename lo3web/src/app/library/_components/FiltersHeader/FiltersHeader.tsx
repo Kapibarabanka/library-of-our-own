@@ -11,7 +11,7 @@ import {
     getFilterType,
     TagInclusion,
 } from '@/app/library/_types/filter-enums';
-import { TagFiled } from '@/app/library/_types/filter-enums';
+import { TagField } from '@/app/library/_types/filter-enums';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import TagFilterComponent from '../FilterComponents/TagFilterComponent';
@@ -24,7 +24,7 @@ export function Filters({
     filtersState: FiltersState;
     onAppliedChanged: (appliedFilters: AppliedFiltersData) => void;
 }) {
-    const [filteredFiled, setFilteredField] = useState<FilterableField>(TagFiled.Ship);
+    const [filteredFiled, setFilteredField] = useState<FilterableField>(TagField.Ship);
     const [filterType, setFilterType] = useState(FilterType.Tag);
 
     function onFilterTypeSelected(selectedType: FilterableField) {
@@ -34,7 +34,7 @@ export function Filters({
 
     function onTagSelected(tagInclusion: TagInclusion, tag?: string) {
         if (!!tag) {
-            const tagField = filteredFiled as TagFiled;
+            const tagField = filteredFiled as TagField;
             const newApplied = filtersState.appliedFilters.withTagFilter({
                 filterInclusion: tagInclusion,
                 tagType: tagField,
@@ -92,7 +92,7 @@ export function Filters({
                 return (
                     <TagFilterComponent
                         filteredField={filteredFiled}
-                        filterItems={filtersState.data.getTagFilterItems(filteredFiled as TagFiled)}
+                        filterItems={filtersState.data.getTagFilterItems(filteredFiled as TagField)}
                         onTagSelected={onTagSelected}
                     />
                 );

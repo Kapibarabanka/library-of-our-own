@@ -1,25 +1,25 @@
 import { Rating } from '@/types/domain-models';
-import { TagInclusion, TagFiled, BoolField } from './filter-enums';
+import { TagInclusion, TagField, BoolField } from './filter-enums';
 
 export type TagFilter = {
     filterInclusion: TagInclusion;
-    tagType: TagFiled;
+    tagType: TagField;
     tag: string;
 };
 
 export class AppliedFiltersData {
-    public includedTagFilters: Map<TagFiled, Set<string>>;
-    public excludedTagFilters: Map<TagFiled, Set<string>>;
+    public includedTagFilters: Map<TagField, Set<string>>;
+    public excludedTagFilters: Map<TagField, Set<string>>;
     public allowedRatings: Set<Rating>;
     public boolFilters: Map<BoolField, boolean>;
 
     constructor(filters: Partial<AppliedFiltersData>) {
         this.includedTagFilters =
             filters.includedTagFilters ??
-            new Map<TagFiled, Set<string>>(Object.values(TagFiled).map(tagType => [tagType, new Set()]));
+            new Map<TagField, Set<string>>(Object.values(TagField).map(tagType => [tagType, new Set()]));
         this.excludedTagFilters =
             filters.excludedTagFilters ??
-            new Map<TagFiled, Set<string>>(Object.values(TagFiled).map(tagType => [tagType, new Set()]));
+            new Map<TagField, Set<string>>(Object.values(TagField).map(tagType => [tagType, new Set()]));
         this.allowedRatings = filters.allowedRatings ?? new Set<Rating>();
         this.boolFilters = filters.boolFilters ?? new Map<BoolField, boolean>();
     }

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { AppliedFiltersData } from '../../_types/AppliedFiltersData';
 import { FiltersState } from '../../_types/FilterState';
 import { getDisplayedCards } from '../../_utils/filter-utils';
-import { TagInclusion, TagFiled } from '../../_types/filter-enums';
+import { TagInclusion, TagField } from '../../_types/filter-enums';
 import { Filters } from '../FiltersHeader/FiltersHeader';
 import FicCard from '../FicCard/FicCard';
 
@@ -17,7 +17,7 @@ export default function LibraryPage({ allCards }: { allCards: FicCardData[] }) {
         setFiltersState(new FiltersState(newDisplayedCards, appliedFilters));
         setDisplayedCards(newDisplayedCards);
     }
-    function onTagClicked(tagType: TagFiled, tag: string) {
+    function onTagClicked(tagType: TagField, tag: string) {
         const newApplied = filtersState.appliedFilters.withTagFilter({
             filterInclusion: TagInclusion.Include,
             tagType,

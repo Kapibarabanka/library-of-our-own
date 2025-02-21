@@ -4,16 +4,16 @@ import { FicCardData } from '@/types/domain-models';
 import styles from './card.module.css';
 import { getTagsByField } from '@/app/library/_utils/filter-utils';
 import Tag from '../Tag/Tag';
-import { TagFiled } from '@/app/library/_types/filter-enums';
+import { TagField } from '@/app/library/_types/filter-enums';
 
 export default function FicCard({
     data,
     onTagClicked,
 }: {
     data: FicCardData;
-    onTagClicked: (tagType: TagFiled, tag: string) => void;
+    onTagClicked: (tagType: TagField, tag: string) => void;
 }) {
-    const tagTypes = [TagFiled.Warning, TagFiled.Fandom, TagFiled.Ship, TagFiled.Character, TagFiled.Tag];
+    const tagTypes = [TagField.Warning, TagField.Fandom, TagField.Ship, TagField.Character, TagField.Tag];
     const authors = data.fic.authors ?? ['Anonymous'];
     const rating = data.fic.rating[0];
     const complete = data.fic.complete ? '✅' : '❌';
@@ -29,7 +29,7 @@ export default function FicCard({
                             <Tag
                                 key={author}
                                 label={author}
-                                onTagClicked={() => onTagClicked(TagFiled.Author, author)}></Tag>
+                                onTagClicked={() => onTagClicked(TagField.Author, author)}></Tag>
                         ))}
                     </div>
                 </div>
@@ -48,7 +48,7 @@ export default function FicCard({
             </div>
         </div>
     );
-    function TagsBlok({ tagType, tags }: { tagType: TagFiled; tags: string[] }) {
+    function TagsBlok({ tagType, tags }: { tagType: TagField; tags: string[] }) {
         return (
             <div>
                 <span>

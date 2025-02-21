@@ -1,27 +1,27 @@
 import { Fic, FicCardData } from '@/types/domain-models';
-import { BoolField, TagFiled } from '@/app/library/_types/filter-enums';
+import { BoolField, TagField } from '@/app/library/_types/filter-enums';
 import { AppliedFiltersData } from '@/app/library/_types/AppliedFiltersData';
 
 export type TagFieldName = 'relationships' | 'tags' | 'fandoms' | 'characters' | 'authors' | 'warnings';
 
-export function tagFieldToProperty(tagType: TagFiled): TagFieldName {
+export function tagFieldToProperty(tagType: TagField): TagFieldName {
     switch (tagType) {
-        case TagFiled.Ship:
+        case TagField.Ship:
             return 'relationships';
-        case TagFiled.Fandom:
+        case TagField.Fandom:
             return 'fandoms';
-        case TagFiled.Character:
+        case TagField.Character:
             return 'characters';
-        case TagFiled.Author:
+        case TagField.Author:
             return 'authors';
-        case TagFiled.Warning:
+        case TagField.Warning:
             return 'warnings';
         default:
             return 'tags';
     }
 }
 
-export function getTagsByField(fic: Fic, tagField: TagFiled): string[] {
+export function getTagsByField(fic: Fic, tagField: TagField): string[] {
     const prop = tagFieldToProperty(tagField);
     return fic[prop] ?? [];
 }

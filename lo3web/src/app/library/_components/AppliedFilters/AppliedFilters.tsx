@@ -1,6 +1,6 @@
 import Tag from '../Tag/Tag';
 import { AppliedFiltersData, TagFilter } from '@/app/library/_types/AppliedFiltersData';
-import { TagInclusion, TagFiled, BoolField } from '@/app/library/_types/filter-enums';
+import { TagInclusion, TagField, BoolField } from '@/app/library/_types/filter-enums';
 
 export default function AppliedFilters({
     appliedFilters,
@@ -49,7 +49,7 @@ export default function AppliedFilters({
         tagFilters,
     }: {
         filterInclusion: TagInclusion;
-        tagFilters: Map<TagFiled, Set<string>>;
+        tagFilters: Map<TagField, Set<string>>;
     }) {
         return (
             <div>
