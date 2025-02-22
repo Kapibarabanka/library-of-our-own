@@ -21,8 +21,8 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app/lo3web
 
-COPY --from=deps /app/lo3web/node_modules ./node_modules
-COPY ../lo3web/build build/
+COPY --from=builder /app/lo3web/node_modules ./node_modules
+COPY --from=builder /app/lo3web/build build/
 COPY ../lo3web/package.json ./
 COPY ../.env ./
 
@@ -30,4 +30,4 @@ ENV PORT=3000
 EXPOSE 3000
 ENV NODE_ENV=production
 # ENTRYPOINT npm run dev
-CMD [ "node","-r", "--env-file=.env", "build" ]
+CMD [ "node","--env-file", ".env", "build" ]
