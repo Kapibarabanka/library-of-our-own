@@ -1,5 +1,4 @@
 import type { FicsPage } from '$lib/types/api-models';
-// import { apiUrl, userId } from '$lib/types/constants';
 import type { PageLoad } from './$types';
 import { PUBLIC_API, PUBLIC_USER } from '$env/static/public';
 
