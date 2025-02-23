@@ -30,16 +30,16 @@ export enum FilterType {
     Custom = 'Custom',
 }
 
-export function getFilterType(filteredField: FilterableField): FilterType {
-    if (Object.values(TagField).includes(filteredField as TagField)) return FilterType.Tag;
-    if (Object.values(BoolField).includes(filteredField as BoolField)) return FilterType.Bool;
-    return FilterType.Custom;
-}
-
 export type FilterableField = TagField | BoolField | CustomField;
-export const filterableFields = [
+export const filterableFields: FilterableField[] = [
     ...Object.values(TagField),
     // TODO
     ...Object.values(BoolField),
     // ...Object.values(CustomFilterType),
 ];
+
+export type TagFilterItem = {
+    value: string;
+    count: number;
+    label: string;
+};
