@@ -10,12 +10,17 @@ import zio.ZIO
 import zio.http.{Response, Route}
 
 protected[api] case class CardsController() extends Controller:
-  val getAllFics = CardsClient.getAllFics.implement { userId => for {
-      //      seriesWithDetails <- data.series.getAllForUser(request.userId)
-      // todo: filter out works that are contained in the series
-      worksWithDetails <- Lo3Data.works.getAllForUser(userId)
+  val getAllFics = CardsClient.getAllFics.implement { userId =>
+    for {
+      worksWithDetails  <- Lo3Data.works.getAllForUser(userId)
+      seriesWithDetails <- Lo3Data.series.getAllForUser(userId, worksWithDetails.map((_, w) => w))
+      workIdsFromSeries <- ZIO.succeed(seriesWithDetails.flatMap((_, _, ids) => ids).toSet)
+      allFicsWithDetails <- ZIO.succeed(
+        seriesWithDetails.map((d, s, _) => (d, s)) ++ worksWithDetails
+          .filter((_, w) => !workIdsFromSeries.contains(w.id))
+      )
       allCards <- ZIO.succeed(
-        worksWithDetails.map((details, fic) => FicCard(UserFicKey(userId, fic.id, fic.ficType), fic, details))
+        allFicsWithDetails.map((details, fic) => FicCard(UserFicKey(userId, fic.id, fic.ficType), fic, details))
       )
     } yield FicsPage(total = allCards.length, cards = allCards)
   }

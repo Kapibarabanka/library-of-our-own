@@ -7,12 +7,9 @@ import sqlite.tables.*
 
 import kapibarabanka.lo3.common.models.ao3.{Fandom, FicType, Rating, Work}
 import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, FlatFicModel}
-import scalaz.Scalaz.ToIdOps
 import slick.dbio.Effect
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
-
-import scala.collection.immutable.Iterable
 
 class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
   private val works             = TableQuery[WorksTable]
