@@ -1,6 +1,6 @@
 <script lang="ts">
     import Tag from '$lib/components/Tag.svelte';
-    import type { FicCardData } from '$lib/types/domain-models';
+    import { FicType, type FicCardData } from '$lib/types/domain-models';
     import * as Card from '$ui/card';
     import { TagField, TagInclusion } from '../_types/filter-enums';
     import { getTagsByField } from '../_utils/filter-utils';
@@ -13,11 +13,11 @@
 
 <Card.Root>
     <Card.Header>
-        <Card.Title>
+        <Card.Title class="text-base">
             <a href={cardData.fic.link}>{cardData.fic.title}</a>
         </Card.Title>
         <Card.Description
-            >by {#each authors as author}
+            >{cardData.key.ficType.toLowerCase()} by {#each authors as author}
                 <Tag
                     label={author}
                     onclick={() => pageState.withTagFilter(TagField.Author, TagInclusion.Include, author)}
@@ -53,7 +53,7 @@
             {/if}
         </div>
 
-        <div>Words: {cardData.fic.words}</div>
+        <div>Words: {cardData.fic.words.toLocaleString('en-us')}</div>
     </Card.Footer>
 </Card.Root>
 

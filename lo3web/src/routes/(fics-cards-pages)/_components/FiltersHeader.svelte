@@ -1,12 +1,19 @@
 <script lang="ts">
-    import { BoolField, filterableFields, FilterType, TagField, type FilterableField } from '../_types/filter-enums';
+    import {
+        BoolField,
+        filterableFields,
+        FilterType,
+        TagField,
+        TagInclusion,
+        type FilterableField,
+    } from '../_types/filter-enums';
     import { getFilterType } from '../_utils/filter-utils';
     import { pageState } from './state.svelte';
-    import Tag from '$lib/components/Tag.svelte';
     import TagFilter from './Filters/TagFilter.svelte';
     import BoolFilter from './Filters/BoolFilter.svelte';
     import * as Select from '$ui/select';
     import Label from '$ui/label/label.svelte';
+    import BadgeTag from '$lib/components/BadgeTag.svelte';
 
     let filteredField: FilterableField = $state(TagField.Ship);
     let filterType = $derived(getFilterType(filteredField));
@@ -37,37 +44,28 @@
 {/if}
 <div>
     {#if pageState.hasApplied}
-        <p>Applied filters (tap filter to remove it):</p>
-        {#if pageState.hasIncluded}
-            <span>Include: </span>
-            {#each pageState.appliedFilters.includedTagFilters as [tagType, includedTags]}
-                {#each includedTags as tag}
-                    <Tag
-                        label={tag}
-                        withCross={true}
-                        onclick={() => pageState.appliedFilters.includedTagFilters.get(tagType)?.delete(tag)}
-                    ></Tag>
-                {/each}
+        <Label>Applied filters:</Label>
+        {#each pageState.appliedFilters.includedTagFilters as [tagType, includedTags]}
+            {#each includedTags as tag}
+                <BadgeTag
+                    label={tag}
+                    striked={false}
+                    onclick={() => pageState.withoutTagFilter(tagType, TagInclusion.Include, tag)}
+                ></BadgeTag>
             {/each}
-        {/if}
-        {#if pageState.hasExcluded}
-            <span>Exclude: </span>
-            {#each pageState.appliedFilters.excludedTagFilters as [tagType, excludedTags]}
-                {#each excludedTags as tag}
-                    <Tag
-                        label={tag}
-                        withCross={true}
-                        onclick={() => pageState.appliedFilters.excludedTagFilters.get(tagType)?.delete(tag)}
-                    ></Tag>
-                {/each}
+        {/each}
+        {#each pageState.appliedFilters.excludedTagFilters as [tagType, excludedTags]}
+            {#each excludedTags as tag}
+                <BadgeTag
+                    label={tag}
+                    striked={true}
+                    onclick={() => pageState.withoutTagFilter(tagType, TagInclusion.Exclude, tag)}
+                ></BadgeTag>
             {/each}
-        {/if}
+        {/each}
         {#each pageState.appliedFilters.boolFilters as [field, value]}
-            <Tag
-                label={`${value ? '' : 'Not '}${field}`}
-                withCross={true}
-                onclick={() => pageState.appliedFilters.boolFilters.delete(field)}
-            ></Tag>
+            <BadgeTag label={field} striked={value} onclick={() => pageState.appliedFilters.boolFilters.delete(field)}
+            ></BadgeTag>
         {/each}
     {/if}
 </div>

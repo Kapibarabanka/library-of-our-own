@@ -12,6 +12,7 @@
     let tagInclusion = $state(TagInclusion.Include);
 
     let openPopover = $state(false);
+    // TODO: add virtual scrolling, now Tag is loading very slowly
     let tagFilterItems = $derived([...(pageState.tagFilters.get(filteredField) ?? [])]);
     const popoverId = 'tag-selection-popover';
 

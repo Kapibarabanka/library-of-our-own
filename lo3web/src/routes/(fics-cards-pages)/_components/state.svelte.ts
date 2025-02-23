@@ -1,4 +1,4 @@
-import type { FicCardData } from '$lib/types/domain-models';
+import { FicType, type FicCardData } from '$lib/types/domain-models';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { BoolField, TagField, TagInclusion, type TagFilterItem } from '../_types/filter-enums';
 import { getTagsByField } from '../_utils/filter-utils';
@@ -105,6 +105,8 @@ function boolFilterApplies(card: FicCardData, boolField: BoolField, value: boole
             return card.details.isOnKindle === value;
         case BoolField.Spicy:
             return card.details.spicy === value;
+        case BoolField.Series:
+            return (card.key.ficType === FicType.Series) === value;
     }
 }
 

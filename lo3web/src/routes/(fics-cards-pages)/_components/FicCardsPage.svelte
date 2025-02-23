@@ -11,10 +11,7 @@
 <div class="flex flex-col gap-2 p-2">
     <FiltersHeader></FiltersHeader>
     <div class="flex flex-col gap-1">
-        <!-- {filtersState.appliedFilters.HasFilter ? (
-            <span>Filtered results ({displayedCards.length}):</span>
-        ) : null} -->
-        <div>Total: {pageState.filteredCards.length}</div>
+        <p>Total: {pageState.filteredCards.length}</p>
         <div class="flex flex-col gap-2">
             {#each pageState.filteredCards as cardData}
                 <FicCard {cardData}></FicCard>

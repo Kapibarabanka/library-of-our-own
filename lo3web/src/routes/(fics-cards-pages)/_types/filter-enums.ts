@@ -16,6 +16,7 @@ export enum BoolField {
     Backlog = 'In backlog',
     OnKindle = 'On Kindle',
     Spicy = 'Spicy',
+    Series = 'Series',
 }
 
 export enum CustomField {
