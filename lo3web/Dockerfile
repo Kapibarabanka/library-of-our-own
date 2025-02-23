@@ -3,7 +3,7 @@
 FROM node:22-alpine AS base
 
 # Install dependencies only when needed
-FROM base AS deps
+FROM base AS builder
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app/lo3web
@@ -12,17 +12,8 @@ WORKDIR /app/lo3web
 COPY ../lo3web/package.json ../lo3web/package-lock.json* ../lo3web/.npmrc* ./
 RUN npm ci
 
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app/lo3web
-COPY --from=deps /app/lo3web/node_modules ./node_modules
 COPY ../lo3web .
-
-# # Next.js collects completely anonymous telemetry data about general usage.
-# # Learn more here: https://nextjs.org/telemetry
-# # Uncomment the following line in case you want to disable telemetry during the build.
-# # ENV NEXT_TELEMETRY_DISABLED=1s
+COPY ../.env ./
 
 RUN npm run build
 
@@ -30,30 +21,13 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app/lo3web
 
-# ENV NODE_ENV=production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=deps /app/lo3web/node_modules ./node_modules
-COPY ../lo3web .
+COPY --from=builder /app/lo3web/node_modules ./node_modules
+COPY --from=builder /app/lo3web/build build/
+COPY ../lo3web/package.json ./
 COPY ../.env ./
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/lo3web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/lo3web/.next/static ./.next/static
-
-# USER nextjs
-
-EXPOSE 3000
-
 ENV PORT=3000
-
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
-ENV HOSTNAME="0.0.0.0"
+EXPOSE 3000
+ENV NODE_ENV=production
 # ENTRYPOINT npm run dev
-CMD ["node", "server.js"]
+CMD [ "node","--env-file", ".env", "build" ]
