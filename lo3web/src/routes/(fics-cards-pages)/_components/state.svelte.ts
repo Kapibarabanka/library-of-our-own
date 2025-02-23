@@ -20,10 +20,10 @@ export class FicCardsPageState {
         excludedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
     });
     public hasIncluded = $derived(
-        !this.appliedFilters.includedTagFilters.values().every(values => ![...values].length)
+        ![...this.appliedFilters.includedTagFilters.values()].every(values => ![...values].length)
     );
     public hasExcluded = $derived(
-        !this.appliedFilters.excludedTagFilters.values().every(values => ![...values].length)
+        ![...this.appliedFilters.excludedTagFilters.values()].every(values => ![...values].length)
     );
     public hasApplied = $derived(!!this.appliedFilters.boolFilters.size || this.hasIncluded || this.hasExcluded);
 
