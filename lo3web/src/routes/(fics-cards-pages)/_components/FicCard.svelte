@@ -32,10 +32,7 @@
                 <div>
                     <span class="font-semibold">{tagField + 's: '}</span>
                     {#each tags as tag}
-                        <Tag
-                            label={tag}
-                            withCross={false}
-                            onclick={() => pageState.withTagFilter(tagField, TagInclusion.Include, tag)}
+                        <Tag label={tag} onclick={() => pageState.withTagFilter(tagField, TagInclusion.Include, tag)}
                         ></Tag>
                     {/each}
                 </div>

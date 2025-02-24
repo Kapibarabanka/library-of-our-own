@@ -64,7 +64,7 @@
             {/each}
         {/each}
         {#each pageState.appliedFilters.boolFilters as [field, value]}
-            <BadgeTag label={field} striked={value} onclick={() => pageState.appliedFilters.boolFilters.delete(field)}
+            <BadgeTag label={field} striked={!value} onclick={() => pageState.appliedFilters.boolFilters.delete(field)}
             ></BadgeTag>
         {/each}
     {/if}

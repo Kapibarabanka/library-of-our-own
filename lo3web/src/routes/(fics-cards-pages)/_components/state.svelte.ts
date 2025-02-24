@@ -93,6 +93,14 @@ export class FicCardsPageState {
             set.delete(tag);
         }
     }
+
+    public clearFilters() {
+        this.appliedFilters = {
+            boolFilters: new SvelteMap<BoolField, boolean>(),
+            includedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
+            excludedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
+        };
+    }
 }
 
 export const pageState = new FicCardsPageState();

@@ -13,7 +13,7 @@ export enum TagField {
 }
 
 export enum BoolField {
-    Backlog = 'In backlog',
+    Backlog = 'In Reading List',
     OnKindle = 'On Kindle',
     Spicy = 'Spicy',
     Series = 'Series',

@@ -1,6 +1,17 @@
 <script lang="ts">
-	import '../app.css';
-	let { children } = $props();
+    import AppSidebar from '$lib/components/AppSidebar.svelte';
+    import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+    import '../app.css';
+    let { children } = $props();
 </script>
 
-{@render children()}
+<Sidebar.Provider>
+    <AppSidebar />
+    <main>
+        <div class="flex gap-2 items-center">
+            <Sidebar.Trigger size="icon" />
+            <h4 class="scroll-m-20 text-xl font-semibold tracking-tight">Library of our own</h4>
+        </div>
+        {@render children?.()}
+    </main>
+</Sidebar.Provider>
