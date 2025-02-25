@@ -1,12 +1,14 @@
-import { FicType, type FicCardData } from '$lib/types/domain-models';
+import { FicType, Rating, UserImpression, type FicCardData } from '$lib/types/domain-models';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { BoolField, TagField, TagInclusion, type TagFilterItem } from '../_types/filter-enums';
-import { getTagsByField } from '../_utils/filter-utils';
+import { getTagsByField, tagFieldToProperty } from '../_utils/filter-utils';
 
 interface AppliedFilters {
     includedTagFilters: SvelteMap<TagField, SvelteSet<string>>;
     excludedTagFilters: SvelteMap<TagField, SvelteSet<string>>;
     boolFilters: SvelteMap<BoolField, boolean>;
+    allowedRatings: SvelteSet<Rating>;
+    allowedImpressions: SvelteSet<UserImpression>;
 }
 
 const emptyTagFilters: () => [TagField, SvelteSet<string>][] = () =>
@@ -18,6 +20,8 @@ export class FicCardsPageState {
         boolFilters: new SvelteMap<BoolField, boolean>(),
         includedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
         excludedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
+        allowedRatings: new SvelteSet<Rating>(),
+        allowedImpressions: new SvelteSet<UserImpression>(),
     });
     public hasIncluded = $derived(
         ![...this.appliedFilters.includedTagFilters.values()].every(values => ![...values].length)
@@ -25,7 +29,13 @@ export class FicCardsPageState {
     public hasExcluded = $derived(
         ![...this.appliedFilters.excludedTagFilters.values()].every(values => ![...values].length)
     );
-    public hasApplied = $derived(!!this.appliedFilters.boolFilters.size || this.hasIncluded || this.hasExcluded);
+    public hasApplied = $derived(
+        !!this.appliedFilters.boolFilters.size ||
+            this.hasIncluded ||
+            this.hasExcluded ||
+            !!this.appliedFilters.allowedRatings.size ||
+            !!this.appliedFilters.allowedImpressions.size
+    );
 
     public filteredCards = $derived.by(() => {
         let filteredCards = [...this.allCards];
@@ -45,6 +55,14 @@ export class FicCardsPageState {
         }
         for (const [field, value] of this.appliedFilters.boolFilters) {
             filteredCards = filteredCards.filter(card => boolFilterApplies(card, field, value));
+        }
+        if (this.appliedFilters.allowedRatings.size) {
+            filteredCards = filteredCards.filter(card => this.appliedFilters.allowedRatings.has(card.fic.rating));
+        }
+        if (this.appliedFilters.allowedImpressions.size) {
+            filteredCards = filteredCards.filter(
+                card => card.details.quality && this.appliedFilters.allowedImpressions.has(card.details.quality)
+            );
         }
         return filteredCards;
     });
@@ -99,6 +117,8 @@ export class FicCardsPageState {
             boolFilters: new SvelteMap<BoolField, boolean>(),
             includedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
             excludedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
+            allowedRatings: new SvelteSet<Rating>(),
+            allowedImpressions: new SvelteSet<UserImpression>(),
         };
     }
 }
@@ -115,24 +135,5 @@ function boolFilterApplies(card: FicCardData, boolField: BoolField, value: boole
             return card.details.spicy === value;
         case BoolField.Series:
             return (card.key.ficType === FicType.Series) === value;
-    }
-}
-
-export type TagFieldName = 'relationships' | 'tags' | 'fandoms' | 'characters' | 'authors' | 'warnings';
-
-export function tagFieldToProperty(tagType: TagField): TagFieldName {
-    switch (tagType) {
-        case TagField.Ship:
-            return 'relationships';
-        case TagField.Fandom:
-            return 'fandoms';
-        case TagField.Character:
-            return 'characters';
-        case TagField.Author:
-            return 'authors';
-        case TagField.Warning:
-            return 'warnings';
-        default:
-            return 'tags';
     }
 }

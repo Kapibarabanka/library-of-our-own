@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Button } from '$lib/components/ui/button/index.js';
     import { cn } from '$lib/components/ui/utils.js';
-    import PanelLeft from 'lucide-svelte/icons/panel-left';
+    import Menu from 'lucide-svelte/icons/menu';
     import type { ComponentProps } from 'svelte';
     import { useSidebar } from './context.svelte.js';
 
@@ -25,10 +25,9 @@
     }}
     data-sidebar="trigger"
     variant="ghost"
-    size="icon"
-    class={cn('h-10 w-10', className)}
+    class={cn('h-10 w-10 [&_svg]:size-6', className)}
     {...restProps}
 >
-    <PanelLeft />
+    <Menu />
     <span class="sr-only">Toggle Sidebar</span>
 </Button>

@@ -21,7 +21,7 @@ export enum Category {
     None = 'No categorys',
 }
 
-export enum Impession {
+export enum UserImpression {
     Never = 'Never again',
     Meh = 'Meh',
     Ok = 'Ok',
@@ -49,7 +49,7 @@ export interface Fic {
 export interface FicDetails {
     backlog: boolean;
     isOnKindle: boolean;
-    quality?: Impession;
+    quality?: UserImpression;
     spicy: boolean;
 }
 

@@ -22,7 +22,7 @@ export enum BoolField {
 export enum CustomField {
     Words = 'Word Count',
     Rating = 'Rating',
-    Quality = 'Your Rating',
+    Impression = 'Your Impression',
 }
 
 export enum FilterType {
@@ -34,9 +34,8 @@ export enum FilterType {
 export type FilterableField = TagField | BoolField | CustomField;
 export const filterableFields: FilterableField[] = [
     ...Object.values(TagField),
-    // TODO
     ...Object.values(BoolField),
-    // ...Object.values(CustomFilterType),
+    ...Object.values(CustomField),
 ];
 
 export type TagFilterItem = {

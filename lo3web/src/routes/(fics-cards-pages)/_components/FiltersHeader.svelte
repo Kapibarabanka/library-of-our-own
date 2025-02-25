@@ -1,6 +1,7 @@
 <script lang="ts">
     import {
         BoolField,
+        CustomField,
         filterableFields,
         FilterType,
         TagField,
@@ -14,6 +15,10 @@
     import * as Select from '$ui/select';
     import Label from '$ui/label/label.svelte';
     import BadgeTag from '$lib/components/BadgeTag.svelte';
+    import RatingFilter from './Filters/RatingFilter.svelte';
+    import RatingIcon from '$lib/components/RatingBadge.svelte';
+    import ImpressionFilter from './Filters/ImpressionFilter.svelte';
+    import ImpressionBadge from '$lib/components/ImpressionBadge.svelte';
 
     let filteredField: FilterableField = $state(TagField.Ship);
     let filterType = $derived(getFilterType(filteredField));
@@ -22,7 +27,7 @@
 <div class="flex gap-2 items-center pl-3">
     <Label for="filter-type">Filter by</Label>
     <div id="filter-type" class="flex-1">
-        <Select.Root type="single" name="favoriteFruit" bind:value={filteredField}>
+        <Select.Root type="single" bind:value={filteredField}>
             <Select.Trigger class="w-full">
                 {filteredField}
             </Select.Trigger>
@@ -41,6 +46,10 @@
     <TagFilter filteredField={filteredField as TagField}></TagFilter>
 {:else if filterType === FilterType.Bool}
     <BoolFilter filteredField={filteredField as BoolField}></BoolFilter>
+{:else if filteredField === CustomField.Rating}
+    <RatingFilter></RatingFilter>
+{:else if filteredField === CustomField.Impression}
+    <ImpressionFilter></ImpressionFilter>
 {/if}
 <div>
     {#if pageState.hasApplied}
@@ -66,6 +75,20 @@
         {#each pageState.appliedFilters.boolFilters as [field, value]}
             <BadgeTag label={field} striked={!value} onclick={() => pageState.appliedFilters.boolFilters.delete(field)}
             ></BadgeTag>
+        {/each}
+        {#each pageState.appliedFilters.allowedRatings as rating}
+            <BadgeTag label={''} striked={false} onclick={() => pageState.appliedFilters.allowedRatings.delete(rating)}>
+                <RatingIcon {rating}></RatingIcon>
+            </BadgeTag>
+        {/each}
+        {#each pageState.appliedFilters.allowedImpressions as impression}
+            <BadgeTag
+                label={''}
+                striked={false}
+                onclick={() => pageState.appliedFilters.allowedImpressions.delete(impression)}
+            >
+                <ImpressionBadge {impression}></ImpressionBadge>
+            </BadgeTag>
         {/each}
     {/if}
 </div>
