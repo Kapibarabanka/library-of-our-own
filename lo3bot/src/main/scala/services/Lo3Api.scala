@@ -1,6 +1,7 @@
 package kapibarabanka.lo3.bot
 package services
 
+import kapibarabanka.lo3.common.models.domain.{ConnectionClosed, TooManyRequests}
 import zio.http.*
 import zio.http.endpoint.{EndpointExecutor, EndpointLocator, Invocation}
 import zio.http.netty.NettyConfig
@@ -9,15 +10,15 @@ import zio.*
 trait Lo3Api:
   def run[P, I, TOutput, TError](
       endpoint: Invocation[P, I, TError, TOutput, zio.http.endpoint.AuthType.None]
-  ): IO[TError, TOutput]
+  ): IO[TError | ConnectionClosed, TOutput]
 
 case class Lo3ApiImpl(url: String, client: Client) extends Lo3Api:
   private val executor = EndpointExecutor(client, EndpointLocator.fromURL(URL.decode(url).getOrElse(URL.empty)))
 
   def run[P, I, TOutput, TError](
       endpoint: Invocation[P, I, TError, TOutput, zio.http.endpoint.AuthType.None]
-  ): IO[TError, TOutput] =
-    executor(endpoint).provide(Scope.default)
+  ): IO[TError | ConnectionClosed, TOutput] =
+    executor(endpoint).provide(Scope.default).catchAllDefect(_ => ZIO.fail(ConnectionClosed()))
 
 object Lo3Api:
   private val clientConfig = ZClient.Config.default.idleTimeout(5.minutes)
@@ -35,7 +36,7 @@ object Lo3Api:
   )
   def run[P, I, TOutput, TError](
       endpoint: Invocation[P, I, TError, TOutput, zio.http.endpoint.AuthType.None]
-  ): ZIO[Lo3Api, TError, TOutput] =
+  ): ZIO[Lo3Api, TError | ConnectionClosed, TOutput] =
     ZIO.serviceWithZIO[Lo3Api](_.run(endpoint))
 
 end Lo3Api

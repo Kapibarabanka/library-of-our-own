@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.bot
 package utils
 
-import kapibarabanka.lo3.common.models.domain.{AuthFailed, KindleEmailNotSet, TooManyRequests}
+import kapibarabanka.lo3.common.models.domain.{AuthFailed, KindleEmailNotSet, TooManyRequests, ConnectionClosed}
 
 object ErrorMessage:
 
@@ -11,6 +11,7 @@ object ErrorMessage:
   def fromThrowable(error: Throwable, actionName: String): String =
     error match
       case TooManyRequests()   => rateLimit
+      case ConnectionClosed()  => timeout
       case KindleEmailNotSet() => noKindleEmail
       case AuthFailed()        => authFailed
       case _                   => defaultMessage(error, actionName)
@@ -27,4 +28,13 @@ object ErrorMessage:
       |The bot has sent too many requests to the Ao3 and is now being rate-limited. Please try again in a couple of minutes. Parsing progress is saved, so even if you get this message again, after some number of attempts fic will be fully parsed.
       |
       |If you were parsing a series, please try to parse its works one by one and then try parsing the series again.
+      |""".stripMargin
+
+  private val timeout =
+    """
+      |Parsing took to long and the connection to API closed, please resend this fic if you want to try again
+      |
+      |Parsing progress is saved, so even if you get this message again, after some number of attempts fic will be fully parsed. If you were parsing a series, please try to parse its works one by one and then try parsing the series again.
+      |
+      |This error will likely persist till April, the reason is described <a href="https://archiveofourown.org/admin_posts/31204">on the Archive itself</a>
       |""".stripMargin

@@ -7,6 +7,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import zio.*
 import zio.http.*
+import zio.http.Header.UserAgent.ProductOrComment
 import zio.http.Header.SetCookie
 import zio.http.netty.NettyConfig
 
@@ -25,6 +26,16 @@ case class Ao3HttpClientImpl(
   private val followRedirects     = ZClientAspect.followRedirects(2)((resp, message) => ZIO.logInfo(message).as(resp))
   private val clientWithRedirects = client @@ followRedirects
 
+  private val cookies = NonEmptyChunk.fromIterable(
+    Cookie.Request("user_credentials", "1"),
+    List(
+      Cookie.Request("_cfuvid", sys.env("_cfuvid")),
+      Cookie.Request("__cf_bm", sys.env("__cf_bm")),
+      Cookie.Request("cf_clearance", sys.env("cf_clearance")),
+      Cookie.Request("_otwarchive_session", sys.env("_otwarchive_session"))
+    )
+  )
+
   override def get(url: String): ZIO[Any, Ao3Error, String] = for {
     request <- ZIO.succeed(authedResponse match
       case Some(response) => populateCookies(Request.get(url), response)
@@ -34,11 +45,21 @@ case class Ao3HttpClientImpl(
   } yield body
 
   override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {
-    authedResponse   <- getAuthedResponse
-    _                <- ZIO.succeed(this.authedResponse = Some(authedResponse))
-    request          <- ZIO.succeed(populateCookies(Request.get(url), authedResponse))
-    (response, body) <- getResponseAndBody(request)
+    request <- ZIO.succeed(Request.get(url))
+    requestWithCookies <- ZIO.succeed(
+      request.addHeaders(Headers(Header.Cookie(cookies), Header.UserAgent(ProductOrComment.Product("Mozilla", Some("5.0")))))
+    )
+    (response, body) <- getResponseAndBody(requestWithCookies)
+    _                <- ZIO.succeed(this.authedResponse = Some(response))
   } yield body
+
+  // TODO hopefully this is a temporary solution due to AO3 blocking parsers
+//  override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {
+//    authedResponse   <- getAuthedResponse
+//    _                <- ZIO.succeed(this.authedResponse = Some(authedResponse))
+//    request          <- ZIO.succeed(populateCookies(Request.get(url), authedResponse))
+//    (response, body) <- getResponseAndBody(request)
+//  } yield body
 
   private def getAuthedResponse = for {
     (preLoginResponse, preLoginBody) <- getResponseAndBody(Request.get(loginUrl))
