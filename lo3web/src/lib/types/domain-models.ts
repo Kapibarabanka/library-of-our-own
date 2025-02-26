@@ -49,7 +49,7 @@ export interface Fic {
 export interface FicDetails {
     backlog: boolean;
     isOnKindle: boolean;
-    quality?: UserImpression;
+    impression?: UserImpression;
     spicy: boolean;
 }
 

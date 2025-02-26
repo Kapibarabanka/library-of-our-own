@@ -13,11 +13,11 @@ class FicsDetailsTable(tag: Tag) extends Table[FicDetailsDoc](tag, FicsDetailsTa
 
   def backlog       = column[Boolean]("backlog")
   def isOnKindle    = column[Boolean]("isOnKindle")
-  def quality       = column[Option[String]]("quality")
+  def impression    = column[Option[String]]("impression")
   def fire          = column[Boolean]("fire")
   def recordCreated = column[String]("recordCreated")
 
-  def * = (id.?, userId, ficId, ficIsSeries, backlog, isOnKindle, quality, fire, recordCreated).mapTo[FicDetailsDoc]
+  def * = (id.?, userId, ficId, ficIsSeries, backlog, isOnKindle, impression, fire, recordCreated).mapTo[FicDetailsDoc]
 
 object FicsDetailsTable extends MyTable:
   override val name: String     = "FicsDetails"

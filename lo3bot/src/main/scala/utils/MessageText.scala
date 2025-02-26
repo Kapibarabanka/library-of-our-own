@@ -79,17 +79,17 @@ object MessageText {
 
   private def displayMyRating(record: UserFicRecord) =
     (if (record.details.spicy) s"${Emoji.fire}<b>It's spicy!</b>${Emoji.fire}\n" else "")
-      + record.details.quality.fold("")(q => s"You rated it ${formatQuality(q)}\n")
+      + record.details.impression.fold("")(q => s"You rated it ${formatImpresson(q)}\n")
       + (if (record.comments.isEmpty) ""
          else
            s"\nYour thoughts on it:\n<i>${record.comments.map(_.format()).mkString("\n")}</i>")
 
-  private def formatQuality(quality: Quality.Value) = quality match
-    case Quality.Brilliant => s"<b>Brilliant</b> ${Emoji.brilliant}"
-    case Quality.Nice      => s"<b>Nice</b> ${Emoji.nice}"
-    case Quality.Ok        => s"<b>Ok</b> ${Emoji.ok}"
-    case Quality.Meh       => s"<b>Meeeh</b> ${Emoji.meh}"
-    case Quality.Never     => s"<b>Never</b> Again ${Emoji.never}"
+  private def formatImpresson(quality: UserImpression.Value) = quality match
+    case UserImpression.Brilliant => s"<b>Brilliant</b> ${Emoji.brilliant}"
+    case UserImpression.Nice      => s"<b>Nice</b> ${Emoji.nice}"
+    case UserImpression.Ok        => s"<b>Ok</b> ${Emoji.ok}"
+    case UserImpression.Meh       => s"<b>Meeeh</b> ${Emoji.meh}"
+    case UserImpression.Never     => s"<b>Never</b> Again ${Emoji.never}"
 
   private def readDates(record: UserFicRecord) =
     (if (record.readDatesInfo.finishedReading)

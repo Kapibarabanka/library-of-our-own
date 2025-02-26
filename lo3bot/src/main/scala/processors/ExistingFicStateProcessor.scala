@@ -6,7 +6,7 @@ import services.Lo3Api
 import utils.Buttons.getButtonsForExisting
 import utils.{Buttons, MessageText}
 
-import kapibarabanka.lo3.common.models.domain.{FicDetails, Quality, UserFicKey, UserFicRecord}
+import kapibarabanka.lo3.common.models.domain.{FicDetails, UserImpression, UserFicKey, UserFicRecord}
 import kapibarabanka.lo3.common.models.tg.MessageData
 import kapibarabanka.lo3.common.models.tg.TgError.*
 import kapibarabanka.lo3.common.openapi.{FicDetailsClient, KindleClient}
@@ -39,11 +39,12 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
       case Buttons.cancelFinishedToday.callbackData =>
         patchDates(key => Lo3Api.run(FicDetailsClient.cancelFinishedToday(key)))(query)
 
-      case Buttons.rateNever.callbackData     => patchDetails(record.details.copy(quality = Some(Quality.Never)), query)
-      case Buttons.rateMeh.callbackData       => patchDetails(record.details.copy(quality = Some(Quality.Meh)), query)
-      case Buttons.rateOk.callbackData        => patchDetails(record.details.copy(quality = Some(Quality.Ok)), query)
-      case Buttons.rateNice.callbackData      => patchDetails(record.details.copy(quality = Some(Quality.Nice)), query)
-      case Buttons.rateBrilliant.callbackData => patchDetails(record.details.copy(quality = Some(Quality.Brilliant)), query)
+      case Buttons.rateNever.callbackData => patchDetails(record.details.copy(impression = Some(UserImpression.Never)), query)
+      case Buttons.rateMeh.callbackData   => patchDetails(record.details.copy(impression = Some(UserImpression.Meh)), query)
+      case Buttons.rateOk.callbackData    => patchDetails(record.details.copy(impression = Some(UserImpression.Ok)), query)
+      case Buttons.rateNice.callbackData  => patchDetails(record.details.copy(impression = Some(UserImpression.Nice)), query)
+      case Buttons.rateBrilliant.callbackData =>
+        patchDetails(record.details.copy(impression = Some(UserImpression.Brilliant)), query)
 
       case Buttons.rateSpicy.callbackData    => patchDetails(record.details.copy(spicy = true), query)
       case Buttons.rateNotSpicy.callbackData => patchDetails(record.details.copy(spicy = false), query)

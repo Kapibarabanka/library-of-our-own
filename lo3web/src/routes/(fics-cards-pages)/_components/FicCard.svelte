@@ -52,10 +52,10 @@
             {#if !cardData.fic.complete}
                 <Badge class="px-1.5" variant="outline"><RefreshCw size={15}></RefreshCw></Badge>
             {/if}
-            {#if cardData.details.quality}
+            {#if cardData.details.impression}
                 <ImpressionBadge
-                    impression={cardData.details.quality}
-                    onclick={() => pageState.appliedFilters.allowedImpressions.add(cardData.details.quality!)}
+                    impression={cardData.details.impression}
+                    onclick={() => pageState.appliedFilters.allowedImpressions.add(cardData.details.impression!)}
                 ></ImpressionBadge>
             {/if}
             {#if cardData.details.spicy}

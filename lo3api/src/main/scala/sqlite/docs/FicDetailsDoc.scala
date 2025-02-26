@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package sqlite.docs
 
-import kapibarabanka.lo3.common.models.domain.{FicDetails, Quality}
+import kapibarabanka.lo3.common.models.domain.{FicDetails, UserImpression}
 
 import java.time.LocalDate
 
@@ -12,14 +12,14 @@ case class FicDetailsDoc(
     ficIsSeries: Boolean,
     backlog: Boolean,
     isOnKindle: Boolean,
-    quality: Option[String],
+    impression: Option[String],
     fire: Boolean,
     recordCreated: String
 ):
   def toModel: FicDetails = FicDetails(
     backlog = backlog,
     isOnKindle = isOnKindle,
-    quality = quality.map(Quality.withName),
+    impression = impression.map(UserImpression.withName),
     spicy = fire,
     recordCreated = LocalDate.parse(recordCreated)
   )

@@ -61,7 +61,7 @@ export class FicCardsPageState {
         }
         if (this.appliedFilters.allowedImpressions.size) {
             filteredCards = filteredCards.filter(
-                card => card.details.quality && this.appliedFilters.allowedImpressions.has(card.details.quality)
+                card => card.details.impression && this.appliedFilters.allowedImpressions.has(card.details.impression)
             );
         }
         return filteredCards;

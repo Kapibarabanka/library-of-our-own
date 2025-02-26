@@ -14,7 +14,7 @@ import java.time.LocalDate
 class FicDetailsRepo(db: Lo3Db):
   private val ficsDetails = TableQuery[FicsDetailsTable]
 
-  def getAllSeries(): IO[DbError, Seq[FicDetailsDoc]]  = db.run(ficsDetails.filter(_.ficIsSeries === true).result)
+  def getAllSeries(): IO[DbError, Seq[FicDetailsDoc]] = db.run(ficsDetails.filter(_.ficIsSeries === true).result)
 
   def getAllUserKeys(userId: String): IO[DbError, List[UserFicKey]] = for {
     docs <- db.run(ficsDetails.result)
@@ -39,7 +39,7 @@ class FicDetailsRepo(db: Lo3Db):
         ficIsSeries = key.ficIsSeries,
         backlog = false,
         isOnKindle = false,
-        quality = None,
+        impression = None,
         fire = false,
         recordCreated = LocalDate.now().toString
       )
@@ -62,12 +62,12 @@ class FicDetailsRepo(db: Lo3Db):
   def patchDetails(key: UserFicKey, details: FicDetails) = for {
     _ <- db.run(
       filterDetails(key)
-        .map(d => (d.backlog, d.isOnKindle, d.quality, d.fire))
+        .map(d => (d.backlog, d.isOnKindle, d.impression, d.fire))
         .update(
           (
             details.backlog,
             details.isOnKindle,
-            details.quality.map(_.toString),
+            details.impression.map(_.toString),
             details.spicy
           )
         )
