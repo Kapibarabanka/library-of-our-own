@@ -10,9 +10,8 @@
     import { pageState } from './state.svelte';
     import RefreshCw from 'lucide-svelte/icons/refresh-cw';
 
-    const { cardData }: { cardData: FicCardData } = $props();
+    let { cardData }: { cardData: FicCardData } = $props();
     const tagTypes = [TagField.Warning, TagField.Fandom, TagField.Ship, TagField.Character, TagField.Tag];
-    const authors = cardData.fic.authors ?? ['Anonymous'];
 </script>
 
 <Card.Root>
@@ -21,7 +20,7 @@
             <a href={cardData.fic.link}>{cardData.fic.title}</a>
         </Card.Title>
         <Card.Description
-            >{cardData.key.ficType.toLowerCase()} by {#each authors as author}
+            >{cardData.key.ficType.toLowerCase()} by {#each cardData.fic.authors ?? ['Anonymous'] as author}
                 <Tag
                     label={author}
                     onclick={() => pageState.withTagFilter(TagField.Author, TagInclusion.Include, author)}
