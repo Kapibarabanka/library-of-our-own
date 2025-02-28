@@ -49,12 +49,7 @@ object FicDetailsClient extends MyClient:
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
-  val cancelStartedToday = endpoint(Method.PATCH, "cancel-started-today")
-    .out[UserFicRecord]
-    .outError[Lo3Error](Status.InternalServerError)
-    |> withKey
-
-  val cancelFinishedToday = endpoint(Method.PATCH, "cancel-finished-today")
+  val abandonedToday = endpoint(Method.PATCH, "abandoned-today")
     .out[UserFicRecord]
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
@@ -68,6 +63,5 @@ object FicDetailsClient extends MyClient:
       addComment,
       startedToday,
       finishedToday,
-      cancelStartedToday,
-      cancelFinishedToday
+      abandonedToday
     )

@@ -30,10 +30,9 @@ object Buttons:
 
   private def getDatesButtons(info: ReadDatesInfo): List[InlineKeyboardButton] =
     List(
-      if (info.canAddStart) Some(markAsStartedToday) else None,
-      if (info.canCancelStart) Some(cancelStartedToday) else None,
-      if (info.canAddFinish) Some(markAsFinishedToday) else None,
-      if (info.canCancelFinish) Some(cancelFinishedToday) else None
+      if (info.canStart) Some(markAsStartedToday) else None,
+      if (info.canFinish) Some(markAsFinishedToday) else None,
+      if (info.canFinish) Some(markAsAbandonedToday) else None
     ).flatten
 
   // for existing
@@ -45,11 +44,9 @@ object Buttons:
   val update     = InlineKeyboardButton(s"${Emoji.refresh} Update", callbackData = Some("update"))
 
   // read dates
-  val markAsRead          = InlineKeyboardButton(s"${Emoji.question} Read some time ago", callbackData = Some("markAsRead"))
-  val markAsStartedToday  = InlineKeyboardButton(s"${Emoji.start} Started today", callbackData = Some("markAsStartedToday"))
-  val markAsFinishedToday = InlineKeyboardButton(s"${Emoji.finish} Finished today", callbackData = Some("markAsFinishedToday"))
-  val cancelStartedToday  = InlineKeyboardButton(s"${Emoji.cross} Not started today", callbackData = Some("cancelStartedToday"))
-  val cancelFinishedToday = InlineKeyboardButton(s"${Emoji.cross} Not finished today", callbackData = Some("cancelFinishedToday"))
+  val markAsStartedToday   = InlineKeyboardButton(s"${Emoji.start} Start", callbackData = Some("markAsStartedToday"))
+  val markAsFinishedToday  = InlineKeyboardButton(s"${Emoji.finish} Finish", callbackData = Some("markAsFinishedToday"))
+  val markAsAbandonedToday = InlineKeyboardButton(s"${Emoji.abandon} Abandon", callbackData = Some("markAsAbandonedToday"))
 
   // rating
   val rateNever     = InlineKeyboardButton(s"${Emoji.never}", callbackData = Some("rateNever"))

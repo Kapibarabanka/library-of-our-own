@@ -28,9 +28,9 @@ protected[api] case class FicDetailsController(ficService: FicService, bot: MyBo
 
   val updateFic = FicDetailsClient.updateFic.implement { key =>
     for {
-      log <- if (key.userId.nonEmpty) LogMessage.create("Working on it...", bot, key.userId) else ZIO.succeed(EmptyLog())
+      log    <- if (key.userId.nonEmpty) LogMessage.create("Working on it...", bot, key.userId) else ZIO.succeed(EmptyLog())
       result <- ficService.updateFic(key.ficId, key.ficType, log)
-      _ <- log.delete
+      _      <- log.delete
     } yield result
   }
 
@@ -65,16 +65,11 @@ protected[api] case class FicDetailsController(ficService: FicService, bot: MyBo
     } yield patchedRecord
   }
 
-  val cancelStartedToday = FicDetailsClient.cancelStartedToday.implement { key =>
+  val abandonedToday = FicDetailsClient.abandonedToday.implement { key =>
     for {
-      _             <- Lo3Data.readDates.cancelStartedToday(key)
-      patchedRecord <- getUserFicInternal(key)
-    } yield patchedRecord
-  }
-
-  val cancelFinishedToday = FicDetailsClient.cancelFinishedToday.implement { key =>
-    for {
-      _             <- Lo3Data.readDates.cancelFinishedToday(key)
+      _             <- Lo3Data.readDates.addFinishDate(key, LocalDate.now().toString)
+      _             <- Lo3Data.readDates.setIsAbandoned(key, true)
+      _             <- Lo3Data.details.setBacklog(key, false)
       patchedRecord <- getUserFicInternal(key)
     } yield patchedRecord
   }
@@ -107,6 +102,5 @@ protected[api] case class FicDetailsController(ficService: FicService, bot: MyBo
       addComment,
       startedToday,
       finishedToday,
-      cancelStartedToday,
-      cancelFinishedToday
+      abandonedToday
     )

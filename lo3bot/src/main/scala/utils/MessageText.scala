@@ -2,20 +2,12 @@ package kapibarabanka.lo3.bot
 package utils
 
 import kapibarabanka.lo3.common.models.domain.*
-import kapibarabanka.lo3.common.models.tg.*
 import scalaz.Scalaz.ToIdOps
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object MessageText {
-  def newFic(link: String): String =
-    s"""
-       |<a href="$link">That's a new one!</a>
-       |It's not in the database yet, but it could be.
-       |Please note that parsing the AO3 can take some time.
-       |""".stripMargin
-
   def existingFic(record: UserFicRecord): String =
     s"""
        |${info(record.fic, record.key.ficIsSeries)}
@@ -79,7 +71,7 @@ object MessageText {
 
   private def displayMyRating(record: UserFicRecord) =
     (if (record.details.spicy) s"${Emoji.fire}<b>It's spicy!</b>${Emoji.fire}\n" else "")
-      + record.details.impression.fold("")(q => s"You rated it ${formatImpresson(q)}\n")
+      + record.details.impression.fold("")(q => s"Your impression is ${formatImpresson(q)}\n")
       + (if (record.comments.isEmpty) ""
          else
            s"\nYour thoughts on it:\n<i>${record.comments.map(_.format()).mkString("\n")}</i>")
@@ -102,6 +94,7 @@ object MessageText {
           case StartAndFinish(start, finish)                    => s"   - from ${format(start)} to ${format(finish)}"
           case Start(date)                                      => s"   - started reading on ${format(date)}"
           case SingleDayRead(date)                              => s"   - on ${format(date)} (read in one day)"
+          case Abandoned(start, finish)                         => s"   - from ${format(start)} to ${format(finish)} (abandoned)"
         }
         .mkString("\n")
 

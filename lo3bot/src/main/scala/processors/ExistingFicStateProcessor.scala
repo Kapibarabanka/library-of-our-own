@@ -32,12 +32,9 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
       case Buttons.addToBacklog.callbackData      => patchDetails(record.details.copy(backlog = true), query)
       case Buttons.removeFromBacklog.callbackData => patchDetails(record.details.copy(backlog = false), query)
 
-      case Buttons.markAsStartedToday.callbackData  => patchDates(key => Lo3Api.run(FicDetailsClient.startedToday(key)))(query)
-      case Buttons.markAsFinishedToday.callbackData => patchDates(key => Lo3Api.run(FicDetailsClient.finishedToday(key)))(query)
-      case Buttons.cancelStartedToday.callbackData =>
-        patchDates(key => Lo3Api.run(FicDetailsClient.cancelStartedToday(key)))(query)
-      case Buttons.cancelFinishedToday.callbackData =>
-        patchDates(key => Lo3Api.run(FicDetailsClient.cancelFinishedToday(key)))(query)
+      case Buttons.markAsStartedToday.callbackData   => patchDates(key => Lo3Api.run(FicDetailsClient.startedToday(key)))(query)
+      case Buttons.markAsFinishedToday.callbackData  => patchDates(key => Lo3Api.run(FicDetailsClient.finishedToday(key)))(query)
+      case Buttons.markAsAbandonedToday.callbackData => patchDates(key => Lo3Api.run(FicDetailsClient.abandonedToday(key)))(query)
 
       case Buttons.rateNever.callbackData => patchDetails(record.details.copy(impression = Some(UserImpression.Never)), query)
       case Buttons.rateMeh.callbackData   => patchDetails(record.details.copy(impression = Some(UserImpression.Meh)), query)

@@ -7,6 +7,7 @@ object Emoji {
   val kindle    = "\uD83D\uDCF1"
   val start     = "\uD83D\uDCD6"
   val finish    = "✅"
+  val abandon   = "\uD83D\uDDD1"
   val comment   = "✍\uFE0F"
   val refresh   = "\uD83D\uDD04"
   val romantic  = "\uD83D\uDC96"

@@ -12,8 +12,9 @@ class ReadDatesTable(tag: Tag) extends Table[ReadDatesDoc](tag, ReadDatesTable.n
   def ficIsSeries = column[Boolean]("ficIsSeries")
   def startDate   = column[Option[String]]("startDate")
   def endDate     = column[Option[String]]("endDate")
+  def isAbandoned = column[Boolean]("isAbandoned")
 
-  def * = (id.?, userId, ficId, ficIsSeries, startDate, endDate).mapTo[ReadDatesDoc]
+  def * = (id.?, userId, ficId, ficIsSeries, startDate, endDate, isAbandoned).mapTo[ReadDatesDoc]
 
 object ReadDatesTable extends MyTable:
   override val name: String     = "ReadDates"
