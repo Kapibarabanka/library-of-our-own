@@ -8,7 +8,7 @@ import sqlite.tables.*
 import kapibarabanka.lo3.common.models.domain.DbError
 import scalaz.Scalaz.ToIdOps
 import slick.jdbc.PostgresProfile.api.*
-import zio.ZIO
+import zio.{IO, ZIO}
 
 import scala.collection.immutable.Iterable
 
@@ -26,6 +26,12 @@ class TagsRepo(db: Lo3Db):
     db.run(
       sql"select t.canonicalName from #${CanonicalTagsTable.name} as t where t.nameInWork = #$value".as[String]
     ).map(_.headOption)
+
+  def shipExists(canonicalName: String): IO[DbError, Boolean] =
+    val value = s"\"${formatForSql(canonicalName)}\""
+    db.run(
+      sql"select r.name from #${RelationshipsTable.name} as r where r.name = #$value".as[String]
+    ).map(_.headOption.nonEmpty)
 
   def addTags(tags: Iterable[TagDoc]) =
     if (tags.isEmpty) DBIO.successful({})

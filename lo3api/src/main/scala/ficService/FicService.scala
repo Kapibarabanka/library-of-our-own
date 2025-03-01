@@ -85,7 +85,8 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
         warnings = getWarnings(doc.warnings),
         categories = doc.categories.map(Category.withName).toSet,
         fandoms = fandoms.toSet,
-        relationships = relationships,
+        relationships = relationships.filter(r => r.isInstanceOf[Relationship]).map(_.asInstanceOf[Relationship]),
+        parsedShips = relationships.filter(r => r.isInstanceOf[String]).map(_.asInstanceOf[String]),
         characters = characters.toSet,
         freeformTags = freeformTags.distinct,
         link = Ao3Url.work(id),
@@ -133,7 +134,7 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
     allCharacters   <- tagService.canonize(newWorkDocs.flatMap(_.characters).distinct)(tagService.character)
     _               <- log.edit(s"Parsing relationships...")
     allShips <- tagService
-      .canonize(newWorkDocs.flatMap(_.relationships).distinct)(tagService.relationship(_: String, allCharacters))
+      .canonize(newWorkDocs.flatMap(_.relationships).distinct)(tagService.relationship(_: String))
     works <- ZIO.succeed(
       newWorkDocs
         .map(doc =>
@@ -145,7 +146,13 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
             warnings = getWarnings(doc.warnings),
             categories = doc.categories.map(Category.withName).toSet,
             fandoms = doc.fandoms.map(allFandoms(_)).toSet,
-            relationships = doc.relationships.map(allShips(_)).toList,
+            relationships = doc.relationships
+              .map(allShips(_))
+              .filter(r => r.isInstanceOf[Relationship])
+              .map(_.asInstanceOf[Relationship])
+              .toList,
+            parsedShips =
+              doc.relationships.map(allShips(_)).filter(r => r.isInstanceOf[String]).map(_.asInstanceOf[String]).toList,
             characters = doc.characters.map(allCharacters(_)).toSet,
             freeformTags = doc.freeformTags.map(allFreeformTags(_)).toList,
             link = Ao3Url.work(id),

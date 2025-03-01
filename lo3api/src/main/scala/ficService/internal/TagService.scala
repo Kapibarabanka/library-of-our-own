@@ -13,32 +13,27 @@ class TagService(html: HtmlService):
     canonicalName <- getCanonicalTagName(nameInWork)
   } yield Character.fromNameInWork(canonicalName)
 
-  def relationship(nameInWork: String, characters: Map[String, Character] = Map()): IO[Lo3Error, Relationship] = {
-    def characterWithLabel(name: String, label: Option[String]): IO[Lo3Error, Character] =
-      val nameWithLabel = Ao3TagName.combineWithLabel(name, label)
-      if (characters.contains(nameWithLabel))
-        ZIO.succeed(characters(nameWithLabel))
-      if (characters.contains(name))
-        ZIO.succeed(characters(name))
-      html
-        .tagExists(nameWithLabel)
-        .map(exists => if (exists) nameWithLabel else name)
-        .flatMap(resultName => character(resultName))
-
+  def relationship(nameInWork: String): IO[Lo3Error, Relationship | String] = {
     val isRomantic = nameInWork.contains("/")
     val separator  = if (isRomantic) "/" else " & "
     val shipType   = if (isRomantic) Romantic else Platonic
     for {
       canonicalShipName <- getCanonicalTagName(nameInWork)
-      (ship, label)     <- ZIO.succeed(Ao3TagName.trySeparateLabel(canonicalShipName))
-      characterNames    <- ZIO.succeed(ship.split(separator))
-      characters        <- ZIO.collectAll(characterNames.toSet.map(name => characterWithLabel(name, label)))
-    } yield Relationship(
-      characters,
-      shipType,
-      // e.g Alphonse Elric/Cats is a synonym of Alphonse Elric/Other(s) and it's not very informative
-      if (characters.contains(Character("Other(s)", None))) Some(nameInWork) else None
-    )
+      shipExists        <- Lo3Data.tags.shipExists(canonicalShipName)
+      result <-
+        if (shipExists) ZIO.succeed(canonicalShipName)
+        else
+          for {
+            (ship, label)  <- ZIO.succeed(Ao3TagName.trySeparateLabel(canonicalShipName))
+            characterNames <- ZIO.succeed(ship.split(separator))
+            characters     <- ZIO.collectAll(characterNames.toSet.map(name => characterWithLabel(name, label)))
+          } yield Relationship(
+            characters,
+            shipType,
+            // e.g Alphonse Elric/Cats is a synonym of Alphonse Elric/Other(s) and it's not very informative
+            if (characters.contains(Character("Other(s)", None))) Some(nameInWork) else None
+          )
+    } yield result
   }
 
   def fandom(nameInWork: String): IO[Lo3Error, Fandom] = for {
@@ -77,3 +72,21 @@ class TagService(html: HtmlService):
           _         <- Lo3Data.tags.addCanonical(tagName, canonical, doc.isFilterable)
         } yield canonical
   } yield canonicalName
+
+  private def characterWithLabel(name: String, label: Option[String]): IO[Lo3Error, Character] =
+    val nameWithLabel = Ao3TagName.combineWithLabel(name, label)
+    for {
+      maybeCanonical <- Lo3Data.tags.tryGetCanonical(nameWithLabel)
+      maybeCanonical <- if (maybeCanonical.isEmpty) Lo3Data.tags.tryGetCanonical(name) else ZIO.succeed(maybeCanonical)
+      canonicalName <- maybeCanonical match
+        case Some(name) => ZIO.succeed(name)
+        case None =>
+          for {
+            canonicalName <- html
+              .tagExists(nameWithLabel)
+              .map(exists => if (exists) nameWithLabel else name)
+            _ <- ZIO.log(s"Canonical name for'$name' is '${canonicalName}'")
+            _ <- Lo3Data.tags.addCanonical(name, canonicalName, false)
+          } yield canonicalName
+      character <- character(canonicalName)
+    } yield character

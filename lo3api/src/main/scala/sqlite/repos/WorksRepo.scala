@@ -76,7 +76,8 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
       shipsToCharacters ++= shipsWithCharacters.flatMap((ship, characters) =>
         characters.map(c => ShipsToCharactersDoc(None, ship.name, c.fullName))
       ),
-      worksToShips ++= relationshipDocs.map(r => WorksToShipsDoc(None, work.id, r.name))
+      worksToShips ++= relationshipDocs.map(r => WorksToShipsDoc(None, work.id, r.name)),
+      worksToShips ++= work.parsedShips.map(name => WorksToShipsDoc(None, work.id, name))
     )
     result
   }

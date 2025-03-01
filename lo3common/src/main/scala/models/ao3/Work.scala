@@ -12,6 +12,7 @@ case class Work(
     categories: Set[Category.Value] = Set(),
     fandoms: Set[Fandom] = Set(),
     relationships: List[Relationship] = List(),
+    parsedShips: List[String] = List(),
     characters: Set[Character] = Set(),
     freeformTags: List[FreeformTag] = List(),
     link: String,
