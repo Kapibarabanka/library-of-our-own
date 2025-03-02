@@ -26,50 +26,52 @@ case class Ao3HttpClientImpl(
   private val followRedirects     = ZClientAspect.followRedirects(2)((resp, message) => ZIO.logInfo(message).as(resp))
   private val clientWithRedirects = client @@ followRedirects
 
-  private val cookies = NonEmptyChunk.fromIterable(
-    Cookie.Request("user_credentials", "1"),
-    List(
-      Cookie.Request("_cfuvid", sys.env("_cfuvid")),
-      Cookie.Request("__cf_bm", sys.env("__cf_bm")),
-      Cookie.Request("cf_clearance", sys.env("cf_clearance")),
-      Cookie.Request("_otwarchive_session", sys.env("_otwarchive_session"))
-    )
-  )
+//  private val cookiesFromChrome = NonEmptyChunk.fromIterable(
+//    Cookie.Request("user_credentials", "1"),
+//    List(
+//      Cookie.Request("_cfuvid", sys.env("_cfuvid")),
+//      Cookie.Request("__cf_bm", sys.env("__cf_bm")),
+//      Cookie.Request("cf_clearance", sys.env("cf_clearance")),
+//      Cookie.Request("_otwarchive_session", sys.env("_otwarchive_session"))
+//    )
+//  )
+//
+//  override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {
+//    request <- ZIO.succeed(addAgent(Request.get(url)))
+//    requestWithCookies <- ZIO.succeed(
+//      request.addHeaders(Headers(Header.Cookie(cookiesFromChrome)))
+//    )
+//    (response, body) <- getResponseAndBody(requestWithCookies)
+//    _ <- ZIO.succeed(this.authedResponse = Some(response))
+//  } yield body
 
   override def get(url: String): ZIO[Any, Ao3Error, String] = for {
     request <- ZIO.succeed(authedResponse match
       case Some(response) => populateCookies(Request.get(url), response)
-      case None           => Request.get(url)
+      case None           => addAgent(Request.get(url))
     )
     (_, body) <- getResponseAndBody(request)
   } yield body
 
+  // TODO hopefully this is a temporary solution due to AO3 blocking parsers
   override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {
-    request <- ZIO.succeed(Request.get(url))
-    requestWithCookies <- ZIO.succeed(
-      request.addHeaders(Headers(Header.Cookie(cookies), Header.UserAgent(ProductOrComment.Product("Mozilla", Some("5.0")))))
-    )
-    (response, body) <- getResponseAndBody(requestWithCookies)
-    _                <- ZIO.succeed(this.authedResponse = Some(response))
+    authedResponse   <- getAuthedResponse
+    _                <- ZIO.succeed(this.authedResponse = Some(authedResponse))
+    request          <- ZIO.succeed(populateCookies(addAgent(Request.get(url)), authedResponse))
+    (response, body) <- getResponseAndBody(request)
   } yield body
 
-  // TODO hopefully this is a temporary solution due to AO3 blocking parsers
-//  override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {
-//    authedResponse   <- getAuthedResponse
-//    _                <- ZIO.succeed(this.authedResponse = Some(authedResponse))
-//    request          <- ZIO.succeed(populateCookies(Request.get(url), authedResponse))
-//    (response, body) <- getResponseAndBody(request)
-//  } yield body
-
   private def getAuthedResponse = for {
-    (preLoginResponse, preLoginBody) <- getResponseAndBody(Request.get(loginUrl))
+    (preLoginResponse, preLoginBody) <- getResponseAndBody(addAgent(Request.get(loginUrl)))
     token                            <- ZIO.succeed(getToken(preLoginBody))
     request <- ZIO.succeed(
-      Request
-        .post(loginUrl, Body.empty)
-        .addQueryParam("user[login]", username)
-        .addQueryParam("user[password]", password)
-        .addQueryParam("authenticity_token", token)
+      addAgent(
+        Request
+          .post(loginUrl, Body.empty)
+          .addQueryParam("user[login]", username)
+          .addQueryParam("user[password]", password)
+          .addQueryParam("authenticity_token", token)
+      )
     )
     requestWithCookies           <- ZIO.succeed(populateCookies(request, preLoginResponse))
     (authedResponse, authedBody) <- getResponseAndBody(requestWithCookies, false)
@@ -90,6 +92,8 @@ case class Ao3HttpClientImpl(
         case Status.TooManyRequests => ZIO.fail(TooManyRequests())
         case Status.NotFound        => ZIO.fail(NotFound(entityName))
         case status =>
+          if (status.code == 525)
+            ZIO.fail(Cloudflare())
           ZIO.fail(HttpError(status.code, s"getting $entityName"))
     } yield (response, body)
   }
@@ -107,6 +111,9 @@ case class Ao3HttpClientImpl(
       case Some(cookies) => request.addHeaders(Headers(Header.Cookie(cookies)))
       case None          => request
   }
+
+  private def addAgent(request: Request) =
+    request.addHeaders(Headers(Header.UserAgent(ProductOrComment.Product("Mozilla", Some("5.0")))))
 
 protected[ficService] object Ao3HttpClientImpl {
   private val clientConfig = ZClient.Config.default.idleTimeout(5.minutes)

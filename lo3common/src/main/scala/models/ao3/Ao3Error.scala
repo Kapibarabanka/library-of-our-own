@@ -20,5 +20,7 @@ case class ParsingError(internalMsg: String, attemptedEntityName: String) extend
 
 case class NotAo3Link(link: String) extends Ao3Error(s"Link '$link' is not a parsable Ao3 link")
 
+case class Cloudflare() extends Ao3Error("Shields are up")
+
 case class UnspecifiedError(message: String) extends Ao3Error(message)
 
