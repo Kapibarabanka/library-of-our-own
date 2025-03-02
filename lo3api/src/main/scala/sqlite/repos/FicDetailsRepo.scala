@@ -9,7 +9,7 @@ import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 
 class FicDetailsRepo(db: Lo3Db):
   private val ficsDetails = TableQuery[FicsDetailsTable]
@@ -41,7 +41,7 @@ class FicDetailsRepo(db: Lo3Db):
         isOnKindle = false,
         impression = None,
         fire = false,
-        recordCreated = LocalDate.now().toString
+        recordCreated = LocalDateTime.now().toString
       )
     )
     maybeDetails <- getDetailsOption(key)
