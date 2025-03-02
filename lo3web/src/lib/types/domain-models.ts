@@ -51,6 +51,7 @@ export interface FicDetails {
     isOnKindle: boolean;
     impression?: UserImpression;
     spicy: boolean;
+    recordCreated: string;
 }
 
 export interface UserFicKey {

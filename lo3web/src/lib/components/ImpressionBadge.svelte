@@ -10,7 +10,7 @@
     }: { impression: UserImpression; withLabel?: boolean; onclick?: () => void } = $props();
 </script>
 
-<Badge class="px-1 text-[15px] leading-4" variant="secondary" {onclick}>
+<Badge class="px-1 text-[15px] leading-4" variant="outline" {onclick}>
     {getImpressionIcon(impression)}
     {#if withLabel}
         <span class="ml-1 text-[12px]">{impression}</span>

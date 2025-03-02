@@ -28,7 +28,7 @@
             {/each}
         </Card.Description>
     </Card.Header>
-    <Card.Content>
+    <Card.Content class="py-2">
         {#each tagTypes as tagField}
             {@const tags = getTagsByField(cardData.fic, tagField)}
             {#if tags.length}
@@ -58,7 +58,7 @@
                 ></ImpressionBadge>
             {/if}
             {#if cardData.details.spicy}
-                <div>🔥</div>
+                <Badge class="px-1 text-[15px] leading-4" variant="outline">🔥</Badge>
             {/if}
         </div>
 

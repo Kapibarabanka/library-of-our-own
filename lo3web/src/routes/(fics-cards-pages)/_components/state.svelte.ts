@@ -1,7 +1,7 @@
 import { FicType, Rating, UserImpression, type FicCardData } from '$lib/types/domain-models';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-import { BoolField, TagField, TagInclusion, type TagFilterItem } from '../_types/filter-enums';
-import { getTagsByField, tagFieldToProperty } from '../_utils/filter-utils';
+import { BoolField, SortBy, SortDirection, TagField, TagInclusion, type TagFilterItem } from '../_types/filter-enums';
+import { getTagsByField, sortCards, tagFieldToProperty } from '../_utils/filter-utils';
 
 interface AppliedFilters {
     includedTagFilters: SvelteMap<TagField, SvelteSet<string>>;
@@ -23,6 +23,10 @@ export class FicCardsPageState {
         allowedRatings: new SvelteSet<Rating>(),
         allowedImpressions: new SvelteSet<UserImpression>(),
     });
+
+    public sortBy = $state(SortBy.DateAdded);
+    public sortDirection = $state(SortDirection.Desc);
+
     public hasIncluded = $derived(
         ![...this.appliedFilters.includedTagFilters.values()].every(values => ![...values].length)
     );
@@ -64,7 +68,7 @@ export class FicCardsPageState {
                 card => card.details.impression && this.appliedFilters.allowedImpressions.has(card.details.impression)
             );
         }
-        return filteredCards;
+        return sortCards(filteredCards, this.sortBy, this.sortDirection);
     });
 
     public tagFilters = $derived.by(() => {

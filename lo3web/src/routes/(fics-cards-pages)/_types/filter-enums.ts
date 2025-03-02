@@ -43,3 +43,14 @@ export type TagFilterItem = {
     count: number;
     label: string;
 };
+
+export enum SortBy {
+    DateAdded = 'Date Added',
+    WordCount = 'Word Count',
+    Impression = 'Your Impression',
+}
+
+export enum SortDirection {
+    Asc = 'Asc',
+    Desc = 'Desc',
+}
