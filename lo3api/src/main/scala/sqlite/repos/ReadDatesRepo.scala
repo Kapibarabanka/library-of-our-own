@@ -58,10 +58,9 @@ class ReadDatesRepo(db: Lo3Db):
       case Some(doc) => doc.endDate.isDefined
 
   private def canFinish(maybeLastDate: Option[ReadDatesDoc]) =
-    val today = LocalDate.now().toString
     maybeLastDate match
-      case None      => true
-      case Some(doc) => doc.endDate.getOrElse("") != today
+      case None      => false
+      case Some(doc) => doc.endDate.isEmpty
 
   private def lastDatesRecord(key: UserFicKey) = filterDates(key).sortBy(_.id.desc).take(1)
 
