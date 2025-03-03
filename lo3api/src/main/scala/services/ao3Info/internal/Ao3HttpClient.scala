@@ -1,5 +1,5 @@
 package kapibarabanka.lo3.api
-package ficService.internal
+package services.ao3Info.internal
 
 import kapibarabanka.lo3.common.models.ao3.*
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
@@ -94,7 +94,8 @@ case class Ao3HttpClientImpl(
         case status =>
           if (status.code == 525)
             ZIO.fail(Cloudflare())
-          ZIO.fail(HttpError(status.code, s"getting $entityName"))
+          else
+            ZIO.fail(HttpError(status.code, s"getting $entityName"))
     } yield (response, body)
   }
 
@@ -115,7 +116,7 @@ case class Ao3HttpClientImpl(
   private def addAgent(request: Request) =
     request.addHeaders(Headers(Header.UserAgent(ProductOrComment.Product("Mozilla", Some("5.0")))))
 
-protected[ficService] object Ao3HttpClientImpl {
+protected[ao3Info] object Ao3HttpClientImpl {
   private val clientConfig = ZClient.Config.default.idleTimeout(5.minutes)
 
   private def ownLayer(username: String, password: String) = ZLayer {

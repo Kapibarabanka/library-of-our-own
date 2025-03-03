@@ -5,7 +5,7 @@ import sqlite.services.Lo3Data
 
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3.FicType
-import kapibarabanka.lo3.common.models.domain.{Lo3Error, UnspecifiedError, UserFicKey, UserFicRecord}
+import kapibarabanka.lo3.common.models.domain.{Lo3Error, UnspecifiedError, UserFicKey, Fic}
 import kapibarabanka.lo3.common.openapi.UserClient
 import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MyBotApi}
 import zio.*
@@ -36,7 +36,7 @@ protected[api] case class UserController(client: Client, bot: MyBotApi) extends 
     } yield result).provide(Scope.default)
   }
 
-  private def getUserFicInternal(key: UserFicKey): IO[Lo3Error, UserFicRecord] = for {
+  private def getUserFicInternal(key: UserFicKey): IO[Lo3Error, Fic] = for {
     maybeFic <- key.ficType match
       case FicType.Work   => Lo3Data.works.getById(key.ficId)
       case FicType.Series => Lo3Data.series.getById(key.ficId)
@@ -45,12 +45,12 @@ protected[api] case class UserController(client: Client, bot: MyBotApi) extends 
       case None      => ZIO.fail(UnspecifiedError("Shouldn't be possible :)"))
     details       <- Lo3Data.details.getOrCreateDetails(key)
     readDatesInfo <- Lo3Data.readDates.getReadDatesInfo(key)
-    comments      <- Lo3Data.comments.getAllComments(key)
-  } yield UserFicRecord(
+    notes         <- Lo3Data.notes.getAllNotes(key)
+  } yield Fic(
     userId = key.userId,
-    fic = fic,
+    ao3Info = fic,
     readDatesInfo = readDatesInfo,
-    comments = comments,
+    notes = notes,
     details = details
   )
 

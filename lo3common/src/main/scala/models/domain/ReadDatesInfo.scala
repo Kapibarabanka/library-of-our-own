@@ -6,15 +6,9 @@ import zio.schema.{DeriveSchema, Schema}
 case class ReadDatesInfo(
     readDates: List[ReadDates] = List(),
     canStart: Boolean,
-    canFinish: Boolean,
+    canFinish: Boolean
 ):
-  val finishedReading: Boolean = readDates.exists(d =>
-    d match
-      case StartAndFinish(startDate, finishDate) => true
-      case Start(date)                           => false
-      case SingleDayRead(date)                   => true
-      case Abandoned(_, _)                       => true
-  )
+  val alreadyRead: Boolean = readDates.exists(d => d.finishDate.nonEmpty)
 
 object ReadDatesInfo:
   implicit val schema: Schema[ReadDatesInfo] = DeriveSchema.gen

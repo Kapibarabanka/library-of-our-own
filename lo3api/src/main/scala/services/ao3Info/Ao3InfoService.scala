@@ -1,23 +1,23 @@
 package kapibarabanka.lo3.api
-package ficService
+package services.ao3Info
 
-import ficService.internal.*
+import services.ao3Info.internal.{Ao3HttpClient, Ao3HttpClientImpl, HtmlService, TagService}
 import sqlite.services.Lo3Data
 
 import kapibarabanka.lo3.common.models.ao3
 import kapibarabanka.lo3.common.models.ao3.*
-import kapibarabanka.lo3.common.models.domain.{DownloadLinkNotFound, FlatFicModel, Lo3Error}
+import kapibarabanka.lo3.common.models.domain.{Ao3FicInfo, DownloadLinkNotFound, Lo3Error}
 import kapibarabanka.lo3.common.services.{EmptyLog, OptionalLog}
 import zio.{IO, ZIO, ZLayer}
 
-trait FicService:
-  def getFic(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, FlatFicModel]
-  def updateFic(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, FlatFicModel]
+trait Ao3InfoService:
+  def getAo3Info(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, Ao3FicInfo]
+  def updateAo3Info(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, Ao3FicInfo]
   def downloadLink(workId: String): IO[Lo3Error, String]
   def seriesWorks(seriesId: String): IO[Lo3Error, List[String]]
   def ficName(id: String, ficType: FicType): IO[Lo3Error, String]
 
-case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
+case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
   private val htmlService = HtmlService(ao3)
   private val tagService  = TagService(htmlService)
 
@@ -37,7 +37,7 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
     link <- doc.mobiLink.fold[IO[Lo3Error, String]](ZIO.fail(DownloadLinkNotFound(workId)))(s => ZIO.succeed(s))
   } yield Ao3Url.download(link)
 
-  override def updateFic(id: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, FlatFicModel] = ficType match
+  override def updateAo3Info(id: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, Ao3FicInfo] = ficType match
     case FicType.Work =>
       for {
         updatedWork <- parseWork(id, log)
@@ -49,11 +49,11 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
         updatedFic    <- Lo3Data.series.update(updatedSeries)
       } yield updatedFic
 
-  override def getFic(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, FlatFicModel] = ficType match
+  override def getAo3Info(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, Ao3FicInfo] = ficType match
     case FicType.Work   => getWork(id, log)
     case FicType.Series => getSeries(id, log)
 
-  private def getWork(id: String, log: OptionalLog): IO[Lo3Error, FlatFicModel] = for {
+  private def getWork(id: String, log: OptionalLog): IO[Lo3Error, Ao3FicInfo] = for {
     maybeFic <- Lo3Data.works.getById(id)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
@@ -107,7 +107,7 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
     _ <- ZIO.log(s"Parsed work: $work")
   } yield work
 
-  def getSeries(id: String, log: OptionalLog): IO[Lo3Error, FlatFicModel] = for {
+  def getSeries(id: String, log: OptionalLog): IO[Lo3Error, Ao3FicInfo] = for {
     maybeFic <- Lo3Data.series.getById(id)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
@@ -192,10 +192,10 @@ case class FicServiceImpl(ao3: Ao3HttpClient) extends FicService:
     case otherWarnings                    => otherWarnings.map(ArchiveWarning(_)).toSet
   }
 
-object FicService:
+object Ao3InfoService:
   private val ownLayer = ZLayer {
-    ZIO.service[Ao3HttpClient].map(FicServiceImpl(_))
+    ZIO.service[Ao3HttpClient].map(Ao3InfoServiceImpl(_))
   }
 
-  def live(login: String, password: String): ZLayer[Any, Throwable, FicService] =
-    ZLayer.make[FicService](ownLayer, Ao3HttpClientImpl.layer(login, password))
+  def live(login: String, password: String): ZLayer[Any, Throwable, Ao3InfoService] =
+    ZLayer.make[Ao3InfoService](ownLayer, Ao3HttpClientImpl.layer(login, password))

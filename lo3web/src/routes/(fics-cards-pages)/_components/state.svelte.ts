@@ -46,14 +46,14 @@ export class FicCardsPageState {
         for (const [tagType, filterValues] of this.appliedFilters.includedTagFilters) {
             const prop = tagFieldToProperty(tagType);
             filteredCards = filteredCards.filter(card => {
-                const cardTags: string[] = card.fic[prop] ?? [];
+                const cardTags: string[] = card.ao3Info[prop] ?? [];
                 return [...filterValues].every(filterValue => cardTags.includes(filterValue));
             });
         }
         for (const [tagField, filterValues] of this.appliedFilters.excludedTagFilters) {
             const prop = tagFieldToProperty(tagField);
             filteredCards = filteredCards.filter(card => {
-                const cardTags: string[] = card.fic[prop] ?? [];
+                const cardTags: string[] = card.ao3Info[prop] ?? [];
                 return [...filterValues].every(filterValue => !cardTags.includes(filterValue));
             });
         }
@@ -61,7 +61,7 @@ export class FicCardsPageState {
             filteredCards = filteredCards.filter(card => boolFilterApplies(card, field, value));
         }
         if (this.appliedFilters.allowedRatings.size) {
-            filteredCards = filteredCards.filter(card => this.appliedFilters.allowedRatings.has(card.fic.rating));
+            filteredCards = filteredCards.filter(card => this.appliedFilters.allowedRatings.has(card.ao3Info.rating));
         }
         if (this.appliedFilters.allowedImpressions.size) {
             filteredCards = filteredCards.filter(
@@ -80,7 +80,7 @@ export class FicCardsPageState {
                 tagField,
                 [
                     ...this.filteredCards
-                        .flatMap(c => getTagsByField(c.fic, tagField))
+                        .flatMap(c => getTagsByField(c.ao3Info, tagField))
                         .reduce(function (storage, item) {
                             storage.set(item, (storage.get(item) ?? 0) + 1);
                             return storage;

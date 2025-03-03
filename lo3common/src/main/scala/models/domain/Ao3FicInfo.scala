@@ -5,7 +5,7 @@ import models.ao3.{FicType, Rating}
 
 import zio.schema.{DeriveSchema, Schema}
 
-case class FlatFicModel(
+case class Ao3FicInfo(
     id: String,
     link: String,
     ficType: FicType,
@@ -23,5 +23,5 @@ case class FlatFicModel(
     partsWritten: Int
 )
 
-object FlatFicModel:
-  implicit val schema: Schema[FlatFicModel] = DeriveSchema.gen
+object Ao3FicInfo:
+  implicit val schema: Schema[Ao3FicInfo] = DeriveSchema.gen

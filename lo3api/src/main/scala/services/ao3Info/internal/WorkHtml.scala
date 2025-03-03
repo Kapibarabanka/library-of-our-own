@@ -1,13 +1,13 @@
 package kapibarabanka.lo3.api
-package ficService.internal
+package services.ao3Info.internal
 
-import ficService.internal.StringUtils.{commaStyleToInt, parseDate}
+import StringUtils.{commaStyleToInt, parseDate}
 
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Document
 
-protected[ficService] case class WorkHtml(doc: Document):
+protected[ao3Info] case class WorkHtml(doc: Document):
   val title   = doc >> text("h2.title")
   val authors = doc >> element("h3.byline") >> texts("a")
   val rating  = doc >> text("dd.rating")

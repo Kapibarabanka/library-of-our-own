@@ -1,8 +1,8 @@
 package kapibarabanka.lo3.api
 
 import controllers.*
-import ficService.FicService
 import sqlite.services.Lo3Data
+import kapibarabanka.lo3.api.services.ao3Info.Ao3InfoService
 
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.openapi.Lo3API

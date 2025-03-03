@@ -1,10 +1,10 @@
-import type { FicsPage } from '$lib/types/api-models';
 import { PUBLIC_API, PUBLIC_USER } from '$env/static/public';
+import type { FicCardData } from '$lib/types/domain-models';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-    const page: Promise<FicsPage> = fetch(`${PUBLIC_API}/cards/${PUBLIC_USER}/all-fics`).then(response =>
+    const allFics: Promise<FicCardData[]> = fetch(`${PUBLIC_API}/fics/${PUBLIC_USER}/all-cards`).then(response =>
         response.json()
     );
-    return { page };
+    return { allFics };
 };

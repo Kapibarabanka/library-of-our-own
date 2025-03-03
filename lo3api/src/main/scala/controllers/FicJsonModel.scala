@@ -2,7 +2,7 @@ package kapibarabanka.lo3.api
 package controllers
 
 import kapibarabanka.lo3.common.models.ao3.FicType
-import kapibarabanka.lo3.common.models.domain.UserFicRecord
+import kapibarabanka.lo3.common.models.domain.Fic
 import zio.json.{DeriveJsonEncoder, JsonEncoder}
 
 case class FicJsonModel(
@@ -24,19 +24,19 @@ case class FicJsonModel(
 
 object FicJsonModel:
   implicit val encoder: JsonEncoder[FicJsonModel] = DeriveJsonEncoder.gen[FicJsonModel]
-  def fromRecord(record: UserFicRecord): FicJsonModel = FicJsonModel(
-    id = record.fic.id,
-    isSeries = record.fic.ficType == FicType.Series,
-    link = record.fic.link,
-    title = record.fic.title,
-    authors = record.fic.authors,
-    rating = record.fic.rating.toString,
-    categories = record.fic.categories,
-    warnings = record.fic.warnings,
-    fandoms = record.fic.fandoms,
-    characters = record.fic.characters,
-    relationships = record.fic.relationships,
-    tags = record.fic.tags ++ record.specialTags,
-    words = record.fic.words,
-    complete = record.fic.complete
+  def fromRecord(record: Fic): FicJsonModel = FicJsonModel(
+    id = record.ao3Info.id,
+    isSeries = record.ao3Info.ficType == FicType.Series,
+    link = record.ao3Info.link,
+    title = record.ao3Info.title,
+    authors = record.ao3Info.authors,
+    rating = record.ao3Info.rating.toString,
+    categories = record.ao3Info.categories,
+    warnings = record.ao3Info.warnings,
+    fandoms = record.ao3Info.fandoms,
+    characters = record.ao3Info.characters,
+    relationships = record.ao3Info.relationships,
+    tags = record.ao3Info.tags ++ record.specialTags,
+    words = record.ao3Info.words,
+    complete = record.ao3Info.complete
   )

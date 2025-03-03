@@ -21,7 +21,7 @@
     <Card.Header class="pr-3">
         <Card.Title class="text-base">
             <div class="flex">
-                <a href={cardData.fic.link} class="flex-1">{cardData.fic.title}</a>
+                <a href={cardData.ao3Info.link} class="flex-1">{cardData.ao3Info.title}</a>
                 <Button
                     variant="ghost"
                     class="p-1 h-4"
@@ -32,7 +32,7 @@
             </div>
         </Card.Title>
         <Card.Description
-            >{cardData.key.ficType.toLowerCase()} by {#each cardData.fic.authors ?? ['Anonymous'] as author}
+            >{cardData.key.ficType.toLowerCase()} by {#each cardData.ao3Info.authors ?? ['Anonymous'] as author}
                 <Tag
                     label={author}
                     onclick={() => pageState.withTagFilter(TagField.Author, TagInclusion.Include, author)}
@@ -42,7 +42,7 @@
     </Card.Header>
     <Card.Content class="py-2">
         {#each tagTypes as tagField}
-            {@const tags = getTagsByField(cardData.fic, tagField)}
+            {@const tags = getTagsByField(cardData.ao3Info, tagField)}
             {#if tags.length}
                 <div>
                     <span class="font-semibold">{tagField + 's: '}</span>
@@ -57,10 +57,10 @@
     <Card.Footer class="flex justify-between">
         <div class="flex gap-2">
             <RatingIcon
-                rating={cardData.fic.rating}
-                onclick={() => pageState.appliedFilters.allowedRatings.add(cardData.fic.rating)}
+                rating={cardData.ao3Info.rating}
+                onclick={() => pageState.appliedFilters.allowedRatings.add(cardData.ao3Info.rating)}
             ></RatingIcon>
-            {#if !cardData.fic.complete}
+            {#if !cardData.ao3Info.complete}
                 <Badge class="px-1.5" variant="outline"><RefreshCw size={15}></RefreshCw></Badge>
             {/if}
             {#if cardData.details.impression}
@@ -74,7 +74,7 @@
             {/if}
         </div>
 
-        <div>Words: {cardData.fic.words.toLocaleString('en-us')}</div>
+        <div>Words: {cardData.ao3Info.words.toLocaleString('en-us')}</div>
     </Card.Footer>
 </Card.Root>
 

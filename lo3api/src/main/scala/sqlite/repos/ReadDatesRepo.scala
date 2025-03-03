@@ -9,8 +9,6 @@ import kapibarabanka.lo3.common.models.domain.{DbError, ReadDatesInfo, UserFicKe
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
-import java.time.LocalDate
-
 class ReadDatesRepo(db: Lo3Db):
   private val readDates = TableQuery[ReadDatesTable]
 

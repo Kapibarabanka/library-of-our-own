@@ -1,5 +1,5 @@
 package kapibarabanka.lo3.api
-package ficService.internal
+package services.ao3Info.internal
 
 import sqlite.services.Lo3Data
 

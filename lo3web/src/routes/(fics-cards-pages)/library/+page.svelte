@@ -4,10 +4,10 @@
     let { data }: PageProps = $props();
 </script>
 
-{#await data.page}
+{#await data.allFics}
     <p>Loading fics...</p>
-{:then ficsPage}
-    <FicCardsPage inputCards={ficsPage.cards}></FicCardsPage>
+{:then allCards}
+    <FicCardsPage inputCards={allCards}></FicCardsPage>
 {:catch error}
     <p>Error {error.message}</p>
 {/await}

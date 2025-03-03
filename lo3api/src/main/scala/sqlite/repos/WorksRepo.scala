@@ -6,7 +6,7 @@ import sqlite.services.Lo3Db
 import sqlite.tables.*
 
 import kapibarabanka.lo3.common.models.ao3.{Fandom, FicType, Rating, Work}
-import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, FlatFicModel}
+import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, Ao3FicInfo}
 import slick.dbio.Effect
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
@@ -25,10 +25,10 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
 
   def title(id: String) = db.run(works.filter(_.id === id).map(_.title).result).map(_.headOption)
 
-  def add(work: Work): IO[DbError, FlatFicModel] =
+  def add(work: Work): IO[DbError, Ao3FicInfo] =
     db.run(DBIO.sequence(getAddingAction(work, true)).transactionally).flatMap(_ => getById(work.id).map(_.get))
 
-  def updateWork(work: Work): IO[DbError, FlatFicModel] = for {
+  def updateWork(work: Work): IO[DbError, Ao3FicInfo] = for {
     maybeExisting <- getById(work.id)
     updated <- maybeExisting match
       case None => add(work)
@@ -82,14 +82,14 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
     result
   }
 
-  def getById(workId: String): IO[DbError, Option[FlatFicModel]] = for {
+  def getById(workId: String): IO[DbError, Option[Ao3FicInfo]] = for {
     docs <- db.run(works.filter(_.id === workId).result)
     maybeDisplayModel <- docs.headOption match
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
-  def getAllForUser(userId: String): IO[DbError, List[(FicDetails, FlatFicModel)]] =
+  def getAllForUser(userId: String): IO[DbError, List[(FicDetails, Ao3FicInfo)]] =
     val detailsQuery = ficDetails.filter(d => d.ficIsSeries === false && d.userId === userId)
     for {
       worksWithDetails <- db.run((for {
@@ -124,7 +124,7 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
         worksWithDetails.map((details, work) =>
           (
             details.toModel,
-            FlatFicModel(
+            Ao3FicInfo(
               id = work.id,
               ficType = FicType.Work,
               link = work.link,
@@ -146,7 +146,7 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
       )
     } yield fics.toList
 
-  def getAll: IO[DbError, List[FlatFicModel]] = for {
+  def getAll: IO[DbError, List[Ao3FicInfo]] = for {
     docs   <- db.run(works.result)
     models <- ZIO.collectAll(docs.map(docToModel))
   } yield models.toList
@@ -156,7 +156,7 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
     characters    <- db.run(worksToCharacters.filter(_.workId === doc.id).map(_.character).result)
     relationships <- db.run(worksToShips.filter(_.workId === doc.id).map(_.shipName).result)
     tags          <- db.run(worksToTags.filter(_.workId === doc.id).map(_.tagName).result)
-  } yield FlatFicModel(
+  } yield Ao3FicInfo(
     id = doc.id,
     ficType = FicType.Work,
     link = doc.link,

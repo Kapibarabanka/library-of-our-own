@@ -4,8 +4,8 @@ package processors
 import models.{BotState, CommentBotState, ExistingFicBotState}
 import services.Lo3Api
 
-import kapibarabanka.lo3.common.models.domain.FicComment
-import kapibarabanka.lo3.common.openapi.FicDetailsClient
+import kapibarabanka.lo3.common.models.domain.Note
+import kapibarabanka.lo3.common.openapi.{FicDetailsClient, FicsClient}
 import kapibarabanka.lo3.common.services.BotWithChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}
@@ -25,7 +25,8 @@ case class CommentStateProcessor(state: CommentBotState, bot: BotWithChatId)
   override def onCallbackQuery(query: CallbackQuery): UIO[BotState] = unknownCallbackQuery(query)
 
   private def addComment(comment: String) = for {
-    logPatching <- bot.sendText("Adding comment...")
-    ficWithComment <- Lo3Api.run(FicDetailsClient.addComment(state.ficForComment.key, FicComment(LocalDate.now().toString, comment)))
-    _ <- bot.editLogText(logPatching, "Successfully added comment!")
+    logPatching    <- bot.sendText("Adding comment...")
+    _              <- Lo3Api.run(FicDetailsClient.addNote(state.ficForComment.key, Note(None, LocalDate.now(), comment)))
+    ficWithComment <- Lo3Api.run(FicsClient.getFicByKey(state.ficForComment.key))
+    _              <- bot.editLogText(logPatching, "Successfully added comment!")
   } yield ExistingFicBotState(ficWithComment, true)

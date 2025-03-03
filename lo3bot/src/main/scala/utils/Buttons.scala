@@ -1,12 +1,12 @@
 package kapibarabanka.lo3.bot
 package utils
 
-import kapibarabanka.lo3.common.models.domain.{ReadDatesInfo, UserFicRecord}
+import kapibarabanka.lo3.common.models.domain.{ReadDatesInfo, Fic}
 import kapibarabanka.lo3.common.models.tg.*
 import telegramium.bots.{InlineKeyboardButton, InlineKeyboardMarkup}
 
 object Buttons:
-  def getButtonsForExisting(fic: UserFicRecord): Option[InlineKeyboardMarkup] = Some(
+  def getButtonsForExisting(fic: Fic): Option[InlineKeyboardMarkup] = Some(
     InlineKeyboardMarkup(inlineKeyboard =
       List(
         List(

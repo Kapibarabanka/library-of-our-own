@@ -8,11 +8,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object MessageText {
-  def existingFic(record: UserFicRecord): String =
+  def existingFic(fic: Fic): String =
     s"""
-       |${info(record.fic, record.key.ficIsSeries)}
-       |${record |> displayMyRating}
-       |${record |> displayStats}
+       |${info(fic.ao3Info, fic.key.ficIsSeries)}
+       |${fic |> displayMyRating}
+       |${fic |> displayStats}
        |""".stripMargin
 
   val help: String =
@@ -38,14 +38,14 @@ object MessageText {
       |Example: myemail@kindle.com
       |""".stripMargin
 
-  private def info(fic: FlatFicModel, isSeries: Boolean) =
-    val header = s"""<b>${fic.title}</b>
-                    |<i>${fic.authors.mkString(", ")}</i>
+  private def info(ao3Info: Ao3FicInfo, isSeries: Boolean) =
+    val header = s"""<b>${ao3Info.title}</b>
+                    |<i>${ao3Info.authors.mkString(", ")}</i>
                     |
-                    |${fic.relationships.map(formatShip).mkString("\n")}""".stripMargin
-    val tags   = fic.tags.mkString(",   ")
-    val s      = if (fic.partsWritten.toString.last == '1' && fic.partsWritten != 11) "" else "s"
-    val footer = s"${f"${fic.partsWritten}%,d"} ${if (isSeries) "work" else "chapter"}$s, ${f"${fic.words}%,d"} words"
+                    |${ao3Info.relationships.map(formatShip).mkString("\n")}""".stripMargin
+    val tags   = ao3Info.tags.mkString(",   ")
+    val s      = if (ao3Info.partsWritten.toString.last == '1' && ao3Info.partsWritten != 11) "" else "s"
+    val footer = s"${f"${ao3Info.partsWritten}%,d"} ${if (isSeries) "work" else "chapter"}$s, ${f"${ao3Info.words}%,d"} words"
     val withTags =
       s"""$header
          |
@@ -63,42 +63,41 @@ object MessageText {
          |$footer
          ||""".stripMargin
 
-  private def displayStats(record: UserFicRecord) =
-    s"""${if (record.details.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}
-       |${if (record.details.isOnKindle) s"${Emoji.kindle} Is on Kindle" else s"${Emoji.cross} Not on Kindle"}
-       |${readDates(record)}
+  private def displayStats(fic: Fic) =
+    s"""${if (fic.details.backlog) s"${Emoji.backlog} Is in backlog" else s"${Emoji.cross} Not in backlog"}
+       |${if (fic.details.isOnKindle) s"${Emoji.kindle} Is on Kindle" else s"${Emoji.cross} Not on Kindle"}
+       |${readDates(fic)}
        |""".stripMargin
 
-  private def displayMyRating(record: UserFicRecord) =
-    (if (record.details.spicy) s"${Emoji.fire}<b>It's spicy!</b>${Emoji.fire}\n" else "")
-      + record.details.impression.fold("")(q => s"Your impression is ${formatImpresson(q)}\n")
-      + (if (record.comments.isEmpty) ""
+  private def displayMyRating(fic: Fic) =
+    (if (fic.details.spicy) s"${Emoji.fire}<b>It's spicy!</b>${Emoji.fire}\n" else "")
+      + fic.details.impression.fold("")(q => s"Your impression is ${formatImpresson(q)}\n")
+      + (if (fic.notes.isEmpty) ""
          else
-           s"\nYour thoughts on it:\n<i>${record.comments.map(_.format()).mkString("\n")}</i>")
+           s"\nYour thoughts on it:\n<i>${fic.notes.map(_.format()).mkString("\n\n")}</i>\n")
 
-  private def formatImpresson(quality: UserImpression.Value) = quality match
+  private def formatImpresson(impression: UserImpression.Value) = impression match
     case UserImpression.Brilliant => s"<b>Brilliant</b> ${Emoji.brilliant}"
     case UserImpression.Nice      => s"<b>Nice</b> ${Emoji.nice}"
     case UserImpression.Ok        => s"<b>Ok</b> ${Emoji.ok}"
     case UserImpression.Meh       => s"<b>Meeeh</b> ${Emoji.meh}"
     case UserImpression.Never     => s"<b>Never</b> Again ${Emoji.never}"
 
-  private def readDates(record: UserFicRecord) =
-    (if (record.readDatesInfo.finishedReading)
+  private def readDates(fic: Fic) =
+    (if (fic.readDatesInfo.alreadyRead)
        s"${Emoji.finish} Already read\n"
      else
        s"${Emoji.cross} Not read\n")
-      + record.readDatesInfo.readDates
+      + fic.readDatesInfo.readDates
         .map {
-          case StartAndFinish(start, finish) if start == finish => s"   - on ${format(start)} (read in one day)"
-          case StartAndFinish(start, finish)                    => s"   - from ${format(start)} to ${format(finish)}"
-          case Start(date)                                      => s"   - started reading on ${format(date)}"
-          case SingleDayRead(date)                              => s"   - on ${format(date)} (read in one day)"
-          case Abandoned(start, finish)                         => s"   - from ${format(start)} to ${format(finish)} (abandoned)"
+          case ReadDates(_, start, Some(finish), false) if start == finish => s"   - on ${format(start)} (read in one day)"
+          case ReadDates(_, start, Some(finish), false)                    => s"   - from ${format(start)} to ${format(finish)}"
+          case ReadDates(_, start, None, _)                                => s"   - started reading on ${format(start)}"
+          case ReadDates(_, start, Some(finish), true) => s"   - from ${format(start)} to ${format(finish)} (abandoned)"
         }
         .mkString("\n")
 
-  private def format(isoDate: String) = LocalDate.parse(isoDate).format(DateTimeFormatter.ofPattern("dd MMM uuuu"))
+  private def format(date: LocalDate) = date.format(DateTimeFormatter.ofPattern("dd MMM uuuu"))
 
   private def formatShip(shipName: String) =
     shipName.replace("/", s"  ${Emoji.romantic}  ").replace(" & ", s"  ${Emoji.platonic}  ")

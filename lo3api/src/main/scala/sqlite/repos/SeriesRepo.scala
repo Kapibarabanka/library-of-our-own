@@ -6,7 +6,7 @@ import sqlite.services.Lo3Db
 import sqlite.tables.{FicsDetailsTable, SeriesTable, SeriesToWorksTable}
 
 import kapibarabanka.lo3.common.models.ao3.{FicType, Series}
-import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, FlatFicModel}
+import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, Ao3FicInfo}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
@@ -18,7 +18,7 @@ class SeriesRepo(db: Lo3Db, worksRepo: WorksRepo):
   def exists(id: String): IO[DbError, Boolean] =
     db.run(series.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)
 
-  def add(s: Series): IO[DbError, FlatFicModel] = {
+  def add(s: Series): IO[DbError, Ao3FicInfo] = {
     for {
       _ <- db
         .run(
@@ -36,7 +36,7 @@ class SeriesRepo(db: Lo3Db, worksRepo: WorksRepo):
     } yield flatFic
   }
 
-  def update(s: Series): IO[DbError, FlatFicModel] = for {
+  def update(s: Series): IO[DbError, Ao3FicInfo] = for {
     maybeExisting <- getById(s.id)
     updated <- maybeExisting match
       case None => add(s)
@@ -66,14 +66,14 @@ class SeriesRepo(db: Lo3Db, worksRepo: WorksRepo):
 
   def title(id: String) = db.run(series.filter(_.id === id).map(_.title).result).map(_.headOption)
 
-  def getById(id: String): IO[DbError, Option[FlatFicModel]] = for {
+  def getById(id: String): IO[DbError, Option[Ao3FicInfo]] = for {
     docs <- db.run(series.filter(_.id === id).result)
     maybeDisplayModel <- docs.headOption match
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
-  def getAllForUser(userId: String, allWorks: List[FlatFicModel]): IO[DbError, List[(FicDetails, FlatFicModel, List[String])]] =
+  def getAllForUser(userId: String, allWorks: List[Ao3FicInfo]): IO[DbError, List[(FicDetails, Ao3FicInfo, List[String])]] =
     for {
       seriesWithDetails <- db.run((for {
         details <- ficDetails if (details.ficIsSeries === true && details.userId === userId)
@@ -93,12 +93,12 @@ class SeriesRepo(db: Lo3Db, worksRepo: WorksRepo):
       )
     } yield result.toList
 
-  def getAll: IO[DbError, List[FlatFicModel]] = for {
+  def getAll: IO[DbError, List[Ao3FicInfo]] = for {
     docs   <- db.run(series.result)
     models <- ZIO.collectAll(docs.map(docToModel(_)))
   } yield models.toList
 
-  private def docToModel(doc: SeriesDoc, maybeWorks: Option[Seq[FlatFicModel]] = None) =
+  private def docToModel(doc: SeriesDoc, maybeWorks: Option[Seq[Ao3FicInfo]] = None) =
     val seriesWorks = maybeWorks match
       case Some(value) => ZIO.succeed(value)
       case None =>
@@ -110,7 +110,7 @@ class SeriesRepo(db: Lo3Db, worksRepo: WorksRepo):
           works   <- ZIO.collectAll(workIds.map(id => worksRepo.getById(id))).map(_.flatten)
         } yield works
     seriesWorks.map(works =>
-      FlatFicModel(
+      Ao3FicInfo(
         id = doc.id,
         ficType = FicType.Series,
         link = doc.link,

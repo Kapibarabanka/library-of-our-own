@@ -16,6 +16,6 @@ object Lo3Data:
   val works     = WorksRepo(db, tags)
   val series    = SeriesRepo(db, works)
   val details   = FicDetailsRepo(db)
-  val comments  = CommentsRepo(db)
+  val notes     = NotesRepo(db)
   val readDates = ReadDatesRepo(db)
   val users     = UsersRepo(db)

@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.common
 package openapi
 
-import models.domain.{FicComment, FicDetails, FlatFicModel, Lo3Error, UserFicRecord}
+import models.domain.{Note, FicDetails, Ao3FicInfo, Lo3Error, Fic}
 
 import scalaz.Scalaz.ToIdOps
 import zio.http.*
@@ -10,57 +10,37 @@ import zio.http.codec.*
 import zio.http.endpoint.Endpoint
 
 object FicDetailsClient extends MyClient:
-  override protected val clientName = "fic"
-
-  val updateFic = endpoint(GET, "update-fic")
-    .out[FlatFicModel]
-    .outError[Lo3Error](Status.InternalServerError)
-    |> withKey
-
-  val getUserFic = endpoint(Method.GET, "user-details")
-    .query(HttpCodec.query[String]("ficLink"))
-    .query(HttpCodec.query[String]("userId"))
-    .query(HttpCodec.query[Boolean]("needToLog"))
-    .out[UserFicRecord]
-    .outError[Lo3Error](Status.InternalServerError)
-
-  val getUserFicByKey = endpoint(Method.GET, "user-details-by-key")
-    .out[UserFicRecord]
-    .outError[Lo3Error](Status.InternalServerError)
-    |> withKey
+  override protected val clientName = "fic-details"
 
   val patchDetails = (endpoint(Method.PATCH, "patch-details")
-    .out[UserFicRecord]
+    .out[Unit]
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey).in[FicDetails]
 
-  val addComment = (endpoint(Method.PATCH, "add-comment")
-    .out[UserFicRecord]
+  val addNote = (endpoint(Method.PATCH, "add-note")
+    .out[Unit]
     .outError[Lo3Error](Status.InternalServerError)
-    |> withKey).in[FicComment]
+    |> withKey).in[Note]
 
   val startedToday = endpoint(Method.PATCH, "started-today")
-    .out[UserFicRecord]
+    .out[Unit]
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
   val finishedToday = endpoint(Method.PATCH, "finished-today")
-    .out[UserFicRecord]
+    .out[Unit]
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
   val abandonedToday = endpoint(Method.PATCH, "abandoned-today")
-    .out[UserFicRecord]
+    .out[Unit]
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
   override val allEndpoints =
     List(
-      getUserFic,
-      updateFic,
-      getUserFicByKey,
       patchDetails,
-      addComment,
+      addNote,
       startedToday,
       finishedToday,
       abandonedToday

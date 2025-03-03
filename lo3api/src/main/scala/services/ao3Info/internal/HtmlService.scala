@@ -1,5 +1,5 @@
 package kapibarabanka.lo3.api
-package ficService.internal
+package services.ao3Info.internal
 
 import kapibarabanka.lo3.common.models.ao3.{Ao3Error, Ao3Url, NotFound}
 import kapibarabanka.lo3.common.models.domain.{Lo3Error, ParsingError}

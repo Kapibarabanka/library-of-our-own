@@ -1,14 +1,14 @@
 package kapibarabanka.lo3.api
-package ficService.internal
+package services.ao3Info.internal
 
-import ficService.internal.StringUtils.{commaStyleToInt, parseDate}
+import StringUtils.{commaStyleToInt, parseDate}
 
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
 import net.ruippeixotog.scalascraper.model.Document
 
 import scala.language.postfixOps
-protected[ficService] case class SeriesPageHtml(doc: Document, seriesId: String, page: Int):
+protected[ao3Info] case class SeriesPageHtml(doc: Document, seriesId: String, page: Int):
   val title                   = doc >> text("h2.heading")
   private val metaDataElement = doc >> element("dl.series")
   private val labels          = (metaDataElement >> texts("dt")).map(_.replace(":", ""))

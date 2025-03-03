@@ -1,8 +1,7 @@
 package kapibarabanka.lo3.bot
 package utils
 
-import kapibarabanka.lo3.common.models.ao3.Cloudflare
-import kapibarabanka.lo3.common.models.domain.{AuthFailed, ConnectionClosed, KindleEmailNotSet, TooManyRequests}
+import kapibarabanka.lo3.common.models.domain.{AuthFailed, ConnectionClosed, KindleEmailNotSet, TooManyRequests, Cloudflare}
 
 object ErrorMessage:
 
@@ -43,7 +42,7 @@ object ErrorMessage:
 
   private val shieldsAreUp =
     """
-      |Cloudflare bot checks are up on Ao3, please try in a couple of minutes
+      |Cloudflare bot checks are up on Ao3, please try again in a couple of minutes
       |
       |This error will likely persist till April, the reason is described <a href="https://archiveofourown.org/admin_posts/31204">on the Archive itself</a>
       |""".stripMargin

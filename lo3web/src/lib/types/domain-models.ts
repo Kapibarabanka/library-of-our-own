@@ -29,7 +29,7 @@ export enum UserImpression {
     Brilliant = 'Brilliant',
 }
 
-export interface Fic {
+export interface Ao3FicInfo {
     id: string;
     link: string;
     ficType: FicType;
@@ -62,18 +62,18 @@ export interface UserFicKey {
 
 export interface FicCardData {
     key: UserFicKey;
-    fic: Fic;
+    ao3Info: Ao3FicInfo;
     details: FicDetails;
 }
 
-export interface FicComment {
-    commentDate: string;
-    comment: string;
+export interface FicNote {
+    date: string;
+    text: string;
 }
 
-export interface FullFicRecord {
+export interface Fic {
     key: UserFicKey;
-    fic: Fic;
+    ao3Info: Ao3FicInfo;
     details: FicDetails;
-    comments: FicComment[];
+    notes: FicNote[];
 }

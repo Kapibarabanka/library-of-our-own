@@ -8,7 +8,7 @@ import utils.{ErrorMessage, MessageText}
 import kapibarabanka.lo3.common.models.ao3.{Ao3Url, FicType}
 import kapibarabanka.lo3.common.models.domain.UserFicKey
 import kapibarabanka.lo3.common.models.tg.TgError.InaccessibleMessageError
-import kapibarabanka.lo3.common.openapi.{FicDetailsClient, UserClient}
+import kapibarabanka.lo3.common.openapi.{FicDetailsClient, FicsClient, UserClient}
 import kapibarabanka.lo3.common.services.{BotWithChatId, Utils}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, InputPartFile, Message}
@@ -64,7 +64,7 @@ trait StateProcessor(currentState: BotState, bot: BotWithChatId) extends WithErr
 
   private def getStateWithFic(ficLink: String): ZIO[Lo3Api, Nothing, BotState] =
     val action = for {
-      record <- Lo3Api.run(FicDetailsClient.getUserFic(ficLink, bot.chatId, true))
+      record <- Lo3Api.run(FicsClient.getFicByLink(ficLink, bot.chatId, true))
       _ <- ZIO.succeed(println("RECORD"))
       _ <- ZIO.succeed(println(record))
     } yield ExistingFicBotState(record, true)
