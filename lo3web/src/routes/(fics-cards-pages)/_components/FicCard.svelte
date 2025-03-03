@@ -9,15 +9,27 @@
     import { getTagsByField } from '../_utils/filter-utils';
     import { pageState } from './state.svelte';
     import RefreshCw from 'lucide-svelte/icons/refresh-cw';
+    import Maximize from 'lucide-svelte/icons/maximize-2';
+    import Button from '$ui/button/button.svelte';
+    import { goto } from '$app/navigation';
 
     let { cardData }: { cardData: FicCardData } = $props();
     const tagTypes = [TagField.Warning, TagField.Fandom, TagField.Ship, TagField.Character, TagField.Tag];
 </script>
 
 <Card.Root>
-    <Card.Header>
+    <Card.Header class="pr-3">
         <Card.Title class="text-base">
-            <a href={cardData.fic.link}>{cardData.fic.title}</a>
+            <div class="flex">
+                <a href={cardData.fic.link} class="flex-1">{cardData.fic.title}</a>
+                <Button
+                    variant="ghost"
+                    class="p-1 h-4"
+                    onclick={() => goto(`/fic/${cardData.key.ficType.toLowerCase()}-${cardData.key.ficId}`)}
+                >
+                    <Maximize class="text-muted-foreground" size={15}></Maximize>
+                </Button>
+            </div>
         </Card.Title>
         <Card.Description
             >{cardData.key.ficType.toLowerCase()} by {#each cardData.fic.authors ?? ['Anonymous'] as author}

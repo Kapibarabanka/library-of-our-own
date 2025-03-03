@@ -65,3 +65,15 @@ export interface FicCardData {
     fic: Fic;
     details: FicDetails;
 }
+
+export interface FicComment {
+    commentDate: string;
+    comment: string;
+}
+
+export interface FullFicRecord {
+    key: UserFicKey;
+    fic: Fic;
+    details: FicDetails;
+    comments: FicComment[];
+}
