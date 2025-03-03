@@ -4,7 +4,10 @@
     let { data }: PageProps = $props();
 </script>
 
-<div>FicPage</div>
-<div>{data.ficType} with id {data.id}</div>
-
-<style></style>
+{#await data.fic}
+    <p>Loading fic...</p>
+{:then fic}
+    <div>Fic with title '{fic.ao3Info.title}'</div>
+{:catch error}
+    <p>Error {error.message}</p>
+{/await}
