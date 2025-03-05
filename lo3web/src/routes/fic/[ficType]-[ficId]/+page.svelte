@@ -1,4 +1,5 @@
 <script lang="ts">
+    import FicPage from '@app/fic/FicPage.svelte';
     import type { PageProps } from './$types';
 
     let { data }: PageProps = $props();
@@ -7,7 +8,7 @@
 {#await data.fic}
     <p>Loading fic...</p>
 {:then fic}
-    <div>Fic with title '{fic.ao3Info.title}'</div>
+    <FicPage {fic}></FicPage>
 {:catch error}
     <p>Error {error.message}</p>
 {/await}

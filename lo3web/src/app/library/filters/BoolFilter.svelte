@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Button } from '$ui/button';
-    import type { BoolField } from '../../_types/filter-enums';
+    import type { BoolField } from '../_types/filter-enums';
     import { pageState } from '../state.svelte';
 
     let { filteredField }: { filteredField: BoolField } = $props();

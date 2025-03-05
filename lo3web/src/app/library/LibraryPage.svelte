@@ -13,7 +13,7 @@
 </script>
 
 <div class="flex flex-col gap-3 p-2">
-    <Tabs.Root value="filter">
+    <Tabs.Root value="filter" class="max-w-[500px] self-center">
         <Tabs.List class="grid w-full grid-cols-2">
             <Tabs.Trigger value="filter">Filter</Tabs.Trigger>
             <Tabs.Trigger value="sort">Sort</Tabs.Trigger>

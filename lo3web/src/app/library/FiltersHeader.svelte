@@ -7,18 +7,18 @@
         TagField,
         TagInclusion,
         type FilterableField,
-    } from '../_types/filter-enums';
-    import { getFilterType } from '../_utils/filter-utils';
+    } from './_types/filter-enums';
     import { pageState } from './state.svelte';
-    import TagFilter from './Filters/TagFilter.svelte';
-    import BoolFilter from './Filters/BoolFilter.svelte';
     import * as Select from '$ui/select';
     import Label from '$ui/label/label.svelte';
     import BadgeTag from '$lib/components/BadgeTag.svelte';
-    import RatingFilter from './Filters/RatingFilter.svelte';
     import RatingIcon from '$lib/components/RatingBadge.svelte';
-    import ImpressionFilter from './Filters/ImpressionFilter.svelte';
     import ImpressionBadge from '$lib/components/ImpressionBadge.svelte';
+    import { getFilterType } from './_utils/filter-utils';
+    import TagFilter from './filters/TagFilter.svelte';
+    import BoolFilter from './filters/BoolFilter.svelte';
+    import RatingFilter from './filters/RatingFilter.svelte';
+    import ImpressionFilter from './filters/ImpressionFilter.svelte';
 
     let filteredField: FilterableField = $state(TagField.Ship);
     let filterType = $derived(getFilterType(filteredField));

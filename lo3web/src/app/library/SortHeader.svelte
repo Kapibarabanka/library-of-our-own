@@ -1,6 +1,6 @@
 <script lang="ts">
     import * as Select from '$ui/select';
-    import { SortBy, SortDirection } from '../_types/filter-enums';
+    import { SortBy, SortDirection } from './_types/filter-enums';
     import { pageState } from './state.svelte';
 </script>
 

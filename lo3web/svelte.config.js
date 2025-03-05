@@ -12,6 +12,7 @@ const config = {
         alias: {
             $ui: 'src/lib/components/ui',
             $api: 'src/lib/api',
+            '@app': 'src/app',
         },
     },
 };

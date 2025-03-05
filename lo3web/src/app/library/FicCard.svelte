@@ -5,11 +5,12 @@
     import { type FicCardData } from '$lib/types/domain-models';
     import Badge from '$ui/badge/badge.svelte';
     import * as Card from '$ui/card';
-    import { TagField, TagInclusion } from '../_types/filter-enums';
-    import { getTagsByField } from '../_utils/filter-utils';
+    import { BoolField, TagField, TagInclusion } from './_types/filter-enums';
+    import { getTagsByField } from './_utils/filter-utils';
     import { pageState } from './state.svelte';
     import RefreshCw from 'lucide-svelte/icons/refresh-cw';
     import Maximize from 'lucide-svelte/icons/maximize-2';
+    import Tablet from 'lucide-svelte/icons/tablet';
     import Button from '$ui/button/button.svelte';
     import { goto } from '$app/navigation';
 
@@ -62,6 +63,15 @@
             ></RatingIcon>
             {#if !cardData.ao3Info.complete}
                 <Badge class="px-1.5" variant="outline"><RefreshCw size={15}></RefreshCw></Badge>
+            {/if}
+            {#if cardData.details.isOnKindle}
+                <Badge
+                    class="px-1.5"
+                    variant="outline"
+                    onclick={() => pageState.appliedFilters.boolFilters.set(BoolField.OnKindle, true)}
+                >
+                    <Tablet size={15}></Tablet>
+                </Badge>
             {/if}
             {#if cardData.details.impression}
                 <ImpressionBadge
