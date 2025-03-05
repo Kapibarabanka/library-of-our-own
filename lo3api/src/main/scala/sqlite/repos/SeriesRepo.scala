@@ -72,32 +72,7 @@ class SeriesRepo(db: Lo3Db, worksRepo: WorksRepo):
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
-
-  def getAllForUser(userId: String, allWorks: List[Ao3FicInfo]): IO[DbError, List[(FicDetails, Ao3FicInfo, List[String])]] =
-    for {
-      seriesWithDetails <- db.run((for {
-        details <- ficDetails if (details.ficIsSeries === true && details.userId === userId)
-        s       <- series if (s.id === details.ficId)
-      } yield (details, s)).result)
-      result <- ZIO.collectAll(
-        seriesWithDetails.map((detailsDoc, seriesDoc) =>
-          for {
-            workIdsWithPositions <- db.run(
-              seriesToWorks.filter(_.seriesId === seriesDoc.id).map(d => (d.workId, d.positionInSeries)).result
-            )
-            workIds     <- ZIO.succeed(workIdsWithPositions.sortBy(_._2).map(_._1).toSet)
-            seriesWorks <- ZIO.succeed(allWorks.filter(w => workIds.contains(w.id)))
-            seriesFic   <- docToModel(seriesDoc, Some(seriesWorks))
-          } yield (detailsDoc.toModel, seriesFic, workIds.toList)
-        )
-      )
-    } yield result.toList
-
-  def getAll: IO[DbError, List[Ao3FicInfo]] = for {
-    docs   <- db.run(series.result)
-    models <- ZIO.collectAll(docs.map(docToModel(_)))
-  } yield models.toList
-
+  
   private def docToModel(doc: SeriesDoc, maybeWorks: Option[Seq[Ao3FicInfo]] = None) =
     val seriesWorks = maybeWorks match
       case Some(value) => ZIO.succeed(value)

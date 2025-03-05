@@ -1,14 +1,9 @@
 package kapibarabanka.lo3.api
 package controllers
 
-import services.FicsService
-import services.ao3Info.Ao3InfoService
 import sqlite.services.Lo3Data
 
-import kapibarabanka.lo3.common.models.ao3.{Ao3Url, FicType}
-import kapibarabanka.lo3.common.models.domain.{Fic, Lo3Error, NotAo3Link, UserFicKey}
 import kapibarabanka.lo3.common.openapi.FicDetailsClient
-import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MyBotApi, OptionalLog}
 import zio.*
 import zio.http.*
 

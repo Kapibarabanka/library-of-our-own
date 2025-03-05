@@ -19,3 +19,4 @@ object Lo3Data:
   val notes     = NotesRepo(db)
   val readDates = ReadDatesRepo(db)
   val users     = UsersRepo(db)
+  val fics      = FicsRepo(db)

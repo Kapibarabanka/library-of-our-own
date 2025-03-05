@@ -89,68 +89,6 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
 
-  def getAllForUser(userId: String): IO[DbError, List[(FicDetails, Ao3FicInfo)]] =
-    val detailsQuery = ficDetails.filter(d => d.ficIsSeries === false && d.userId === userId)
-    for {
-      worksWithDetails <- db.run((for {
-        details <- detailsQuery
-        work    <- works if (work.id === details.ficId)
-      } yield (details, work)).result)
-      fandomsByWork <- db
-        .run((for {
-          details <- detailsQuery
-          fandom  <- worksToFandoms if (fandom.workId === details.ficId)
-        } yield (details, fandom)).result)
-        .map(seq => seq.groupMap((d, _) => d.ficId)((_, f) => f.fandom))
-      charactersByWork <- db
-        .run((for {
-          details   <- detailsQuery
-          character <- worksToCharacters if (character.workId === details.ficId)
-        } yield (details, character)).result)
-        .map(seq => seq.groupMap((d, _) => d.ficId)((_, c) => c.character))
-      shipsByWork <- db
-        .run((for {
-          details   <- detailsQuery
-          character <- worksToShips if (character.workId === details.ficId)
-        } yield (details, character)).result)
-        .map(seq => seq.groupMap((d, _) => d.ficId)((_, s) => s.shipName))
-      tagsByWork <- db
-        .run((for {
-          details <- detailsQuery
-          tag     <- worksToTags if (tag.workId === details.ficId)
-        } yield (details, tag)).result)
-        .map(seq => seq.groupMap((d, _) => d.ficId)((_, t) => t.tagName))
-      fics <- ZIO.succeed(
-        worksWithDetails.map((details, work) =>
-          (
-            details.toModel,
-            Ao3FicInfo(
-              id = work.id,
-              ficType = FicType.Work,
-              link = work.link,
-              title = work.title,
-              authors = work.authors.split(", ").toList,
-              rating = Rating.withName(work.rating),
-              categories = work.categories.split(", ").toSet,
-              warnings = if (work.warnings.isBlank) Set() else work.warnings.split(", ").toSet,
-              fandoms = fandomsByWork.getOrElse(work.id, Seq()).toSet,
-              characters = charactersByWork.getOrElse(work.id, Seq()).toSet,
-              relationships = shipsByWork.getOrElse(work.id, Seq()).toList.distinct,
-              tags = tagsByWork.getOrElse(work.id, Seq()).toList.distinct,
-              words = work.words,
-              complete = work.complete,
-              partsWritten = work.partsWritten
-            )
-          )
-        )
-      )
-    } yield fics.toList
-
-  def getAll: IO[DbError, List[Ao3FicInfo]] = for {
-    docs   <- db.run(works.result)
-    models <- ZIO.collectAll(docs.map(docToModel))
-  } yield models.toList
-
   private def docToModel(doc: WorkDoc) = for {
     fandoms       <- db.run(worksToFandoms.filter(_.workId === doc.id).map(_.fandom).result)
     characters    <- db.run(worksToCharacters.filter(_.workId === doc.id).map(_.character).result)

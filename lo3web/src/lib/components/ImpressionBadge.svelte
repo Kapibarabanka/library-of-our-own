@@ -13,7 +13,7 @@
 <Badge class="px-1 text-[15px] leading-4" variant="outline" {onclick}>
     {getImpressionIcon(impression)}
     {#if withLabel}
-        <span class="ml-1 text-[12px]">{impression}</span>
+        <span class="ml-1 text-[12px]">{impression === UserImpression.Never ? 'Nope' : impression}</span>
     {/if}
 </Badge>
 

@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.common
 package openapi
 
-import models.api.{FicsPage, FicsPageRequest}
+import models.api.{FicsPage, FicsPageRequest, HomePageData}
 import models.domain.{Ao3FicInfo, Fic, FicCard, Lo3Error}
 
 import scalaz.Scalaz.ToIdOps
@@ -30,9 +30,14 @@ object FicsClient extends MyClient:
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
+  val getHomePage = endpoint(GET, string("userId") / "home-page")
+    .out[HomePageData]
+    .outError[Lo3Error](Status.InternalServerError)
+
   val updateAo3Info = endpoint(POST, "update-ao3-info")
     .out[Ao3FicInfo]
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
-  override val allEndpoints: List[Endpoint[_, _, _, _, _]] = List(getAllCards, getFicByLink, getFicByKey, updateAo3Info)
+  override val allEndpoints: List[Endpoint[_, _, _, _, _]] =
+    List(getAllCards, getFicByLink, getFicByKey, getHomePage, updateAo3Info)

@@ -1,7 +1,7 @@
-import { FicType, type Fic } from '$lib/types/domain-models.js';
+import { FicType } from '$lib/types/domain-models.js';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { PUBLIC_API, PUBLIC_USER } from '$env/static/public';
+import FicsClient from '$api/FicsClient';
 
 export const ssr = false;
 export const load: PageServerLoad = async ({ params }) => {
@@ -9,9 +9,7 @@ export const load: PageServerLoad = async ({ params }) => {
     if (!ficType) error(404);
     const ficId = params.ficId;
 
-    const fic: Promise<Fic> = fetch(
-        `${PUBLIC_API}/fics/fic-by-key?` + new URLSearchParams({ userId: PUBLIC_USER, ficId, ficType })
-    ).then(response => response.json());
+    const fic = FicsClient.getFic(ficId, ficType);
 
     return { fic };
 };
