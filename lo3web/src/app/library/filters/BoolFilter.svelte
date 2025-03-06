@@ -9,13 +9,13 @@
 <div class="flex justify-around">
     <Button
         class="w-[100px]"
-        onclick={() => pageState.appliedFilters.boolFilters.set(filteredField, true)}
-        variant="outline">Yes</Button
+        onclick={() => pageState.appliedFilters.boolFilters.set(filteredField, false)}
+        variant="outline">No</Button
     >
     <Button
         class="w-[100px]"
-        onclick={() => pageState.appliedFilters.boolFilters.set(filteredField, false)}
-        variant="outline">No</Button
+        onclick={() => pageState.appliedFilters.boolFilters.set(filteredField, true)}
+        variant="outline">Yes</Button
     >
 </div>
 

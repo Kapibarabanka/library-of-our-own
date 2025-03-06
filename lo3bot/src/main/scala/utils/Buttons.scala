@@ -31,8 +31,8 @@ object Buttons:
   private def getDatesButtons(info: ReadDatesInfo): List[InlineKeyboardButton] =
     List(
       if (info.canStart) Some(markAsStartedToday) else None,
+      if (info.canFinish) Some(markAsAbandonedToday) else None,
       if (info.canFinish) Some(markAsFinishedToday) else None,
-      if (info.canFinish) Some(markAsAbandonedToday) else None
     ).flatten
 
   // for existing
