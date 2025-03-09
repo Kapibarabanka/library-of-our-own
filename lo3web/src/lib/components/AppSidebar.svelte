@@ -1,25 +1,17 @@
 <script lang="ts">
     import * as Sidebar from '$lib/components/ui/sidebar/index.js';
     import { useSidebar } from '$lib/components/ui/sidebar/index.js';
+    import { BoolField } from '@app/library/_types/filter-enums';
+    import { pageState as libraryState } from '@app/library/state.svelte';
     const sidebar = useSidebar();
-    const links: { title: string; href: string }[] = [
-        {
-            title: 'Home',
-            href: '/',
-        },
-        {
-            title: 'All Fics',
-            href: '/library',
-        },
-        {
-            title: 'Reading List',
-            href: '/reading-list',
-        },
-        {
-            title: 'Fics on Kindle',
-            href: '/on-kindle',
-        },
-    ];
+
+    function toLibrary(field: BoolField | null) {
+        libraryState.clearFilters();
+        if (field) {
+            libraryState.appliedFilters.boolFilters.set(field, true);
+        }
+        sidebar.toggle();
+    }
 </script>
 
 <Sidebar.Root>
@@ -28,15 +20,34 @@
         <Sidebar.Group>
             <Sidebar.GroupContent>
                 <Sidebar.Menu>
-                    {#each links as link (link.title)}
-                        <Sidebar.MenuItem>
-                            <Sidebar.MenuButton onclick={() => sidebar.toggle()}>
-                                {#snippet child({ props })}
-                                    <a href={link.href} {...props}>{link.title}</a>
-                                {/snippet}
-                            </Sidebar.MenuButton>
-                        </Sidebar.MenuItem>
-                    {/each}
+                    <Sidebar.MenuItem>
+                        <Sidebar.MenuButton onclick={() => sidebar.toggle()}>
+                            {#snippet child({ props })}
+                                <a href="/" {...props}>Home</a>
+                            {/snippet}
+                        </Sidebar.MenuButton>
+                    </Sidebar.MenuItem>
+                    <Sidebar.MenuItem>
+                        <Sidebar.MenuButton onclick={() => toLibrary(null)}>
+                            {#snippet child({ props })}
+                                <a href="/library" {...props}>All Fics</a>
+                            {/snippet}
+                        </Sidebar.MenuButton>
+                    </Sidebar.MenuItem>
+                    <Sidebar.MenuItem>
+                        <Sidebar.MenuButton onclick={() => toLibrary(BoolField.Backlog)}>
+                            {#snippet child({ props })}
+                                <a href="/library" {...props}>Reading List</a>
+                            {/snippet}
+                        </Sidebar.MenuButton>
+                    </Sidebar.MenuItem>
+                    <Sidebar.MenuItem>
+                        <Sidebar.MenuButton onclick={() => toLibrary(BoolField.OnKindle)}>
+                            {#snippet child({ props })}
+                                <a href="/library" {...props}>Fics on Kindle</a>
+                            {/snippet}
+                        </Sidebar.MenuButton>
+                    </Sidebar.MenuItem>
                 </Sidebar.Menu>
             </Sidebar.GroupContent>
         </Sidebar.Group>
