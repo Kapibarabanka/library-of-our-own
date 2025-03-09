@@ -13,7 +13,7 @@
 </script>
 
 <div class="flex flex-col gap-3 p-2">
-    <Tabs.Root value="filter" class="max-w-[500px] self-center">
+    <Tabs.Root value="filter" class="max-w-[500px]">
         <Tabs.List class="grid w-full grid-cols-2">
             <Tabs.Trigger value="filter">Filter</Tabs.Trigger>
             <Tabs.Trigger value="sort">Sort</Tabs.Trigger>
@@ -30,9 +30,9 @@
         </Tabs.Content>
     </Tabs.Root>
     <div class="flex flex-col">
-        <Label for="fics" class="text-center text-sm font-bold text-muted-foreground"
-            >Found {pageState.filteredCards.length} fics</Label
-        >
+        <Label for="fics" class="text-center text-sm font-bold text-muted-foreground">
+            Found {pageState.filteredCards.length} fics
+        </Label>
         <div id="fics" class="flex flex-col gap-2">
             {#each pageState.filteredCards as cardData}
                 <FicCard {cardData}></FicCard>
