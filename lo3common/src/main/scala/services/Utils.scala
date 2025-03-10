@@ -5,6 +5,8 @@ import scalaz.Scalaz.ToIdOps
 import zio.*
 
 import java.io.File
+import java.time.LocalDateTime
+import scala.util.Try
 
 object Utils:
   def useTempFile(fileName: String)(action: File => Task[Unit]): Task[Unit] = {
@@ -21,3 +23,6 @@ object Utils:
 
     ZIO.acquireReleaseWith(acquire)(deleteFile)(action)
   }
+
+  def parseDateTime(str: String, id: Option[Int]) =
+    Try(LocalDateTime.parse(str)).getOrElse(LocalDateTime.parse(str + s"T00:00:00${id.map(i => s".$i").getOrElse("")}"))

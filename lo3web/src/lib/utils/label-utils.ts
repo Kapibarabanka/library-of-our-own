@@ -1,4 +1,4 @@
-import { Rating } from '$lib/types/domain-models';
+import { Rating, UserImpression } from '$lib/types/domain-models';
 
 export function shortRating(rating: Rating) {
     switch (rating) {
@@ -10,5 +10,13 @@ export function shortRating(rating: Rating) {
             return 'General';
         default:
             return rating;
+    }
+}
+export function shortImpression(impression: UserImpression) {
+    switch (impression) {
+        case UserImpression.Never:
+            return 'Nope';
+        default:
+            return impression;
     }
 }

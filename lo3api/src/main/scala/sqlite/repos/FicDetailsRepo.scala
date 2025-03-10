@@ -5,6 +5,7 @@ import sqlite.docs.FicDetailsDoc
 import sqlite.services.Lo3Db
 import sqlite.tables.FicsDetailsTable
 
+import kapibarabanka.lo3.common.models.domain.UserImpression.UserImpression
 import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
@@ -29,6 +30,9 @@ class FicDetailsRepo(db: Lo3Db):
 
   def setOnKindle(key: UserFicKey, value: Boolean): IO[DbError, Unit] =
     db.run(filterDetails(key).map(d => d.isOnKindle).update(value)).unit
+
+  def setImpression(key: UserFicKey, impression: UserImpression): IO[DbError, Unit] =
+    db.run(filterDetails(key).map(d => d.impression).update(Some(impression.toString))).unit
 
   def addUserFicRecord(key: UserFicKey): IO[DbError, FicDetails] = for {
     _ <- db.run(

@@ -1,11 +1,12 @@
 package kapibarabanka.lo3.common
 package openapi
 
-import models.domain.{Note, FicDetails, Ao3FicInfo, Lo3Error, Fic}
+import models.domain.{Ao3FicInfo, Fic, FicDetails, Lo3Error, Note}
 
+import kapibarabanka.lo3.common.models.api.FinishInfo
 import scalaz.Scalaz.ToIdOps
 import zio.http.*
-import zio.http.Method.GET
+import zio.http.Method.{GET, POST}
 import zio.http.codec.*
 import zio.http.endpoint.Endpoint
 
@@ -36,6 +37,11 @@ object FicDetailsClient extends MyClient:
     .out[Unit]
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
+  
+  val finishFic = endpoint(POST, "finish-fic")
+    .in[FinishInfo]
+    .out[Unit]
+    .outError[Lo3Error](Status.InternalServerError)
 
   override val allEndpoints =
     List(
@@ -43,5 +49,6 @@ object FicDetailsClient extends MyClient:
       addNote,
       startedToday,
       finishedToday,
-      abandonedToday
+      abandonedToday,
+      finishFic
     )

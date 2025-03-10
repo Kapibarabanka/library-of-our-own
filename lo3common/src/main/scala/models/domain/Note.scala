@@ -3,9 +3,9 @@ package models.domain
 
 import zio.schema.{DeriveSchema, Schema}
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
-case class Note(id: Option[Int], date: LocalDate, text: String):
+case class Note(id: Option[Int], date: LocalDateTime, text: String):
   def format() = s"$date:\n$text"
 
 object Note:

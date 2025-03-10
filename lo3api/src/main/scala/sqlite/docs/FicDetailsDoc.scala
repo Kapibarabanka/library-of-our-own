@@ -2,6 +2,7 @@ package kapibarabanka.lo3.api
 package sqlite.docs
 
 import kapibarabanka.lo3.common.models.domain.{FicDetails, UserImpression}
+import kapibarabanka.lo3.common.services.Utils
 
 import java.time.LocalDateTime
 import scala.util.Try
@@ -22,6 +23,5 @@ case class FicDetailsDoc(
     isOnKindle = isOnKindle,
     impression = impression.map(UserImpression.withName),
     spicy = fire,
-    recordCreated = Try(LocalDateTime.parse(recordCreated))
-      .getOrElse(LocalDateTime.parse(recordCreated + s"T00:00:00${id.map(i => s".$i").getOrElse("")}"))
+    recordCreated = Utils.parseDateTime(recordCreated, id)
   )
