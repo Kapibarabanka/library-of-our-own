@@ -11,7 +11,7 @@ import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}
 import zio.*
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 case class CommentStateProcessor(state: CommentBotState, bot: BotWithChatId)
     extends StateProcessor(state, bot),
@@ -26,7 +26,7 @@ case class CommentStateProcessor(state: CommentBotState, bot: BotWithChatId)
 
   private def addComment(comment: String) = for {
     logPatching    <- bot.sendText("Adding comment...")
-    _              <- Lo3Api.run(FicDetailsClient.addNote(state.ficForComment.key, Note(None, LocalDate.now(), comment)))
+    _              <- Lo3Api.run(FicDetailsClient.addNote(state.ficForComment.key, Note(None, LocalDateTime.now(), comment)))
     ficWithComment <- Lo3Api.run(FicsClient.getFicByKey(state.ficForComment.key))
     _              <- bot.editLogText(logPatching, "Successfully added comment!")
   } yield ExistingFicBotState(ficWithComment, true)
