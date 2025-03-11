@@ -5,7 +5,7 @@
     import FicCard from '@app/library/FicCard.svelte';
     import { UserImpression, type UserFicKey } from '$lib/types/domain-models';
     import StartedFicCard from './StartedFicCard.svelte';
-    import * as Drawer from '$lib/components/ui/drawer';
+    import * as Sheet from '$lib/components/ui/sheet';
     import { Button } from '$ui/button';
     import { Checkbox } from '$ui/checkbox';
     import * as ToggleGroup from '$lib/components/ui/toggle-group';
@@ -38,7 +38,7 @@
         const finishInfo: FinishInfo = {
             key: selectedKey,
             abandoned,
-            impression,
+            impression: !impression ? null : impression,
             note,
         };
         await FicDetailsClient.finishFic(finishInfo);
@@ -46,6 +46,14 @@
         pageState.startedFics = newHome.currentlyReading;
         open = false;
         isLoading = false;
+    }
+
+    function onOpenChange(isOpen: boolean) {
+        if (!isOpen) {
+            abandoned = false;
+            impression = undefined;
+            note = null;
+        }
     }
 </script>
 
@@ -67,17 +75,17 @@
         {/if}
     </div>
 </div>
-<Drawer.Root bind:open>
-    <Drawer.Content>
+<Sheet.Root bind:open {onOpenChange}>
+    <Sheet.Content side="top">
         {#if isLoading}
             <div class="flex h-[280px] items-center text-muted-foreground">
                 <LoaderCircle size={80} class="animate-spin flex-1" />
             </div>
         {:else}
-            <Drawer.Header>
-                <Drawer.Title>How was this fic?</Drawer.Title>
-            </Drawer.Header>
-            <div class="flex flex-col gap-3 px-4">
+            <Sheet.Header>
+                <Sheet.Title>How was this fic?</Sheet.Title>
+            </Sheet.Header>
+            <div class="flex flex-col gap-3 py-4">
                 <div class="flex items-center space-x-2">
                     <Checkbox id="abandoned" bind:checked={abandoned} />
                     <Label for="abandoned">
@@ -96,12 +104,11 @@
                 <Textarea bind:value={note} class="text-sm" id="note" placeholder="Add a note if you want to"
                 ></Textarea>
             </div>
-            <Drawer.Footer>
-                <Button onclick={async () => await submit()}>Submit</Button>
-                <Drawer.Close>Cancel</Drawer.Close>
-            </Drawer.Footer>
+            <Sheet.Footer>
+                <Button onclick={async () => await submit()}>Mark as finished</Button>
+            </Sheet.Footer>
         {/if}
-    </Drawer.Content>
-</Drawer.Root>
+    </Sheet.Content>
+</Sheet.Root>
 
 <style></style>
