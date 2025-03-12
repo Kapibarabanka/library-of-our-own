@@ -15,6 +15,7 @@
     import LoaderCircle from 'lucide-svelte/icons/loader-circle';
     import FicDetailsClient from '$api/FicDetailsClient';
     import FicsClient from '$api/FicsClient';
+    import TestChart from './TestChart.svelte';
 
     let { homePage }: { homePage: HomePageData } = $props();
     pageState.startedFics = homePage.currentlyReading;
@@ -73,6 +74,10 @@
         {:else}
             <p>No fics in the reading list yet</p>
         {/if}
+    </div>
+    <div class="flex flex-col">
+        <Label class="text-center text-sm font-bold text-muted-foreground">Test Chart</Label>
+        <TestChart></TestChart>
     </div>
 </div>
 <Sheet.Root bind:open {onOpenChange}>

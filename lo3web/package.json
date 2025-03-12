@@ -42,6 +42,7 @@
     },
     "dependencies": {
         "@sveltejs/adapter-node": "^5.2.12",
+        "chart.js": "^4.4.8",
         "dotenv": "^16.4.7"
     }
 }
