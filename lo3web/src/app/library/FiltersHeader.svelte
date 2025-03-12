@@ -24,7 +24,7 @@
     let filterType = $derived(getFilterType(filteredField));
 </script>
 
-<div class="flex flex-col gap-1">
+<div class="flex flex-col gap-2">
     <div id="filter-type">
         <Select.Root type="single" bind:value={filteredField}>
             <Select.Trigger class="w-full">

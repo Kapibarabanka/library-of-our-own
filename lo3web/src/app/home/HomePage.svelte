@@ -76,7 +76,7 @@
     </div>
 </div>
 <Sheet.Root bind:open {onOpenChange}>
-    <Sheet.Content side="top">
+    <Sheet.Content side="top" class="p-3">
         {#if isLoading}
             <div class="flex h-[280px] items-center text-muted-foreground">
                 <LoaderCircle size={80} class="animate-spin flex-1" />
