@@ -15,10 +15,15 @@
     import LoaderCircle from 'lucide-svelte/icons/loader-circle';
     import FicDetailsClient from '$api/FicDetailsClient';
     import FicsClient from '$api/FicsClient';
-    import TestChart from './TestChart.svelte';
+    import GeneralStatsChart from './GeneralStatsChart.svelte';
+
+    function updateState(newPage: HomePageData) {
+        pageState.startedFics = newPage.currentlyReading;
+        pageState.stats = newPage.generalStats;
+    }
 
     let { homePage }: { homePage: HomePageData } = $props();
-    pageState.startedFics = homePage.currentlyReading;
+    updateState(homePage);
 
     let isLoading = $state(false);
     let open = $state(false);
@@ -44,7 +49,7 @@
         };
         await FicDetailsClient.finishFic(finishInfo);
         const newHome = await FicsClient.getHomePage();
-        pageState.startedFics = newHome.currentlyReading;
+        updateState(newHome);
         open = false;
         isLoading = false;
     }
@@ -77,7 +82,7 @@
     </div>
     <div class="flex flex-col">
         <Label class="text-center text-sm font-bold text-muted-foreground">Test Chart</Label>
-        <TestChart></TestChart>
+        <GeneralStatsChart stats={pageState.stats}></GeneralStatsChart>
     </div>
 </div>
 <Sheet.Root bind:open {onOpenChange}>

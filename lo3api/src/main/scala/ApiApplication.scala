@@ -1,15 +1,15 @@
 package kapibarabanka.lo3.api
 
 import controllers.*
+import services.ao3Info.Ao3InfoService
 import sqlite.services.Lo3Data
 
-import kapibarabanka.lo3.api.services.ao3Info.Ao3InfoService
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.openapi.Lo3API
 import kapibarabanka.lo3.common.services.MyBotApi
 import zio.*
 import zio.http.*
-import zio.http.Header.{AccessControlAllowOrigin, Origin}
+import zio.http.Header.AccessControlAllowOrigin
 import zio.http.Middleware.{CorsConfig, cors}
 import zio.http.endpoint.openapi.SwaggerUI
 
@@ -34,7 +34,8 @@ object ApiApplication extends ZIOAppDefault {
         UserController(client, bot),
         FicDetailsController(),
         KindleController(ao3InfoService, bot),
-        FicsController(ao3InfoService, bot)
+        FicsController(ao3InfoService, bot),
+        StatsController()
       )
     )
     swaggerRoutes <- ZIO.succeed(SwaggerUI.routes("api", Lo3API.openAPI))

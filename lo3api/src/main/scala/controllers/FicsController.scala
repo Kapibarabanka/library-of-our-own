@@ -5,7 +5,7 @@ import services.FicsService
 import services.ao3Info.Ao3InfoService
 
 import kapibarabanka.lo3.common.models.ao3.Ao3Url
-import kapibarabanka.lo3.common.models.api.HomePageData
+import kapibarabanka.lo3.common.models.api.{HomePageData, MonthStats}
 import kapibarabanka.lo3.common.models.domain.{NotAo3Link, UserFicKey}
 import kapibarabanka.lo3.common.openapi.FicsClient
 import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MyBotApi}
@@ -39,7 +39,11 @@ protected[api] case class FicsController(ao3InfoService: Ao3InfoService, bot: My
       started       <- ficsService.getStarted(userId)
       ficsInBacklog <- ficsService.getBacklog(userId)
       randomFic     <- ZIO.succeed(if (ficsInBacklog.isEmpty) None else Some(ficsInBacklog(random.nextInt(ficsInBacklog.length))))
-    } yield HomePageData(currentlyReading = started, randomFicFromBacklog = randomFic)
+    } yield HomePageData(
+      currentlyReading = started,
+      randomFicFromBacklog = randomFic,
+      generalStats = List(MonthStats("Jan", 12, 65), MonthStats("Feb", 7, 123), MonthStats("Mar", 15, 56))
+    )
   }
 
   val updateAo3Info = FicsClient.updateAo3Info.implement { key =>

@@ -7,7 +7,8 @@ import zio.schema.{DeriveSchema, Schema}
 
 case class HomePageData(
     currentlyReading: List[FicCard],
-    randomFicFromBacklog: Option[FicCard]
+    randomFicFromBacklog: Option[FicCard],
+    generalStats: List[MonthStats]
 )
 
 object HomePageData:
