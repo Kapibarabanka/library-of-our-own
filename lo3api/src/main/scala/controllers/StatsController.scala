@@ -11,4 +11,4 @@ protected[api] case class StatsController() extends Controller:
 //    ZIO.succeed(List(MonthStats("Jan", 12, 65), MonthStats("Feb", 7, 123), MonthStats("Mar", 15, 56)))
 //  }
 
-  override val routes: List[Route[Any, Response]] = List(generalStats)
+  override val routes: List[Route[Any, Response]] = List()

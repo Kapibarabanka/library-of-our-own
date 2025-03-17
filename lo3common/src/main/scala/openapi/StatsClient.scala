@@ -16,4 +16,4 @@ object StatsClient extends MyClient:
 //    .out[List[MonthStats]]
 //    .outError[Lo3Error](Status.InternalServerError)
 
-  override val allEndpoints = List(generalStats)
+  override val allEndpoints = List()
