@@ -81,7 +81,7 @@
         {/if}
     </div>
     <div class="flex flex-col">
-        <Label class="text-center text-sm font-bold text-muted-foreground">Test Chart</Label>
+        <Label class="text-center text-sm font-bold text-muted-foreground">Reading stats for last 6 months</Label>
         <GeneralStatsChart stats={pageState.stats}></GeneralStatsChart>
     </div>
 </div>

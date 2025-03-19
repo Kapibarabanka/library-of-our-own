@@ -21,6 +21,9 @@ class ReadDatesRepo(db: Lo3Db):
     canFinish = canFinish(maybeLast)
   )
 
+  def getReadDocs(userId: String, datesFilter: ReadDatesTable => Rep[Boolean]): IO[DbError, List[ReadDatesDoc]] =
+    db.run(readDates.filter(d => d.userId === userId && datesFilter(d)).result).map(_.toList)
+
   def addStartDate(key: UserFicKey, startDate: String): IO[DbError, Unit] = for {
     _ <- db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, Some(startDate), None, false))
   } yield ()

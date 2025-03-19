@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package controllers
 
-import services.FicsService
+import services.{FicsService, StatsService}
 import services.ao3Info.Ao3InfoService
 
 import kapibarabanka.lo3.common.models.ao3.Ao3Url
@@ -39,10 +39,11 @@ protected[api] case class FicsController(ao3InfoService: Ao3InfoService, bot: My
       started       <- ficsService.getStarted(userId)
       ficsInBacklog <- ficsService.getBacklog(userId)
       randomFic     <- ZIO.succeed(if (ficsInBacklog.isEmpty) None else Some(ficsInBacklog(random.nextInt(ficsInBacklog.length))))
+      stats <- StatsService.getGeneralStats(userId)
     } yield HomePageData(
       currentlyReading = started,
       randomFicFromBacklog = randomFic,
-      generalStats = List(MonthStats("Jan", 12, 65), MonthStats("Feb", 7, 123), MonthStats("Mar", 15, 56))
+      generalStats = stats
     )
   }
 

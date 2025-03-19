@@ -5,11 +5,13 @@
     import SimpleChart from '$lib/components/SimpleChart.svelte';
 
     let { stats }: { stats: MonthStats[] } = $props();
+    let totalFics = $derived(stats.map(s => s.fics).reduce((prev, curr) => prev + curr, 0));
+    let totalWords = $derived(stats.map(s => s.words).reduce((prev, curr) => prev + curr, 0));
 
     let chartConfig: ChartConfiguration = $derived({
         type: 'line',
         data: {
-            labels: stats.map(s => s.month),
+            labels: stats.map(s => s.month.slice(0, 3)),
             datasets: [
                 {
                     label: '# of fics',
@@ -49,6 +51,10 @@
     <Card.Content class="p-1">
         <SimpleChart {chartConfig}></SimpleChart>
     </Card.Content>
+    <Card.Footer class="p-1 flex justify-around">
+        <div>Total fics: {totalFics}</div>
+        <div>Total words: {totalWords.toLocaleString('en-us')}K</div>
+    </Card.Footer>
 </Card.Root>
 
 <style></style>
