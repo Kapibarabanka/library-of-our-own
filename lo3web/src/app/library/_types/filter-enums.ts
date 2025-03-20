@@ -42,6 +42,7 @@ export type TagFilterItem = {
     value: string;
     count: number;
     label: string;
+    lowercase: string;
 };
 
 export enum SortBy {

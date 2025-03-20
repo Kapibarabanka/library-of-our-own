@@ -86,7 +86,12 @@ export class FicCardsPageState {
                             return storage;
                         }, new Map<string, number>()),
                 ]
-                    .map(([value, count]) => ({ value, count, label: `${value} (${count})` }))
+                    .map(([value, count]) => ({
+                        value,
+                        count,
+                        label: `${value} (${count})`,
+                        lowercase: value.toLocaleLowerCase(),
+                    }))
                     .filter(item => !includedApplied?.has(item.value) && !excludedApplied?.has(item.value))
                     .toSorted((a, b) => b.count - a.count)
             );
