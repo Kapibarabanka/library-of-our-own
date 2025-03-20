@@ -30,7 +30,7 @@
             <Select.Trigger class="w-full">
                 {filteredField}
             </Select.Trigger>
-            <Select.Content>
+            <Select.Content preventScroll={true}>
                 <Select.Group>
                     {#each filterableFields as filterableField}
                         <Select.Item value={filterableField} label={filterableField}></Select.Item>

@@ -10,6 +10,7 @@
     import { ScrollArea } from '$ui/scroll-area';
     import Input from '$ui/input/input.svelte';
     import { Label } from '$ui/label';
+    import Button from '$ui/button/button.svelte';
     let { filteredField }: { filteredField: TagField } = $props();
     let tagInclusion = $state(TagInclusion.Include);
 
@@ -80,11 +81,19 @@
         <ScrollArea id="tags" class="h-52 rounded-md border" type="always">
             <div class="p-1 flex flex-col">
                 {#each visibleItems as tagFilterItem}
-                    <div
+                    <!-- <div
                         class="cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                        onclick={() => handleSelection(tagFilterItem.value)}
                     >
                         {tagFilterItem.label}
-                    </div>
+                    </div> -->
+                    <!-- <Button variant="ghost" onclick={() => handleSelection(tagFilterItem.value)}>
+                        {tagFilterItem.label}
+                    </Button> -->
+                    <button
+                        class="cursor-pointer text-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                        onclick={() => handleSelection(tagFilterItem.value)}>{tagFilterItem.label}</button
+                    >
                 {/each}
             </div>
         </ScrollArea>
