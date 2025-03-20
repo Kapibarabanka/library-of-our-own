@@ -90,6 +90,7 @@ export class FicCardsPageState {
                     .filter(item => !includedApplied?.has(item.value) && !excludedApplied?.has(item.value))
                     .toSorted((a, b) => b.count - a.count)
             );
+            console.log(`${tagField}: ${result.get(tagField)?.length}`);
         }
         return result;
     });
