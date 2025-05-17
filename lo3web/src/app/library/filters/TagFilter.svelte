@@ -10,13 +10,14 @@
     let allFilterItems = $derived([...(pageState.tagFilters.get(filteredField) ?? [])]);
     const count = 50;
     let filterValue = $state('');
-    let visibleItems = $derived.by(() => {
+    let filteredValues = $derived.by(() => {
         if (filterValue == null || filterValue === '') {
-            return allFilterItems.slice(0, count);
+            return allFilterItems;
         }
         const lowerFilter = filterValue.toLocaleLowerCase();
-        return allFilterItems.filter(i => i.lowercase.includes(lowerFilter)).slice(0, count);
+        return allFilterItems.filter(i => i.lowercase.includes(lowerFilter));
     });
+    let visibleItems = $derived(filteredValues.slice(0, count));
 
     function handleSelection(tag: string) {
         filterValue = '';
@@ -40,7 +41,7 @@
         <Input class="flex-1 text-sm" placeholder="Type to filter.." bind:value={filterValue}></Input>
     </div>
     <div>
-        {#if visibleItems.length < allFilterItems.length}
+        {#if filteredValues.length > count}
             <Label for="tags" class="text-center text-xs text-muted-foreground">
                 Showing top {count}
                 {filteredField.toLowerCase()}s, filter to see more

@@ -34,8 +34,8 @@ object ApiApplication extends ZIOAppDefault {
         UserController(client, bot),
         FicDetailsController(),
         KindleController(ao3InfoService, bot),
-        FicsController(ao3InfoService, bot)
-//        StatsController()
+        FicsController(ao3InfoService, bot),
+        StatsController()
       )
     )
     swaggerRoutes <- ZIO.succeed(SwaggerUI.routes("api", Lo3API.openAPI))

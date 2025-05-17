@@ -18,3 +18,19 @@ export interface HomePageData {
     randomFicFromBacklog?: FicCardData | null;
     generalStats: MonthStats[];
 }
+
+export enum StatTagField {
+    Ship = 'Ship',
+    Fandom = 'Fandom',
+    Tag = 'Tag',
+}
+
+export interface TagDataset {
+    tagValue: string;
+    counts: number[];
+}
+export interface TagFieldStats {
+    months: string[];
+    byFics: TagDataset[];
+    byWords: TagDataset[];
+}

@@ -1,19 +1,21 @@
 package kapibarabanka.lo3.common
 package openapi
 
-import models.api.MonthStats
+import models.api.{StatTagField, TagFieldStats}
 import models.domain.Lo3Error
-import openapi.KindleClient.endpoint
 
 import zio.http.Method.GET
+import zio.http.Status
 import zio.http.codec.PathCodec.string
-import zio.http.{Method, Status}
 
 object StatsClient extends MyClient:
   override protected val clientName = "stats"
 
-//  val generalStats = endpoint(GET, string("userId") / "general-stats")
-//    .out[List[MonthStats]]
-//    .outError[Lo3Error](Status.InternalServerError)
+  val tagStats = endpoint(GET, string("userId") / string("tagField") / "stats")
+    .transformIn { case (userId, tagStr) => (userId, StatTagField.valueOf(tagStr.toLowerCase.capitalize)) } {
+      (userId, tagField) => (userId, tagField.toString)
+    }
+    .out[TagFieldStats]
+    .outError[Lo3Error](Status.InternalServerError)
 
-  override val allEndpoints = List()
+  override val allEndpoints = List(tagStats)

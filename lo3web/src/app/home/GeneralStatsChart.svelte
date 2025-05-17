@@ -9,7 +9,7 @@
     let totalWords = $derived(stats.map(s => s.words).reduce((prev, curr) => prev + curr, 0));
 
     let chartConfig: ChartConfiguration = $derived({
-        type: 'line',
+        type: 'bar',
         data: {
             labels: stats.map(s => s.month.slice(0, 3)),
             datasets: [
