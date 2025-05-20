@@ -1,0 +1,12 @@
+services:
+    lo3parser:
+        container_name: lo3parser
+        restart: unless-stopped
+        build:
+            context: .
+            platforms:
+                - 'linux/amd64'
+        env_file:
+            - '../.env'
+        ports:
+            - 9000:9000

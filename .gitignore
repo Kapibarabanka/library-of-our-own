@@ -35,3 +35,9 @@ classes/
 
 .env
 .env*
+
+.fake
+.vscode
+bin
+obj
+publish
