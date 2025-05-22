@@ -4,8 +4,9 @@ services:
         restart: unless-stopped
         build:
             context: .
-            platforms:
-                - 'linux/amd64'
+            # for mac only
+            # platforms:
+            #     - 'linux/amd64'
         env_file:
             - '../.env'
         ports:

@@ -5,7 +5,7 @@ import models.{BotState, SetEmailBotState, StartBotState}
 import services.Lo3Api
 
 import kapibarabanka.lo3.bot.utils.MessageText
-import kapibarabanka.lo3.common.openapi.UserClient
+import kapibarabanka.lo3.common.lo3api.UserClient
 import kapibarabanka.lo3.common.services.BotWithChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}

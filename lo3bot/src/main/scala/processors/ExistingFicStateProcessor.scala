@@ -9,7 +9,7 @@ import utils.{Buttons, MessageText}
 import kapibarabanka.lo3.common.models.domain.{Fic, FicDetails, UserFicKey, UserImpression}
 import kapibarabanka.lo3.common.models.tg.MessageData
 import kapibarabanka.lo3.common.models.tg.TgError.*
-import kapibarabanka.lo3.common.openapi.{FicDetailsClient, FicsClient, KindleClient}
+import kapibarabanka.lo3.common.lo3api.{FicDetailsClient, FicsClient, KindleClient}
 import kapibarabanka.lo3.common.services.BotWithChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*

@@ -5,7 +5,7 @@ import models.{BotState, CommentBotState, ExistingFicBotState}
 import services.Lo3Api
 
 import kapibarabanka.lo3.common.models.domain.Note
-import kapibarabanka.lo3.common.openapi.{FicDetailsClient, FicsClient}
+import kapibarabanka.lo3.common.lo3api.{FicDetailsClient, FicsClient}
 import kapibarabanka.lo3.common.services.BotWithChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, Message}

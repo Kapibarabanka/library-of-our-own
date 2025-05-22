@@ -6,7 +6,7 @@ import processors.*
 
 import cats.Parallel
 import cats.effect.Async
-import kapibarabanka.lo3.common.openapi.UserClient
+import kapibarabanka.lo3.common.lo3api.UserClient
 import kapibarabanka.lo3.common.services.{BotWithChatId, MyBotApi}
 import telegramium.bots.*
 import telegramium.bots.high.LongPollBot
