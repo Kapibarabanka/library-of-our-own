@@ -1,33 +1,33 @@
-package kapibarabanka.lo3.bot
+package kapibarabanka.lo3.api
 package services
 
-import kapibarabanka.lo3.common.models.domain.{ConnectionClosed, TooManyRequests}
+import kapibarabanka.lo3.common.models.ao3.UnspecifiedError
 import zio.http.*
 import zio.http.endpoint.{EndpointExecutor, EndpointLocator, Invocation}
 import zio.http.netty.NettyConfig
 import zio.*
 
-trait Lo3Api:
+trait ParserApi:
   def run[P, I, TOutput, TError](
       endpoint: Invocation[P, I, TError, TOutput, zio.http.endpoint.AuthType.None]
-  ): IO[TError | ConnectionClosed, TOutput]
+  ): IO[TError | UnspecifiedError, TOutput]
 
-case class Lo3ApiImpl(url: String, client: Client) extends Lo3Api:
+case class ParserApiImpl(url: String, client: Client) extends ParserApi:
   private val executor = EndpointExecutor(client, EndpointLocator.fromURL(URL.decode(url).getOrElse(URL.empty)))
 
   def run[P, I, TOutput, TError](
       endpoint: Invocation[P, I, TError, TOutput, zio.http.endpoint.AuthType.None]
-  ): IO[TError | ConnectionClosed, TOutput] =
-    executor(endpoint).provide(Scope.default).catchAllDefect(_ => ZIO.fail(ConnectionClosed()))
+  ): IO[TError | UnspecifiedError, TOutput] =
+    executor(endpoint).provide(Scope.default)
 
-object Lo3Api:
+object ParserApi:
   private val clientConfig = ZClient.Config.default.idleTimeout(5.minutes)
 
-  def live(url: String): ZLayer[Any, Throwable, Lo3Api] = ZLayer.make[Lo3Api](
+  def live(url: String): ZLayer[Any, Throwable, ParserApi] = ZLayer.make[ParserApi](
     ZLayer {
       ZIO
         .service[Client]
-        .map(client => Lo3ApiImpl(url, client))
+        .map(client => ParserApiImpl(url, client))
     },
     ZLayer.succeed(clientConfig),
     Client.live,
@@ -36,5 +36,5 @@ object Lo3Api:
   )
   def run[P, I, TOutput, TError](
       endpoint: Invocation[P, I, TError, TOutput, zio.http.endpoint.AuthType.None]
-  ): ZIO[Lo3Api, TError | ConnectionClosed, TOutput] =
-    ZIO.serviceWithZIO[Lo3Api](_.run(endpoint))
+  ): ZIO[ParserApi, TError | UnspecifiedError, TOutput] =
+    ZIO.serviceWithZIO[ParserApi](_.run(endpoint))

@@ -1,5 +1,5 @@
 package kapibarabanka.lo3.common
-package openapi
+package lo3api
 
 import models.api.{FicsPage, FicsPageRequest, HomePageData}
 import models.domain.{Ao3FicInfo, Fic, FicCard, Lo3Error}

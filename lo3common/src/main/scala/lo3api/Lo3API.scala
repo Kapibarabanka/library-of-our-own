@@ -1,5 +1,5 @@
 package kapibarabanka.lo3.common
-package openapi
+package lo3api
 
 import zio.http.endpoint.openapi.{OpenAPI, OpenAPIGen}
 

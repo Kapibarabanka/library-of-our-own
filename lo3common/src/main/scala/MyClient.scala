@@ -1,5 +1,4 @@
 package kapibarabanka.lo3.common
-package openapi
 
 import models.ao3.FicType
 import models.domain.UserFicKey

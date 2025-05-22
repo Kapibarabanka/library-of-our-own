@@ -19,3 +19,4 @@ object AppConfig:
 
   val htmlApi: String = sys.env("HTML_API")
   val dataApi: String = sys.env("DATA_API")
+  val parserApi: String = sys.env("PARSER_API")

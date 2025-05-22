@@ -6,15 +6,12 @@ import services.Lo3Api
 import utils.{ErrorMessage, MessageText}
 
 import kapibarabanka.lo3.common.models.ao3.{Ao3Url, FicType}
-import kapibarabanka.lo3.common.models.domain.UserFicKey
 import kapibarabanka.lo3.common.models.tg.TgError.InaccessibleMessageError
-import kapibarabanka.lo3.common.openapi.{FicDetailsClient, FicsClient, UserClient}
+import kapibarabanka.lo3.common.openapi.{FicsClient, UserClient}
 import kapibarabanka.lo3.common.services.{BotWithChatId, Utils}
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.{CallbackQuery, InputPartFile, Message}
 import zio.*
-import zio.http.{Body, Client, Request}
-import zio.json.*
 
 import java.io.File
 import java.nio.charset.StandardCharsets

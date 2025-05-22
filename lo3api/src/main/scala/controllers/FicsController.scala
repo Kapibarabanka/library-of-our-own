@@ -7,7 +7,7 @@ import services.ao3Info.Ao3InfoService
 import kapibarabanka.lo3.common.models.ao3.Ao3Url
 import kapibarabanka.lo3.common.models.api.{HomePageData, MonthStats}
 import kapibarabanka.lo3.common.models.domain.{NotAo3Link, UserFicKey}
-import kapibarabanka.lo3.common.openapi.FicsClient
+import kapibarabanka.lo3.common.lo3api.FicsClient
 import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MyBotApi}
 import zio.ZIO
 import slick.jdbc.PostgresProfile.api.*

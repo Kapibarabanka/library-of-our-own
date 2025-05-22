@@ -1,6 +1,6 @@
 services:
-    lo3parser:
-        container_name: lo3parser
+    lo3-parser:
+        container_name: lo3-parser
         restart: unless-stopped
         build:
             context: .

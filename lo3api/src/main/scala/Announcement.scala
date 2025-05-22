@@ -5,7 +5,7 @@ import sqlite.services.Lo3Data
 import kapibarabanka.lo3.api.services.ao3Info.Ao3InfoService
 
 import kapibarabanka.lo3.common.AppConfig
-import kapibarabanka.lo3.common.openapi.Lo3API
+import kapibarabanka.lo3.common.lo3api.Lo3API
 import kapibarabanka.lo3.common.services.MyBotApi
 import zio.*
 import zio.http.*

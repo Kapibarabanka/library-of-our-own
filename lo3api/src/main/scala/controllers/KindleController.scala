@@ -8,7 +8,7 @@ import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3
 import kapibarabanka.lo3.common.models.ao3.FicType
 import kapibarabanka.lo3.common.models.domain.{EmailError, KindleEmailNotSet, Lo3Error, UnspecifiedError}
-import kapibarabanka.lo3.common.openapi.KindleClient
+import kapibarabanka.lo3.common.lo3api.KindleClient
 import kapibarabanka.lo3.common.services.*
 import zio.http.*
 import zio.process.Command

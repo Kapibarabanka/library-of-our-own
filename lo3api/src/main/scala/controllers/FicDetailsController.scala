@@ -4,7 +4,7 @@ package controllers
 import sqlite.services.Lo3Data
 
 import kapibarabanka.lo3.common.models.domain.Note
-import kapibarabanka.lo3.common.openapi.FicDetailsClient
+import kapibarabanka.lo3.common.lo3api.FicDetailsClient
 import zio.*
 import zio.http.*
 

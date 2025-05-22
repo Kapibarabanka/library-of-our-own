@@ -1,5 +1,5 @@
 package kapibarabanka.lo3.common
-package openapi
+package lo3api
 
 import models.api.{StatTagField, TagFieldStats}
 import models.domain.Lo3Error

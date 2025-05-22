@@ -6,7 +6,7 @@ import sqlite.services.Lo3Data
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3.FicType
 import kapibarabanka.lo3.common.models.domain.{Lo3Error, UnspecifiedError, UserFicKey, Fic}
-import kapibarabanka.lo3.common.openapi.UserClient
+import kapibarabanka.lo3.common.lo3api.UserClient
 import kapibarabanka.lo3.common.services.{EmptyLog, LogMessage, MyBotApi}
 import zio.*
 import zio.http.*
