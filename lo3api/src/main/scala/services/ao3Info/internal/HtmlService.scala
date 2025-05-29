@@ -1,14 +1,31 @@
 package kapibarabanka.lo3.api
 package services.ao3Info.internal
 
+import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3.{Ao3Error, Ao3Url, NotFound}
 import kapibarabanka.lo3.common.models.domain.{Lo3Error, ParsingError}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.model.Document
 import zio.*
 
+import scala.language.postfixOps
+
 class HtmlService(ao3: Ao3HttpClient):
   private val jsoupBrowser = JsoupBrowser()
+
+  def workFromFile(id: String, fileName: String): ZIO[Any, Lo3Error, RestrictedWorkHtml] =
+    val url        = Ao3Url.download(id, fileName)
+    val entityName = s"work with id $id from url $url"
+    for {
+      body <- ao3.getFromFile(url, fileName).mapError(e => Lo3Error.fromAo3Error(e))
+      html <- ZIO.attempt(jsoupBrowser.parseString(body)).mapError(e => ParsingError(e.toString, entityName))
+      doc <- ZIO.attempt(RestrictedWorkHtml(html, url)).mapError {
+        case _: NoSuchElementException =>
+          println(html.toString)
+          ParsingError("Cannot parse html into custom doc: element not found exception", entityName)
+        case e => ParsingError(e.toString, entityName)
+      }
+    } yield doc
 
   def work(id: String): IO[Lo3Error, WorkHtml] =
     getDoc(Ao3Url.work(id), true, s"work with id $id", "work")(html => WorkHtml(html))

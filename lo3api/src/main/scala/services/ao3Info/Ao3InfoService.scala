@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.api
 package services.ao3Info
 
-import services.ao3Info.internal.{Ao3HttpClient, Ao3HttpClientImpl, HtmlService, TagService}
+import services.ao3Info.internal.{Ao3HttpClient, Ao3HttpClientImpl, HtmlService, TagService, WorkDoc}
 import sqlite.services.Lo3Data
 
 import kapibarabanka.lo3.common.models.ao3
@@ -11,15 +11,21 @@ import kapibarabanka.lo3.common.services.{EmptyLog, OptionalLog}
 import zio.{IO, ZIO, ZLayer}
 
 trait Ao3InfoService:
-  def getAo3Info(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, Ao3FicInfo]
+  def htmlService: HtmlService
+  def getAo3Info(
+      id: String,
+      ficType: FicType,
+      htmlFileName: Option[String] = None,
+      log: OptionalLog = EmptyLog()
+  ): IO[Lo3Error, Ao3FicInfo]
   def updateAo3Info(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, Ao3FicInfo]
   def downloadLink(workId: String): IO[Lo3Error, String]
   def seriesWorks(seriesId: String): IO[Lo3Error, List[String]]
   def ficName(id: String, ficType: FicType): IO[Lo3Error, String]
 
 case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
-  private val htmlService = HtmlService(ao3)
-  private val tagService  = TagService(htmlService)
+  val htmlService        = HtmlService(ao3)
+  private val tagService = TagService(htmlService)
 
   override def ficName(id: String, ficType: FicType): IO[Lo3Error, String] = ficType match
     case FicType.Work   => htmlService.work(id).map(doc => doc.title)
@@ -40,7 +46,7 @@ case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
   override def updateAo3Info(id: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, Ao3FicInfo] = ficType match
     case FicType.Work =>
       for {
-        updatedWork <- parseWork(id, log)
+        updatedWork <- parseWork(id, log, None)
         updatedFic  <- Lo3Data.works.updateWork(updatedWork)
       } yield updatedFic
     case FicType.Series =>
@@ -49,25 +55,33 @@ case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
         updatedFic    <- Lo3Data.series.update(updatedSeries)
       } yield updatedFic
 
-  override def getAo3Info(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, Ao3FicInfo] = ficType match
-    case FicType.Work   => getWork(id, log)
+  override def getAo3Info(
+      id: String,
+      ficType: FicType,
+      htmlFileName: Option[String] = None,
+      log: OptionalLog = EmptyLog()
+  ): IO[Lo3Error, Ao3FicInfo] = ficType match
+    case FicType.Work   => getWork(id, log, htmlFileName)
     case FicType.Series => getSeries(id, log)
 
-  private def getWork(id: String, log: OptionalLog): IO[Lo3Error, Ao3FicInfo] = for {
+  private def getWork(id: String, log: OptionalLog, htmlFileName: Option[String]): IO[Lo3Error, Ao3FicInfo] = for {
     maybeFic <- Lo3Data.works.getById(id)
     fic <- maybeFic match
       case Some(fic) => ZIO.succeed(fic)
       case None =>
         for {
-          work    <- parseWork(id, log)
+          work    <- parseWork(id, log, htmlFileName)
           _       <- log.edit(s"Work parsed, saving to database...")
           flatFic <- Lo3Data.works.add(work)
         } yield flatFic
   } yield fic
 
-  private def parseWork(id: String, log: OptionalLog): IO[Lo3Error, Work] = for {
-    _             <- log.edit(s"Parsing work with id '$id'...")
-    doc           <- htmlService.work(id)
+  private def parseWork(id: String, log: OptionalLog, htmlFileName: Option[String]): IO[Lo3Error, Work] = for {
+    _ <- log.edit(s"Parsing work with id '$id'...")
+    doc: WorkDoc <- htmlFileName match {
+      case Some(fileName) => htmlService.workFromFile(id, fileName)
+      case None           => htmlService.work(id)
+    }
     _             <- log.edit(s"Parsing fandoms...")
     fandoms       <- ZIO.collectAll(doc.fandoms.map(tagService.fandom))
     _             <- log.edit(s"Parsing characters...")
@@ -91,17 +105,14 @@ case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
         freeformTags = freeformTags.distinct,
         link = Ao3Url.work(id),
         date = {
-          doc.stats.updated match
-            case Some(date) => PublishedAndUpdated(doc.stats.published, date)
-            case None       => Published(doc.stats.published)
+          doc.updated match
+            case Some(date) => PublishedAndUpdated(doc.published, date)
+            case None       => Published(doc.published)
         },
-        words = doc.stats.words,
-        chaptersWritten = doc.stats.chaptersWritten.get,
-        chaptersPlanned = doc.stats.chaptersPlanned,
-        comments = doc.stats.comments,
-        kudos = doc.stats.kudos,
-        hits = doc.stats.hits,
-        bookmarks = doc.stats.bookmarks
+        words = doc.words,
+        chaptersWritten = doc.chaptersWritten.get,
+        chaptersPlanned = doc.chaptersPlanned,
+        downloadLink = doc.mobiLink.flatMap(l => Ao3Url.cleanDownloadUrl(l))
       )
     )
     _ <- ZIO.log(s"Parsed work: $work")
@@ -160,10 +171,7 @@ case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
             words = doc.stats.words,
             chaptersWritten = doc.stats.chaptersWritten.get,
             chaptersPlanned = doc.stats.chaptersPlanned,
-            comments = doc.stats.comments,
-            kudos = doc.stats.kudos,
-            hits = doc.stats.hits,
-            bookmarks = doc.stats.bookmarks
+            downloadLink = None
           )
         )
     )

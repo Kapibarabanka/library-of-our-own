@@ -4,7 +4,7 @@ package controllers
 import services.{FicsService, StatsService}
 import services.ao3Info.Ao3InfoService
 
-import kapibarabanka.lo3.common.models.ao3.Ao3Url
+import kapibarabanka.lo3.common.models.ao3.{Ao3Url, FicType}
 import kapibarabanka.lo3.common.models.api.{HomePageData, MonthStats}
 import kapibarabanka.lo3.common.models.domain.{NotAo3Link, UserFicKey}
 import kapibarabanka.lo3.common.lo3api.FicsClient
@@ -23,10 +23,14 @@ protected[api] case class FicsController(ao3InfoService: Ao3InfoService, bot: My
   val getFicByLink = FicsClient.getFicByLink.implement { (ficLink, userId, needToLog) =>
     Ao3Url.tryParseFicLink(ficLink) match
       case None => ZIO.fail(NotAo3Link(ficLink))
-      case Some((ficId, ficType)) =>
+      case Some((ficId, typeOrFile)) =>
+        val (ficType, filename) = typeOrFile match {
+          case t: FicType => (t, None)
+          case f: String  => (FicType.Work, Some(f))
+        }
         for {
           log    <- if (needToLog) LogMessage.create("Working on it...", bot, userId) else ZIO.succeed(EmptyLog())
-          result <- ficsService.getFic(UserFicKey(userId, ficId, ficType), log)
+          result <- ficsService.getFic(UserFicKey(userId, ficId, ficType), log, filename)
           _      <- log.delete
         } yield result
   }
@@ -39,7 +43,7 @@ protected[api] case class FicsController(ao3InfoService: Ao3InfoService, bot: My
       started       <- ficsService.getStarted(userId)
       ficsInBacklog <- ficsService.getBacklog(userId)
       randomFic     <- ZIO.succeed(if (ficsInBacklog.isEmpty) None else Some(ficsInBacklog(random.nextInt(ficsInBacklog.length))))
-      stats <- StatsService.getGeneralStats(userId)
+      stats         <- StatsService.getGeneralStats(userId)
     } yield HomePageData(
       currentlyReading = started,
       randomFicFromBacklog = randomFic,

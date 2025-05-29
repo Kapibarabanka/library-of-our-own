@@ -19,6 +19,7 @@ class WorksTable(tag: Tag) extends Table[WorkDoc](tag, WorksTable.name):
   def words        = column[Int]("words")
   def complete     = column[Boolean]("complete")
   def partsWritten = column[Int]("partsWritten")
+  def downloadLink = column[Option[String]]("downloadLink")
 
   def * = (
     id,
@@ -32,7 +33,8 @@ class WorksTable(tag: Tag) extends Table[WorkDoc](tag, WorksTable.name):
     updated,
     words,
     complete,
-    partsWritten
+    partsWritten,
+    downloadLink
   ).mapTo[WorkDoc]
 
 object WorksTable extends MyTable:

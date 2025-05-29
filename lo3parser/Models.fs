@@ -1,8 +1,12 @@
 module Models
 
-type Fandom = { name: string; label: option<string> }
+type PageType =
+    | Work
+    | Series
+    | Tag
 
-type Work =
-    { id: string
-      title: string
-      authors: list<string> }
+let toPageType str =
+    match str with
+    | "work" -> Work
+    | "series" -> Series
+    | _ -> Tag

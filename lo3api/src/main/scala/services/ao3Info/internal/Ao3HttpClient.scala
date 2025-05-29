@@ -16,6 +16,7 @@ import zio.http.Header.UserAgent.ProductOrComment
 import zio.http.netty.NettyConfig
 
 trait Ao3HttpClient:
+  def getFromFile(url: String, fileName: String): ZIO[Any, Ao3Error, String]
   def getFromChrome(url: String, pageType: String): ZIO[Any, Ao3Error, String]
   def get(url: String): ZIO[Any, Ao3Error, String]
   def getAuthed(url: String): ZIO[Any, Ao3Error, String]
@@ -40,6 +41,21 @@ case class Ao3HttpClientImpl(
       Cookie.Request("_otwarchive_session", sys.env("_otwarchive_session"))
     )
   )
+
+  override def getFromFile(url: String, fileName: String): ZIO[Any, Ao3Error, String] = ZIO.scoped {
+    for {
+      response <- client
+        .request(
+          Request
+            .get(AppConfig.parserApi + "/downloadHtml")
+            .addQueryParam("url", url)
+            .addQueryParam("fileName", fileName)
+        )
+        .mapError(e => UnspecifiedError(e.getMessage))
+      entityName <- ZIO.succeed(s"file from of $url")
+      body       <- getBody(response, entityName)
+    } yield body
+  }
 
   override def getFromChrome(url: String, pageType: String): ZIO[Any, Ao3Error, String] = ZIO.scoped {
     for {

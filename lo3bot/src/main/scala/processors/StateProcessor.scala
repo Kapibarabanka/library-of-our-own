@@ -54,16 +54,11 @@ trait StateProcessor(currentState: BotState, bot: BotWithChatId) extends WithErr
       case "/help" | "/start" => bot.sendText(MessageText.help).map(_ => StartBotState(true))
       case "/setKindleEmail"  => ZIO.succeed(SetEmailBotState())
       case "/feedback"        => ZIO.succeed(FeedbackBotState())
-      case _ =>
-        Ao3Url.tryParseFicLink(text) match
-          case Some((ficId, ficType)) => getStateWithFic(text)
-          case None                   => bot.sendText(ErrorMessage.invalidMessage(text)).map(_ => StartBotState(true))
+      case _                  => getStateWithFic(text)
 
   private def getStateWithFic(ficLink: String): ZIO[Lo3Api, Nothing, BotState] =
     val action = for {
       record <- Lo3Api.run(FicsClient.getFicByLink(ficLink, bot.chatId, true))
-      _ <- ZIO.succeed(println("RECORD"))
-      _ <- ZIO.succeed(println(record))
     } yield ExistingFicBotState(record, true)
     action |> sendOnError(s"getting user record (${bot.chatId} -- $ficLink) in DB")
 

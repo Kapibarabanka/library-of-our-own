@@ -20,10 +20,7 @@ case class Work(
     words: Int,
     chaptersWritten: Int,
     chaptersPlanned: Option[Int],
-    comments: Option[Int],
-    kudos: Option[Int],
-    hits: Option[Int],
-    bookmarks: Option[Int],
+    downloadLink: Option[String]
 ):
   val complete: Boolean = chaptersPlanned match
     case Some(planned) => chaptersWritten >= planned

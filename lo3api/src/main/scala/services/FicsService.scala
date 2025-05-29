@@ -19,15 +19,15 @@ class FicsService(ao3InfoService: Ao3InfoService):
   def getStarted(userId: String): IO[DbError, List[FicCard]] =
     Lo3Data.fics.getFilteredCards(userId, None, Some(dates => dates.startDate.nonEmpty && dates.endDate.isEmpty))
 
-  def getFic(key: UserFicKey, log: OptionalLog = EmptyLog()): IO[Lo3Error, Fic] = for {
-    fic           <- ao3InfoService.getAo3Info(key.ficId, key.ficType, log)
+  def getFic(key: UserFicKey, log: OptionalLog = EmptyLog(), htmlFileName: Option[String] = None): IO[Lo3Error, Fic] = for {
+    ao3FicInfo    <- ao3InfoService.getAo3Info(key.ficId, key.ficType, htmlFileName, log)
     _             <- if (key.ficIsSeries) createDetailsForSeriesParts(key) else ZIO.unit
     details       <- Lo3Data.details.getOrCreateDetails(key)
     readDatesInfo <- Lo3Data.readDates.getReadDatesInfo(key)
     notes         <- Lo3Data.notes.getAllNotes(key)
   } yield Fic(
     userId = key.userId,
-    ao3Info = fic,
+    ao3Info = ao3FicInfo,
     readDatesInfo = readDatesInfo,
     notes = notes,
     details = details

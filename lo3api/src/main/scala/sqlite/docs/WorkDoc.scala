@@ -16,6 +16,7 @@ case class WorkDoc(
     words: Int,
     complete: Boolean,
     partsWritten: Int,
+    downloadLink: Option[String]
 )
 
 object WorkDoc:
@@ -44,4 +45,5 @@ object WorkDoc:
     link = work.link,
     complete = work.complete,
     partsWritten = work.chaptersWritten,
+    downloadLink = work.downloadLink
   )
