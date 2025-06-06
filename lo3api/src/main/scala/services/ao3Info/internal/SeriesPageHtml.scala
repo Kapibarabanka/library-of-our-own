@@ -9,7 +9,7 @@ import net.ruippeixotog.scalascraper.model.Document
 
 import scala.language.postfixOps
 protected[ao3Info] case class SeriesPageHtml(doc: Document, seriesId: String, page: Int):
-  val title                   = doc >> text("h2.heading")
+  val title                   = doc >> element("div.series-show") >> text("h2.heading")
   private val metaDataElement = doc >> element("dl.series")
   private val labels          = (metaDataElement >> texts("dt")).map(_.replace(":", ""))
   private val data            = metaDataElement >> texts("dd")
