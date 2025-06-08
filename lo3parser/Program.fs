@@ -27,6 +27,15 @@ let tryDownloadFile q =
         match Option.ofChoice (q ^^ "url") with
         | None -> return BAD_REQUEST "No url was provided"
         | Some url ->
+            let! res = downloadFile url
+            return OK("ok")
+    }
+
+let tryDownloadHtml q =
+    async {
+        match Option.ofChoice (q ^^ "url") with
+        | None -> return BAD_REQUEST "No url was provided"
+        | Some url ->
             match Option.ofChoice (q ^^ "fileName") with
             | None -> return BAD_REQUEST "No fileName was provided"
             | Some fileName ->
@@ -37,8 +46,15 @@ let tryDownloadFile q =
 
 let app =
     choose
-        [ path "/parser/source" >=> request (fun r -> tryGetPageSource r.query)
+        [ path "/hello" >=> fun (x: HttpContext) -> async { return! OK ("hello") x }
+          path "/parser/source" >=> request (fun r -> tryGetPageSource r.query)
           path "/downloadHtml"
+          >=> fun (x: HttpContext) ->
+              async {
+                  let! res = tryDownloadHtml x.request.query
+                  return! res x
+              }
+          path "/downloadFile"
           >=> fun (x: HttpContext) ->
               async {
                   let! res = tryDownloadFile x.request.query

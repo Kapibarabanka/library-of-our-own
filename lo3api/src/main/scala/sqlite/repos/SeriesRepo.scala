@@ -72,7 +72,7 @@ class SeriesRepo(db: Lo3Db, worksRepo: WorksRepo):
       case Some(doc) => docToModel(doc).map(Some(_))
       case None      => ZIO.succeed(None)
   } yield maybeDisplayModel
-  
+
   private def docToModel(doc: SeriesDoc, maybeWorks: Option[Seq[Ao3FicInfo]] = None) =
     val seriesWorks = maybeWorks match
       case Some(value) => ZIO.succeed(value)
@@ -100,6 +100,7 @@ class SeriesRepo(db: Lo3Db, worksRepo: WorksRepo):
         tags = works.flatMap(_.tags).toList.distinct,
         words = works.map(_.words).sum,
         complete = doc.complete,
-        partsWritten = works.length
+        partsWritten = works.length,
+        downloadLink = None
       )
     )

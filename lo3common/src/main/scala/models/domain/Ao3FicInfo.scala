@@ -20,7 +20,8 @@ case class Ao3FicInfo(
     tags: List[String] = List(),
     words: Int,
     complete: Boolean,
-    partsWritten: Int
+    partsWritten: Int,
+    downloadLink: Option[String]
 )
 
 object Ao3FicInfo:

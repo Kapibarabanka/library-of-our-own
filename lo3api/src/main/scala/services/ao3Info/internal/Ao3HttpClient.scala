@@ -70,7 +70,9 @@ case class Ao3HttpClientImpl(
       entityName   <- ZIO.succeed(s"source of $url")
       body         <- getBody(response, entityName)
       existingBody <- if (body.contains("Error 404")) ZIO.fail(NotFound(entityName)) else ZIO.succeed(body)
-    } yield existingBody
+      nonRestrictedBody <-
+        if (body.contains("ERROR: restricted work")) ZIO.fail(RestrictedWork(entityName)) else ZIO.succeed(existingBody)
+    } yield nonRestrictedBody
   }
 
   override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {

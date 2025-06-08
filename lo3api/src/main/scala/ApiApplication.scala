@@ -33,7 +33,7 @@ object ApiApplication extends ZIOAppDefault {
       List(
         UserController(client, bot),
         FicDetailsController(),
-        KindleController(ao3InfoService, bot),
+        KindleController(ao3InfoService, bot, client),
         FicsController(ao3InfoService, bot),
         StatsController()
       )

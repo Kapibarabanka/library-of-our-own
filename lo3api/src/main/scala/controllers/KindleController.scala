@@ -2,11 +2,11 @@ package kapibarabanka.lo3.api
 package controllers
 
 import sqlite.services.Lo3Data
-import kapibarabanka.lo3.api.services.ao3Info.Ao3InfoService
 
+import kapibarabanka.lo3.api.services.ao3Info.Ao3InfoService
 import kapibarabanka.lo3.common.AppConfig
 import kapibarabanka.lo3.common.models.ao3
-import kapibarabanka.lo3.common.models.ao3.FicType
+import kapibarabanka.lo3.common.models.ao3.{Ao3Url, FicType}
 import kapibarabanka.lo3.common.models.domain.{EmailError, KindleEmailNotSet, Lo3Error, UnspecifiedError}
 import kapibarabanka.lo3.common.lo3api.KindleClient
 import kapibarabanka.lo3.common.services.*
@@ -19,7 +19,7 @@ import java.net.URL
 import scala.language.postfixOps
 import scala.sys.process.*
 
-case class KindleController(ao3InfoService: Ao3InfoService, bot: MyBotApi) extends Controller:
+case class KindleController(ao3InfoService: Ao3InfoService, bot: MyBotApi, client: Client) extends Controller:
   private def fileNames(id: String, ficType: FicType) =
     val fileName = AppConfig.ficsPath + ficType.toString + id
     (fileName + ".mobi", fileName + ".epub")
@@ -59,18 +59,27 @@ case class KindleController(ao3InfoService: Ao3InfoService, bot: MyBotApi) exten
         ZIO.unit
     action.map(_ => epubFileName).mapError(e => UnspecifiedError(e.getMessage))
 
-  private def saveWork(id: String, log: OptionalLog): IO[Throwable, Unit] =
+  private def saveWork(id: String, log: OptionalLog): IO[Throwable, Unit] = ZIO.scoped {
     val (mobi, epub) = fileNames(id, FicType.Work)
     for {
-      link    <- ao3InfoService.downloadLink(id)
-      _       <- log.edit("Downloading work...")
-      _       <- ZIO.attempt(new URL(link) #> File(mobi) !!)
-      _       <- log.edit("Converting work to epub...")
-      process <- Command("ebook-convert", mobi, epub).run
-      output  <- process.stdout.string
-      _       <- ZIO.attempt(File(mobi).delete())
-      _       <- process.successfulExitCode.mapError(_ => Exception(output))
+      link <- ao3InfoService.downloadLink(id)
+      _    <- log.edit("Downloading work...")
+      _ <- client
+        .request(
+          Request
+            .get(AppConfig.parserApi + "/downloadFile")
+            .addQueryParam("url", link)
+        )
+        .mapError(e => UnspecifiedError(e.getMessage))
+      ao3FileName <- ZIO.succeed(Ao3Url.getFileName(link).get)
+      _           <- ZIO.attempt(File(AppConfig.ficsPath + ao3FileName).renameTo(File(mobi)))
+      _           <- log.edit("Converting work to epub...")
+      process     <- Command("ebook-convert", mobi, epub).run
+      output      <- process.stdout.string
+      _           <- ZIO.attempt(File(mobi).delete())
+      _           <- process.successfulExitCode.mapError(_ => Exception(output))
     } yield ()
+  }
 
   private def saveSeries(id: String, log: OptionalLog, title: String) =
     val (_, mergedEpub) = fileNames(id + "merged", FicType.Series)

@@ -86,7 +86,8 @@ class FicsRepo(db: Lo3Db):
       tags = tagsByWork.getOrElse(work.id, Seq()).toList.distinct,
       words = work.words,
       complete = work.complete,
-      partsWritten = work.partsWritten
+      partsWritten = work.partsWritten,
+      downloadLink = work.downloadLink
     )
   )
 
@@ -113,7 +114,8 @@ class FicsRepo(db: Lo3Db):
         tags = seriesWorks.flatMap(_.tags).distinct,
         words = seriesWorks.map(_.words).sum,
         complete = seriesDoc.complete,
-        partsWritten = seriesWorks.length
+        partsWritten = seriesWorks.length,
+        downloadLink = None
       )
     )
   )

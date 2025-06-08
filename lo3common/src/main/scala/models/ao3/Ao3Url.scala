@@ -46,6 +46,11 @@ object Ao3Url {
     case _                          => None
   }
 
+  def getFileName(url: String) = url match
+    case htmlRegex(_, fileName) => Some(fileName)
+    case mobiRegex(_, fileName) => Some(fileName)
+    case _                      => None
+
   def tryParseFicLink(url: String): Option[(String, FicType | String)] = url match
     case workIdRegex(id)            => Some((id, FicType.Work))
     case seriesIdRegex(id)          => Some((id, FicType.Series))

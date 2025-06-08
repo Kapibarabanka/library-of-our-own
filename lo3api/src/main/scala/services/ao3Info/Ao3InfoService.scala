@@ -39,9 +39,16 @@ case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
   } yield workIds
 
   override def downloadLink(workId: String): IO[Lo3Error, String] = for {
-    doc  <- htmlService.work(workId)
-    link <- doc.mobiLink.fold[IO[Lo3Error, String]](ZIO.fail(DownloadLinkNotFound(workId)))(s => ZIO.succeed(s))
-  } yield Ao3Url.download(link)
+    work <- getWork(workId, EmptyLog(), None)
+    link <- work.downloadLink match {
+      case Some(value) => ZIO.succeed(value)
+      case None =>
+        htmlService
+          .work(workId)
+          .flatMap(doc => doc.mobiLink.fold[IO[Lo3Error, String]](ZIO.fail(DownloadLinkNotFound(workId)))(s => ZIO.succeed(s)))
+          .map(Ao3Url.download)
+    }
+  } yield link
 
   override def updateAo3Info(id: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, Ao3FicInfo] = ficType match
     case FicType.Work =>

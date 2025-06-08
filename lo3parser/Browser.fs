@@ -7,19 +7,31 @@ open System
 open System.IO
 open OpenQA.Selenium.Support.UI
 
-// todo use env
-let private downloadDir = "/Users/kapibarabanka/Documents/fics"
+open dotenv.net
+
+DotEnv.Load()
+
+let downloadDir = Environment.GetEnvironmentVariable "DOWNLOADED_FICS"
 let private toError message = $"ERROR: {message}"
 
-let downloadHtml (url: string) (fileName: string) =
+let downloadFile (url: string) =
     async {
         let options = new ChromeOptions()
         options.AddUserProfilePreference("download.default_directory", downloadDir)
         let driver = new ChromeDriver(options)
-        driver.Navigate().GoToUrl url
-        do! Async.Sleep 5000
-        driver.Close()
-        let filePath = $"{downloadDir}/{fileName}"
+
+        try
+            driver.Navigate().GoToUrl url
+            do! Async.Sleep 5000
+
+        finally
+            driver.Close()
+    }
+
+let downloadHtml (url: string) (fileName: string) =
+    async {
+        do! downloadFile url
+        let filePath = $"{downloadDir}{fileName}"
         let res = File.ReadAllText filePath
         File.Delete filePath
         let idx = res.IndexOf "<div id=\"chapters\""
@@ -46,7 +58,7 @@ let private tryGetWork driver =
     // todo match exception
     with ex ->
         let mes =
-            if driver.PageSource.Contains "registred" then
+            if driver.PageSource.Contains "registered users" then
                 "restricted work"
             else
                 ex.Message

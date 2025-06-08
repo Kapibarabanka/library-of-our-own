@@ -109,5 +109,6 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
     tags = tags.toList.distinct,
     words = doc.words,
     complete = doc.complete,
-    partsWritten = doc.partsWritten
+    partsWritten = doc.partsWritten,
+    downloadLink = doc.downloadLink
   )

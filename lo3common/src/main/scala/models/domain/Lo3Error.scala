@@ -14,6 +14,7 @@ object Lo3Error:
     case ao3.TooManyRequests() => TooManyRequests()
     case ao3.AuthFailed()      => AuthFailed()
     case ao3.Cloudflare()      => Cloudflare()
+    case ao3.RestrictedWork(_) => Restricted()
     case e                     => SomeAo3Error(e.msg)
 
 case class DbError(dbMessage: String)        extends Lo3Error(s"Error while working with DB: $dbMessage")
@@ -29,3 +30,4 @@ case class DownloadLinkNotFound(workId: String)  extends Lo3Error(s"Couldn't fin
 case class UnspecifiedError(internalMsg: String) extends Lo3Error(internalMsg)
 case class ConnectionClosed()                    extends Lo3Error("Connection closed due to timeout")
 case class Cloudflare()                          extends Lo3Error("Shields are up")
+case class Restricted()                          extends Lo3Error("This is a restricted work")
