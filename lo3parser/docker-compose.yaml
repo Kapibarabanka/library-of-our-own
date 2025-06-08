@@ -5,14 +5,11 @@ services:
         build:
             context: .
             # for mac only
-            platforms:
-                - 'linux/amd64'
+            # platforms:
+            #     - 'linux/amd64'
         env_file:
             - '../.env'
         ports:
             - 9000:9000
         volumes:
-            - downloaded-fics:/home/downloaded-fics/
-volumes:
-    downloaded-fics:
-        external: true
+            - library-of-our-own_downloaded-fics:/home/downloaded-fics/

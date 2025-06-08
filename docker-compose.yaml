@@ -3,3 +3,6 @@ include:
     - lo3bot/docker-compose.yaml
     - lo3parser/docker-compose.yaml
     - lo3web/docker-compose.yaml
+volumes:
+    library-of-our-own_downloaded-fics:
+        external: true
