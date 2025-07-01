@@ -12,4 +12,4 @@ services:
         ports:
             - 9000:9000
         volumes:
-            - library-of-our-own_downloaded-fics:/home/downloaded-fics/
+            - downloaded-fics:/home/downloaded-fics/

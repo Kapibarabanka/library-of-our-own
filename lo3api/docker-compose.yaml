@@ -8,10 +8,7 @@ services:
         env_file:
             - '../.env'
         volumes:
-            - ao3-db:/home/ao3db/
-            - library-of-our-own_downloaded-fics:/home/downloaded-fics/
+            - db:/home/lo3db/
+            - downloaded-fics:/home/downloaded-fics/
         ports:
             - '8090:8090'
-volumes:
-    ao3-db:
-        external: true
