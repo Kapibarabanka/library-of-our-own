@@ -6,8 +6,8 @@ import kapibarabanka.lo3.common.models.domain.{
   Cloudflare,
   ConnectionClosed,
   KindleEmailNotSet,
-  Restricted,
-  TooManyRequests
+  TooManyRequests,
+  RestrictedWork
 }
 
 object ErrorMessage:
@@ -22,7 +22,7 @@ object ErrorMessage:
       case KindleEmailNotSet() => noKindleEmail
       case AuthFailed()        => authFailed
       case Cloudflare()        => shieldsAreUp
-      case Restricted()        => restricted
+      case RestrictedWork(_)   => restricted
       case _                   => defaultMessage(error, actionName)
 
   private def defaultMessage(error: Throwable, actionName: String) = s"\nError happened while $actionName: ${error.getMessage}"
