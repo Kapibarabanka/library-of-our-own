@@ -59,4 +59,7 @@ protected[api] case class FicsController(ao3InfoService: Ao3InfoService, bot: My
     } yield result
   }
 
-  override val routes: List[Route[Any, Response]] = List(getAllCards, getFicByLink, getFicByKey, getHomePage, updateAo3Info)
+  val toggleParser = FicsClient.toggleParser.implement { _ => ao3InfoService.toggleParser().map(use => s"Now useParser is $use") }
+
+  override val routes: List[Route[Any, Response]] =
+    List(getAllCards, getFicByLink, getFicByKey, getHomePage, updateAo3Info, toggleParser)

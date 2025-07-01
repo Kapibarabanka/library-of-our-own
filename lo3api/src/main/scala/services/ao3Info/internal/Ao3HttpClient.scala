@@ -1,11 +1,8 @@
 package kapibarabanka.lo3.api
 package services.ao3Info.internal
 
-import services.ParserApi
-
 import kapibarabanka.lo3.common.AppConfig
-import kapibarabanka.lo3.common.models.ao3.*
-import kapibarabanka.lo3.common.parserapi.ParserClient
+import kapibarabanka.lo3.common.models.domain.*
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.*
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract.*
@@ -16,10 +13,9 @@ import zio.http.Header.UserAgent.ProductOrComment
 import zio.http.netty.NettyConfig
 
 trait Ao3HttpClient:
-  def getFromFile(url: String, fileName: String): ZIO[Any, Ao3Error, String]
-  def getFromChrome(url: String, pageType: String): ZIO[Any, Ao3Error, String]
-  def get(url: String): ZIO[Any, Ao3Error, String]
-  def getAuthed(url: String): ZIO[Any, Ao3Error, String]
+  def getFromFile(url: String, fileName: String): ZIO[Any, Lo3Error, String]
+  def get(url: String, pageType: PageType): ZIO[Any, Lo3Error, String]
+  def toggleParser: ZIO[Any, Nothing, Boolean]
 
 case class Ao3HttpClientImpl(
     username: String,
@@ -28,21 +24,20 @@ case class Ao3HttpClientImpl(
 ) extends Ao3HttpClient:
   private val loginUrl                         = "https://archiveofourown.org/users/login"
   private var authedResponse: Option[Response] = None
+  private var useParser                        = true
 
   private val followRedirects     = ZClientAspect.followRedirects(2)((resp, message) => ZIO.logInfo(message).as(resp))
   private val clientWithRedirects = client @@ followRedirects
 
-  private val cookiesFromChrome = NonEmptyChunk.fromIterable(
-    Cookie.Request("user_credentials", "1"),
-    List(
-      Cookie.Request("_cfuvid", sys.env("_cfuvid")),
-      Cookie.Request("__cf_bm", sys.env("__cf_bm")),
-      Cookie.Request("cf_clearance", sys.env("cf_clearance")),
-      Cookie.Request("_otwarchive_session", sys.env("_otwarchive_session"))
-    )
-  )
+  override def get(url: String, pageType: PageType): ZIO[Any, Lo3Error, String] =
+    if (this.useParser) then getFromChrome(url, pageType.toString.toLowerCase)
+    else
+      pageType match {
+        case PageType.Tag => getWithoutAuth(url)
+        case _            => getAuthed(url)
+      }
 
-  override def getFromFile(url: String, fileName: String): ZIO[Any, Ao3Error, String] = ZIO.scoped {
+  override def getFromFile(url: String, fileName: String): ZIO[Any, Lo3Error, String] = ZIO.scoped {
     for {
       response <- client
         .request(
@@ -57,7 +52,9 @@ case class Ao3HttpClientImpl(
     } yield body
   }
 
-  override def getFromChrome(url: String, pageType: String): ZIO[Any, Ao3Error, String] = ZIO.scoped {
+  override def toggleParser: ZIO[Any, Nothing, Boolean] = ZIO.succeed(this.useParser = !this.useParser).map(_ => this.useParser)
+
+  private def getFromChrome(url: String, pageType: String): ZIO[Any, Lo3Error, String] = ZIO.scoped {
     for {
       response <- client
         .request(
@@ -69,22 +66,13 @@ case class Ao3HttpClientImpl(
         .mapError(e => UnspecifiedError(e.getMessage))
       entityName   <- ZIO.succeed(s"source of $url")
       body         <- getBody(response, entityName)
-      existingBody <- if (body.contains("Error 404")) ZIO.fail(NotFound(entityName)) else ZIO.succeed(body)
+      existingBody <- if (body.contains("Error 404")) ZIO.fail(NotFoundOnAo3(entityName)) else ZIO.succeed(body)
       nonRestrictedBody <-
         if (body.contains("ERROR: restricted work")) ZIO.fail(RestrictedWork(entityName)) else ZIO.succeed(existingBody)
     } yield nonRestrictedBody
   }
 
-  override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {
-    request <- ZIO.succeed(addAgent(Request.get(url)))
-    requestWithCookies <- ZIO.succeed(
-      request.addHeaders(Headers(Header.Cookie(cookiesFromChrome)))
-    )
-    (response, body) <- getResponseAndBody(requestWithCookies)
-    _                <- ZIO.succeed(this.authedResponse = Some(response))
-  } yield body
-
-  override def get(url: String): ZIO[Any, Ao3Error, String] = for {
+  private def getWithoutAuth(url: String) = for {
     request <- ZIO.succeed(authedResponse match
       case Some(response) => populateCookies(Request.get(url), response)
       case None           => addAgent(Request.get(url))
@@ -92,13 +80,12 @@ case class Ao3HttpClientImpl(
     (_, body) <- getResponseAndBody(request)
   } yield body
 
-  // TODO hopefully this is a temporary solution due to AO3 blocking parsers
-//  override def getAuthed(url: String): ZIO[Any, Ao3Error, String] = for {
-//    authedResponse   <- getAuthedResponse
-//    _                <- ZIO.succeed(this.authedResponse = Some(authedResponse))
-//    request          <- ZIO.succeed(populateCookies(addAgent(Request.get(url)), authedResponse))
-//    (response, body) <- getResponseAndBody(request)
-//  } yield body
+  private def getAuthed(url: String): ZIO[Any, Lo3Error, String] = for {
+    authedResponse   <- getAuthedResponse
+    _                <- ZIO.succeed(this.authedResponse = Some(authedResponse))
+    request          <- ZIO.succeed(populateCookies(addAgent(Request.get(url)), authedResponse))
+    (response, body) <- getResponseAndBody(request)
+  } yield body
 
   private def getAuthedResponse = for {
     (preLoginResponse, preLoginBody) <- getResponseAndBody(addAgent(Request.get(loginUrl)))
@@ -124,7 +111,7 @@ case class Ao3HttpClientImpl(
       entityName <- ZIO.succeed(s"response from ${request.url.host.getOrElse("") + request.url.path}")
       response <- (if (allowRedirects) clientWithRedirects else client)
         .request(request)
-        .mapError(e => UnspecifiedError(e.getMessage))
+        .mapError(e => SomeAo3Error(e.getMessage))
       body <- getBody(response, entityName)
     } yield (response, body)
   }
@@ -133,7 +120,7 @@ case class Ao3HttpClientImpl(
     case Status.Found | Status.Ok =>
       response.body.asString.mapError(e => ParsingError(e.getMessage, entityName))
     case Status.TooManyRequests => ZIO.fail(TooManyRequests())
-    case Status.NotFound        => ZIO.fail(NotFound(entityName))
+    case Status.NotFound        => ZIO.fail(NotFoundOnAo3(entityName))
     case status =>
       if (status.code == 525)
         ZIO.fail(Cloudflare())
@@ -172,7 +159,6 @@ protected[ao3Info] object Ao3HttpClientImpl {
       ZLayer.succeed(clientConfig),
       Client.live,
       ZLayer.succeed(NettyConfig.default.copy(shutdownTimeoutDuration = Duration.fromSeconds(60))),
-      DnsResolver.default,
-      ParserApi.live(AppConfig.parserApi)
+      DnsResolver.default
     )
 }

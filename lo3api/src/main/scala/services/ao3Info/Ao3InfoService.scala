@@ -8,7 +8,7 @@ import kapibarabanka.lo3.common.models.ao3
 import kapibarabanka.lo3.common.models.ao3.*
 import kapibarabanka.lo3.common.models.domain.{Ao3FicInfo, DownloadLinkNotFound, Lo3Error}
 import kapibarabanka.lo3.common.services.{EmptyLog, OptionalLog}
-import zio.{IO, ZIO, ZLayer}
+import zio.{IO, UIO, ZIO, ZLayer}
 
 trait Ao3InfoService:
   def htmlService: HtmlService
@@ -22,10 +22,13 @@ trait Ao3InfoService:
   def downloadLink(workId: String): IO[Lo3Error, String]
   def seriesWorks(seriesId: String): IO[Lo3Error, List[String]]
   def ficName(id: String, ficType: FicType): IO[Lo3Error, String]
+  def toggleParser(): UIO[Boolean]
 
 case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
   val htmlService        = HtmlService(ao3)
   private val tagService = TagService(htmlService)
+
+  override def toggleParser(): UIO[Boolean] = ao3.toggleParser
 
   override def ficName(id: String, ficType: FicType): IO[Lo3Error, String] = ficType match
     case FicType.Work   => htmlService.work(id).map(doc => doc.title)

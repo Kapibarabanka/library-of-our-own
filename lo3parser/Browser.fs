@@ -22,7 +22,7 @@ let downloadFile (url: string) =
 
         try
             driver.Navigate().GoToUrl url
-            do! Async.Sleep 10000
+            do! Async.Sleep 15000
 
         finally
             driver.Close()

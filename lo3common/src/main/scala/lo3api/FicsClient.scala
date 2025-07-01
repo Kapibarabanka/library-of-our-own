@@ -39,5 +39,8 @@ object FicsClient extends MyClient:
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
+  val toggleParser = endpoint(POST, "toggle-parser")
+    .out[String]
+
   override val allEndpoints: List[Endpoint[_, _, _, _, _]] =
-    List(getAllCards, getFicByLink, getFicByKey, getHomePage, updateAo3Info)
+    List(getAllCards, getFicByLink, getFicByKey, getHomePage, updateAo3Info, toggleParser)
