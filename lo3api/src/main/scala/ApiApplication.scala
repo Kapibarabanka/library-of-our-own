@@ -12,8 +12,10 @@ import zio.http.*
 import zio.http.Header.AccessControlAllowOrigin
 import zio.http.Middleware.{CorsConfig, cors}
 import zio.http.endpoint.openapi.SwaggerUI
+import zio.http.netty.NettyConfig
 
 object ApiApplication extends ZIOAppDefault {
+  private val clientConfig = ZClient.Config.default.idleTimeout(5.minutes)
   private val config: CorsConfig =
     CorsConfig(
 //      allowedOrigin = {
@@ -50,8 +52,11 @@ object ApiApplication extends ZIOAppDefault {
   def run: ZIO[Any, Throwable, Unit] = serve.provide(
     Ao3InfoService.live(AppConfig.ao3Login, AppConfig.ao3Password),
     Server.defaultWithPort(8090),
-    Client.default,
+    ZLayer.succeed(clientConfig),
+    Client.live,
     Scope.default,
+    ZLayer.succeed(NettyConfig.default),
+    DnsResolver.default,
     MyBotApi.layer(s"https://api.telegram.org/bot${AppConfig.mainBotToken}")
   )
 }
