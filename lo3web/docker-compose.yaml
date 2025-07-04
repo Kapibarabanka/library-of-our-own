@@ -7,5 +7,12 @@ services:
             dockerfile: ./lo3web/Dockerfile
         env_file:
             - '../.env'
-        ports:
-            - '3000:3000'
+        # ports:
+        #     - '3000:3000'
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.libraryofourown.rule=Host(`libraryofourown.local`)"
+            - "traefik.http.routers.libraryofourown.entrypoints=web"
+            - "traefik.http.services.libraryofourown.loadbalancer.server.port=3000"
+        networks:
+            - traefik

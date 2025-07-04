@@ -1,7 +1,6 @@
-import FicsClient from '$api/FicsClient';
-import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
 
-export const load: PageServerLoad = async () => {
-    const homePage = FicsClient.getHomePage();
-    return { homePage };
-};
+export const ssr = false;
+export function load() {
+    redirect(303, `/home`);
+}
