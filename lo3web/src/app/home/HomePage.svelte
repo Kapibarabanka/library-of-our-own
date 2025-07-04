@@ -16,6 +16,7 @@
     import FicDetailsClient from '$api/FicDetailsClient';
     import FicsClient from '$api/FicsClient';
     import GeneralStatsChart from './GeneralStatsChart.svelte';
+    import { globalState } from '@app/global-state.svelte';
 
     function updateState(newPage: HomePageData) {
         pageState.startedFics = newPage.currentlyReading;
@@ -48,7 +49,7 @@
             note,
         };
         await FicDetailsClient.finishFic(finishInfo);
-        const newHome = await FicsClient.getHomePage();
+        const newHome = await FicsClient.getHomePage(globalState.user!.id);
         updateState(newHome);
         open = false;
         isLoading = false;
@@ -66,6 +67,9 @@
 <div class="flex flex-col gap-3 p-2">
     <div class="flex flex-col">
         <Label class="text-center text-sm font-bold text-muted-foreground">Currently Reading</Label>
+        {#if isLoading}
+            <Label class="text-center text-sm font-bold text-muted-foreground">Loading</Label>
+        {/if}
         <div class="flex flex-col gap-2">
             {#each pageState.startedFics as fic}
                 <StartedFicCard {fic} onFinish={key => onFinishedPressed(key)}></StartedFicCard>
