@@ -35,7 +35,7 @@ object Ao3Url {
 
   def tag(name: String): String = tags.addPathPart(name |> encodeForAo3).toString
 
-  def download(link: String): String = baseUrl.addPathPart(link).toString
+  def download(link: String): String = baseUrl.toString + link
 
   def download(id: String, fileName: String): String =
     baseUrl.addPathPart("downloads").addPathPart(id).addPathPart(fileName).toString
