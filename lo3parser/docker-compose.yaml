@@ -9,7 +9,14 @@ services:
             #     - 'linux/amd64'
         env_file:
             - '../.env'
-        ports:
-            - 9000:9000
+        # ports:
+        #     - 9000:9000
         volumes:
             - downloaded-fics:/home/downloaded-fics/
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.lo3parser.rule=Host(`lo3parser.local`)"
+            - "traefik.http.routers.lo3parser.entrypoints=web"
+            - "traefik.http.services.lo3parser.loadbalancer.server.port=9000"
+        networks:
+            - traefik

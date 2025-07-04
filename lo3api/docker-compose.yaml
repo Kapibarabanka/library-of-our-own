@@ -10,5 +10,12 @@ services:
         volumes:
             - db:/home/lo3db/
             - downloaded-fics:/home/downloaded-fics/
-        ports:
-            - '8090:8090'
+        # ports:
+        #     - '8090:8090'
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.lo3api.rule=Host(`lo3api.local`)"
+            - "traefik.http.routers.lo3api.entrypoints=web"
+            - "traefik.http.services.lo3api.loadbalancer.server.port=8090"
+        networks:
+            - traefik

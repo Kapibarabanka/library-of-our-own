@@ -7,3 +7,9 @@ services:
       dockerfile: ./lo3bot/Dockerfile
     env_file:
        - '../.env'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lo3bot.rule=Host(`lo3bot.local`)"
+      - "traefik.http.routers.lo3bot.entrypoints=web"
+    networks:
+      - traefik

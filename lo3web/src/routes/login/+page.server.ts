@@ -15,7 +15,7 @@ export function load({ cookies, url }) {
             photo_url: url.searchParams.get('photo_url'),
             auth_date: url.searchParams.get('auth_date'),
         };
-        cookies.set('logged_user', JSON.stringify(userCookie), { path: '/' });
+        cookies.set('logged_user', JSON.stringify(userCookie), { path: '/', secure:false });
         redirect(303, '/home');
     }
 }
