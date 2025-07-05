@@ -5,7 +5,7 @@ export interface UserCookie {
     username: string | null;
     photo_url: string | null;
     auth_date: string | null;
-    hash: string;
+    hash?: string;
 }
 
 export interface User {

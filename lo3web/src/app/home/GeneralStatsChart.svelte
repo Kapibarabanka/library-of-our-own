@@ -5,8 +5,8 @@
     import SimpleChart from '$lib/components/SimpleChart.svelte';
 
     let { stats }: { stats: MonthStats[] } = $props();
-    let totalFics = $derived(stats.map(s => s.fics).reduce((prev, curr) => prev + curr, 0));
-    let totalWords = $derived(stats.map(s => s.words).reduce((prev, curr) => prev + curr, 0));
+    let totalFics = $derived(stats?.map(s => s.fics).reduce((prev, curr) => prev + curr, 0) ?? 0);
+    let totalWords = $derived(stats?.map(s => s.words).reduce((prev, curr) => prev + curr, 0) ?? 0);
 
     let chartConfig: ChartConfiguration = $derived({
         type: 'bar',
