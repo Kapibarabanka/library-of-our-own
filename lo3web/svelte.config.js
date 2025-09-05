@@ -14,6 +14,14 @@ const config = {
             $api: 'src/lib/api',
             '@app': 'src/app',
         },
+        experimental: {
+            remoteFunctions: true,
+        },
+    },
+    compilerOptions: {
+        experimental: {
+            async: true,
+        },
     },
 };
 
