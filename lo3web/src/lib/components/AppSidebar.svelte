@@ -11,7 +11,6 @@
     import Heart from 'lucide-svelte/icons/heart';
     import Earth from 'lucide-svelte/icons/earth';
     import LogOut from 'lucide-svelte/icons/log-out';
-    import { globalState } from '@app/global-state.svelte';
     const sidebar = useSidebar();
 
     function toLibrary(field: BoolField | null) {
@@ -45,7 +44,8 @@
     <Sidebar.Header>
         <Sidebar.Menu>
             <Sidebar.MenuItem>
-                <Sidebar.MenuButton>Hello, {globalState.user?.name}!</Sidebar.MenuButton>
+                <!-- todo -->
+                <Sidebar.MenuButton>Hello, uesername!</Sidebar.MenuButton>
             </Sidebar.MenuItem>
             <Sidebar.MenuItem>
                 <Sidebar.MenuButton onclick={() => sidebar.toggle()}>

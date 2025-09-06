@@ -11,7 +11,7 @@ const config = {
         adapter: adapter(),
         alias: {
             $ui: 'src/lib/components/ui',
-            $api: 'src/lib/api',
+            $api: 'src/routes/api',
             '@app': 'src/app',
         },
         experimental: {

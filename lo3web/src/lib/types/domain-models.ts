@@ -1,7 +1,10 @@
+import z from 'zod';
+
 export enum FicType {
     Work = 'Work',
     Series = 'Series',
 }
+export const FicTypeSchema = z.enum(FicType);
 
 export enum Rating {
     None = 'Not Rated',
@@ -10,6 +13,7 @@ export enum Rating {
     Mature = 'Mature',
     Explicit = 'Explicit',
 }
+export const RatingSchema = z.enum(Rating);
 
 export enum Category {
     FF = 'F/F',
@@ -20,6 +24,7 @@ export enum Category {
     Other = 'Other',
     None = 'No categorys',
 }
+export const CategorySchema = z.enum(Category);
 
 export enum UserImpression {
     Never = 'Never again',
@@ -28,6 +33,7 @@ export enum UserImpression {
     Nice = 'Nice',
     Brilliant = 'Brilliant',
 }
+export const UserImpressionSchema = z.enum(UserImpression);
 
 export interface Ao3FicInfo {
     id: string;
@@ -59,6 +65,17 @@ export interface UserFicKey {
     ficId: string;
     ficType: FicType;
 }
+export const UserFicKeySchema = z.object({
+    userId: z.string(),
+    ficId: z.string(),
+    ficType: FicTypeSchema,
+});
+
+export const FicKeySchema = z.object({
+    ficId: z.string(),
+    ficType: FicTypeSchema,
+});
+export type FicKey = z.infer<typeof FicKeySchema>;
 
 export interface FicCardData {
     key: UserFicKey;

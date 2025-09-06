@@ -1,7 +1,8 @@
-import type { UserCookie } from '$lib/types/ui-models';
+import type { User, UserCookie } from '$lib/types/ui-models';
 import { MAIN_BOT } from '$env/static/private';
 import * as crypto from 'crypto';
 import { getRequestEvent } from '$app/server';
+import { error } from '@sveltejs/kit';
 
 export const userCookieName = 'logged_user';
 
@@ -19,11 +20,29 @@ export function cookieIsValid(cookie: UserCookie) {
     return hash === hashCheck;
 }
 
-export function getUserCookie() {
-    const { cookies, locals } = getRequestEvent();
+export function tryGetUserCookie() {
+    const { cookies } = getRequestEvent();
     const cookie = cookies.get(userCookieName);
-    locals.userCookie = tryParseCookie(cookie);
-    return locals.userCookie;
+    return tryParseCookie(cookie);
+}
+
+export function getUser(): User {
+    const maybeCookie = tryGetUserCookie();
+    if (maybeCookie) {
+        return {
+            id: maybeCookie.id,
+            name: maybeCookie.username ?? [maybeCookie.first_name, maybeCookie.last_name].join(' '),
+            photoUrl: maybeCookie.photo_url,
+        };
+    } else {
+        error(401);
+    }
+}
+export function ensureAuth(): void {
+    const maybeCookie = tryGetUserCookie();
+    if (!maybeCookie) {
+        error(401);
+    }
 }
 
 function tryParseCookie(cookie: string | undefined) {

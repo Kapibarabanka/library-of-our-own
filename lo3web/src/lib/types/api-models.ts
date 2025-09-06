@@ -1,11 +1,13 @@
-import type { FicCardData, UserFicKey, UserImpression } from './domain-models';
+import z from 'zod';
+import { UserFicKeySchema, UserImpressionSchema, type FicCardData } from './domain-models';
 
-export interface FinishInfo {
-    key: UserFicKey;
-    abandoned: boolean;
-    impression?: UserImpression | null | undefined;
-    note?: string | null | undefined;
-}
+export const FinishInfoSchema = z.object({
+    key: UserFicKeySchema,
+    abandoned: z.boolean(),
+    impression: UserImpressionSchema.optional(),
+    note: z.string().optional(),
+});
+export type FinishInfo = z.infer<typeof FinishInfoSchema>;
 
 export interface MonthStats {
     month: string;
@@ -24,6 +26,7 @@ export enum StatTagField {
     Fandom = 'Fandom',
     Tag = 'Tag',
 }
+export const StatTagFieldSchema = z.enum(StatTagField);
 
 export interface TagDataset {
     tagValue: string;

@@ -1,6 +1,5 @@
 <script lang="ts">
     import type { FinishInfo, HomePageData } from '$lib/types/api-models';
-    import { pageState } from './state.svelte';
     import { Label } from '$ui/label';
     import FicCard from '@app/library/FicCard.svelte';
     import { UserImpression, type UserFicKey } from '$lib/types/domain-models';
@@ -13,18 +12,11 @@
     import { shortImpression } from '$lib/utils/label-utils';
     import { getImpressionIcon } from '$lib/utils/icon-utils';
     import LoaderCircle from 'lucide-svelte/icons/loader-circle';
-    import FicDetailsClient from '$api/FicDetailsClient';
-    import FicsClient from '$api/FicsClient';
     import GeneralStatsChart from './GeneralStatsChart.svelte';
-    import { globalState } from '@app/global-state.svelte';
-
-    function updateState(newPage: HomePageData) {
-        pageState.startedFics = newPage.currentlyReading;
-        pageState.stats = newPage.generalStats;
-    }
+    import { finishFic } from '$api/fics-details.remote';
+    import { getHomePage } from '$api/fics.remote';
 
     let { homePage }: { homePage: HomePageData } = $props();
-    updateState(homePage);
 
     let isLoading = $state(false);
     let open = $state(false);
@@ -33,7 +25,7 @@
 
     let abandoned = $state(false);
     let impression = $state<UserImpression | undefined>(undefined);
-    let note = $state<string | null>(null);
+    let note = $state<string | undefined>(undefined);
 
     function onFinishedPressed(key: UserFicKey) {
         selectedKey = key;
@@ -45,12 +37,14 @@
         const finishInfo: FinishInfo = {
             key: selectedKey,
             abandoned,
-            impression: !impression ? null : impression,
+            impression: !impression ? undefined : impression,
             note,
         };
-        await FicDetailsClient.finishFic(finishInfo);
-        const newHome = await FicsClient.getHomePage(globalState.user!.id);
-        updateState(newHome);
+        try {
+            await finishFic(finishInfo).updates(getHomePage());
+        } catch (e) {
+            alert(JSON.stringify(e));
+        }
         open = false;
         isLoading = false;
     }
@@ -59,7 +53,7 @@
         if (!isOpen) {
             abandoned = false;
             impression = undefined;
-            note = null;
+            note = undefined;
         }
     }
 </script>
@@ -67,11 +61,8 @@
 <div class="flex flex-col gap-3 p-2">
     <div class="flex flex-col">
         <Label class="text-center text-sm font-bold text-muted-foreground">Currently Reading</Label>
-        {#if isLoading}
-            <Label class="text-center text-sm font-bold text-muted-foreground">Loading</Label>
-        {/if}
         <div class="flex flex-col gap-2">
-            {#each pageState.startedFics as fic}
+            {#each homePage.currentlyReading as fic}
                 <StartedFicCard {fic} onFinish={key => onFinishedPressed(key)}></StartedFicCard>
             {/each}
         </div>
@@ -86,9 +77,10 @@
     </div>
     <div class="flex flex-col">
         <Label class="text-center text-sm font-bold text-muted-foreground">Reading stats for last 6 months</Label>
-        <GeneralStatsChart stats={pageState.stats}></GeneralStatsChart>
+        <GeneralStatsChart stats={homePage.generalStats}></GeneralStatsChart>
     </div>
 </div>
+<!-- TODO: extract sheet with finish info into component and use in other places -->
 <Sheet.Root bind:open {onOpenChange}>
     <Sheet.Content side="top" class="p-3">
         {#if isLoading}

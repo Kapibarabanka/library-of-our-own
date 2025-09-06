@@ -1,5 +1,5 @@
 import type { UserCookie } from '$lib/types/ui-models.js';
-import { cookieIsValid, getUserCookie, userCookieName } from '$lib/utils/auth-utils.js';
+import { cookieIsValid, tryGetUserCookie, userCookieName } from '$lib/utils/auth-utils.js';
 import { redirect } from '@sveltejs/kit';
 
 export function load({ cookies, url }) {
@@ -19,7 +19,7 @@ export function load({ cookies, url }) {
             cookies.set(userCookieName, JSON.stringify(userCookie), { path: '/', secure: false });
             redirect(303, '/home');
         }
-    } else if (getUserCookie()) {
+    } else if (tryGetUserCookie()) {
         redirect(303, '/home');
     }
 }

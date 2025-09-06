@@ -1,10 +1,8 @@
 <script lang="ts">
     import AppSidebar from '$lib/components/AppSidebar.svelte';
     import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-    import { globalState } from '@app/global-state.svelte';
-    import '../../app.css';
-    let { data, children } = $props();
-    globalState.user = data.user;
+    import '../../../app.css';
+    let { children } = $props();
 </script>
 
 <Sidebar.Provider>
