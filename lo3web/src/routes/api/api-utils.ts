@@ -23,6 +23,7 @@ export async function post(controller: string, endpoint: string, data: unknown) 
     });
     if (!resp.ok) {
         const message = resp.bodyUsed ? JSON.stringify(await resp.json()) : resp.statusText;
+        console.log(resp);
         error(resp.status, message);
     }
 }

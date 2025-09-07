@@ -4,6 +4,7 @@ import { UserFicKeySchema, UserImpressionSchema, type FicCardData } from './doma
 export const FinishInfoSchema = z.object({
     key: UserFicKeySchema,
     abandoned: z.boolean(),
+    spicy: z.boolean(),
     impression: UserImpressionSchema.optional(),
     note: z.string().optional(),
 });

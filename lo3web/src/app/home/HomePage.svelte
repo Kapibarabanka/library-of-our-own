@@ -2,12 +2,11 @@
     import type { FinishInfo, HomePageData } from '$lib/types/api-models';
     import { Label } from '$ui/label';
     import FicCard from '@app/library/FicCard.svelte';
-    import { UserImpression, type UserFicKey } from '$lib/types/domain-models';
+    import { UserImpression, type FicCardData, type UserFicKey } from '$lib/types/domain-models';
     import StartedFicCard from './StartedFicCard.svelte';
     import * as Sheet from '$lib/components/ui/sheet';
     import { Button } from '$ui/button';
     import { Checkbox } from '$ui/checkbox';
-    import * as ToggleGroup from '$lib/components/ui/toggle-group';
     import Textarea from '$ui/textarea/textarea.svelte';
     import { shortImpression } from '$lib/utils/label-utils';
     import { getImpressionIcon } from '$lib/utils/icon-utils';
@@ -15,6 +14,7 @@
     import GeneralStatsChart from './GeneralStatsChart.svelte';
     import { finishFic } from '$api/fics-details.remote';
     import { getHomePage } from '$api/fics.remote';
+    import * as Tabs from '$lib/components/ui/tabs';
 
     let { homePage }: { homePage: HomePageData } = $props();
 
@@ -24,11 +24,14 @@
     let selectedKey: UserFicKey;
 
     let abandoned = $state(false);
+    let spicy = $state(false);
     let impression = $state<UserImpression | undefined>(undefined);
     let note = $state<string | undefined>(undefined);
 
-    function onFinishedPressed(key: UserFicKey) {
-        selectedKey = key;
+    function onFinishedPressed(fic: FicCardData) {
+        selectedKey = fic.key;
+        spicy = fic.details.spicy;
+        impression = fic.details.impression;
         open = true;
     }
 
@@ -37,6 +40,7 @@
         const finishInfo: FinishInfo = {
             key: selectedKey,
             abandoned,
+            spicy,
             impression: !impression ? undefined : impression,
             note,
         };
@@ -63,7 +67,7 @@
         <Label class="text-center text-sm font-bold text-muted-foreground">Currently Reading</Label>
         <div class="flex flex-col gap-2">
             {#each homePage.currentlyReading as fic}
-                <StartedFicCard {fic} onFinish={key => onFinishedPressed(key)}></StartedFicCard>
+                <StartedFicCard {fic} onFinish={fic => onFinishedPressed(fic)}></StartedFicCard>
             {/each}
         </div>
     </div>
@@ -99,16 +103,23 @@
                         <span class="text-muted-foreground text-xs">(fic won't be included in statistics)</span>
                     </Label>
                 </div>
-                <ToggleGroup.Root type="single" variant="outline" size="sm" bind:value={impression}>
-                    {#each Object.values(UserImpression) as impr}
-                        <ToggleGroup.Item value={impr} class="flex gap-1">
-                            {getImpressionIcon(impr)}
-                            <span class="text-[12px]">{shortImpression(impr)}</span>
-                        </ToggleGroup.Item>
-                    {/each}
-                </ToggleGroup.Root>
-                <Textarea bind:value={note} class="text-sm" id="note" placeholder="Add a note if you want to"
-                ></Textarea>
+                <div class="flex items-center space-x-2">
+                    <Checkbox id="spicy" bind:checked={spicy} />
+                    <Label for="spicy">
+                        <span class="text-sm font-medium leading-none">🔥 Spicy</span>
+                    </Label>
+                </div>
+                <Tabs.Root bind:value={impression} class="max-w-[500px]">
+                    <Tabs.List class="grid w-full grid-cols-5">
+                        {#each Object.values(UserImpression) as impr}
+                            <Tabs.Trigger value={impr} class="flex gap-1">
+                                {getImpressionIcon(impr)}
+                                <span class="text-[12px]">{shortImpression(impr)}</span>
+                            </Tabs.Trigger>
+                        {/each}
+                    </Tabs.List>
+                </Tabs.Root>
+                <Textarea bind:value={note} class="text-sm" id="note" placeholder="Add a note if you want to" />
             </div>
             <Sheet.Footer>
                 <Button onclick={async () => await submit()}>Mark as finished</Button>

@@ -34,6 +34,9 @@ class FicDetailsRepo(db: Lo3Db):
   def setImpression(key: UserFicKey, impression: UserImpression): IO[DbError, Unit] =
     db.run(filterDetails(key).map(d => d.impression).update(Some(impression.toString))).unit
 
+  def setIsSpicy(key: UserFicKey, isSpicy: Boolean): IO[DbError, Unit] =
+    db.run(filterDetails(key).map(d => d.fire).update(isSpicy)).unit
+
   def addUserFicRecord(key: UserFicKey): IO[DbError, FicDetails] = for {
     _ <- db.run(
       ficsDetails += FicDetailsDoc(

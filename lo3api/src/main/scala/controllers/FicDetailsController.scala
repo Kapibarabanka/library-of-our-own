@@ -36,13 +36,15 @@ protected[api] case class FicDetailsController() extends Controller:
 
   val finishFic = FicDetailsClient.finishFic.implement { finishInfo =>
     for {
-      _ <- Lo3Data.readDates.addFinishDate(finishInfo.key, LocalDate.now().toString)
-      _ <- Lo3Data.readDates.setIsAbandoned(finishInfo.key, finishInfo.abandoned)
-      _ <- finishInfo.impression.map(impression => Lo3Data.details.setImpression(finishInfo.key, impression)).getOrElse(ZIO.unit)
+      _       <- Lo3Data.readDates.addFinishDate(finishInfo.key, LocalDate.now().toString, finishInfo.abandoned)
+      details <- Lo3Data.details.getOrCreateDetails(finishInfo.key)
+      newDetails <- ZIO.succeed(
+        details.copy(backlog = false, impression = finishInfo.impression.orElse(details.impression), spicy = finishInfo.spicy)
+      )
+      _ <- Lo3Data.details.patchDetails(finishInfo.key, newDetails)
       _ <- finishInfo.note
         .map(text => Lo3Data.notes.addNote(finishInfo.key, Note(None, LocalDateTime.now(), text)))
         .getOrElse(ZIO.unit)
-      _ <- Lo3Data.details.setBacklog(finishInfo.key, false)
     } yield ()
   }
 

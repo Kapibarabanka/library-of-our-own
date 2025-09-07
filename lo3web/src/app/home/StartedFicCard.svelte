@@ -6,7 +6,7 @@
     import Maximize from 'lucide-svelte/icons/maximize-2';
     import BookCheck from 'lucide-svelte/icons/book-check';
 
-    let { fic, onFinish }: { fic: FicCardData; onFinish: (key: UserFicKey) => void } = $props();
+    let { fic, onFinish }: { fic: FicCardData; onFinish: (fic: FicCardData) => void } = $props();
 </script>
 
 <Card.Root>
@@ -27,7 +27,7 @@
             >
                 <Maximize class="text-muted-foreground" size={15}></Maximize>
             </Button>
-            <Button size="sm" variant="outline" onclick={() => onFinish(fic.key)}><BookCheck />Finish</Button>
+            <Button size="sm" variant="outline" onclick={() => onFinish(fic)}><BookCheck />Finish</Button>
         </div>
     </Card.Content>
 </Card.Root>

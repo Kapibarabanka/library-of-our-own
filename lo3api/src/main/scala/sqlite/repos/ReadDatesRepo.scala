@@ -28,7 +28,7 @@ class ReadDatesRepo(db: Lo3Db):
     _ <- db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, Some(startDate), None, false))
   } yield ()
 
-  def addFinishDate(key: UserFicKey, endDate: String): IO[DbError, Unit] =
+  def addFinishDate(key: UserFicKey, endDate: String, isAbandoned: Boolean = false): IO[DbError, Unit] =
     for {
       startDates <- db.run(
         filterDates(key)
@@ -37,8 +37,12 @@ class ReadDatesRepo(db: Lo3Db):
           .result
       )
       _ <- startDates.headOption match
-        case Some(startDateDoc) => db.run(readDates.filter(_.id === startDateDoc.id).map(_.endDate).update(Some(endDate)))
-        case None => db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, None, Some(endDate), false))
+        case Some(startDateDoc) =>
+          db.run(
+            readDates.filter(_.id === startDateDoc.id).map(d => (d.endDate, d.isAbandoned)).update((Some(endDate), isAbandoned))
+          )
+        case None =>
+          db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, None, Some(endDate), isAbandoned))
     } yield ()
 
   def setIsAbandoned(key: UserFicKey, value: Boolean): IO[DbError, Unit] =

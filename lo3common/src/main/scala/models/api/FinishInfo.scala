@@ -6,7 +6,13 @@ import models.domain.UserImpression.UserImpression
 
 import zio.schema.{DeriveSchema, Schema}
 
-case class FinishInfo(key: UserFicKey, abandoned: Boolean, impression: Option[UserImpression], note: Option[String])
+case class FinishInfo(
+    key: UserFicKey,
+    abandoned: Boolean,
+    spicy: Boolean,
+    impression: Option[UserImpression],
+    note: Option[String]
+)
 
 object FinishInfo:
   implicit val schema: Schema[FinishInfo] = DeriveSchema.gen
