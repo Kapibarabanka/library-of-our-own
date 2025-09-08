@@ -15,7 +15,7 @@ import scala.collection.immutable
 object StatsService:
   def getGeneralStats(userId: String): IO[DbError, List[MonthStats]] = for {
     data <- getHalfYearData(userId)
-  } yield data.map((m, fics) => MonthStats(month = m.toString, fics = fics.length, words = fics.map(_.ao3Info.words).sum / 1000))
+  } yield data.map((m, fics) => MonthStats(month = m.toString, fics = fics.length, words = fics.map(_.ao3Info.words).sum))
 
   def getTagStats(userId: String, tagField: StatTagField): IO[DbError, TagFieldStats] =
     val data = getHalfYearData(userId)

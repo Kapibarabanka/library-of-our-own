@@ -22,7 +22,7 @@
     <Card.Header class="pr-3">
         <Card.Title class="text-base">
             <div class="flex">
-                <a href={cardData.ao3Info.link} class="flex-1">{cardData.ao3Info.title}</a>
+                <a href={cardData.ao3Info.link} target="_blank" class="flex-1">{cardData.ao3Info.title}</a>
                 <Button
                     variant="ghost"
                     class="p-1 h-4"

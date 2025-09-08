@@ -13,7 +13,7 @@
     <Card.Content class="flex gap-2 flex-row p-3">
         <div class="flex-1">
             <Card.Title>
-                <a href={fic.ao3Info.link}>{fic.ao3Info.title}</a>
+                <a href={fic.ao3Info.link} target="_blank">{fic.ao3Info.title}</a>
             </Card.Title>
             <Card.Description>
                 <span class="text-xs">{fic.ao3Info.relationships?.join(', ')} </span>

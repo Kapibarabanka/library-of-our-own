@@ -1,60 +1,90 @@
 <script lang="ts">
-    import { type ChartConfiguration } from 'chart.js/auto';
     import * as Card from '$ui/card';
     import type { MonthStats } from '$lib/types/api-models';
-    import SimpleChart from '$lib/components/SimpleChart.svelte';
+    import * as Chart from '$lib/components/ui/chart/index.js';
+    import { BarChart } from 'layerchart';
+    import { cubicInOut } from 'svelte/easing';
 
     let { stats }: { stats: MonthStats[] } = $props();
-    let totalFics = $derived(stats?.map(s => s.fics).reduce((prev, curr) => prev + curr, 0) ?? 0);
-    let totalWords = $derived(stats?.map(s => s.words).reduce((prev, curr) => prev + curr, 0) ?? 0);
 
-    let chartConfig: ChartConfiguration = $derived({
-        type: 'bar',
-        data: {
-            labels: stats.map(s => s.month.slice(0, 3)),
-            datasets: [
-                {
-                    label: '# of fics',
-                    data: stats.map(s => s.fics),
-                    borderWidth: 1,
-                    yAxisID: 'y',
-                },
-                {
-                    label: 'K Words',
-                    data: stats.map(s => s.words),
-                    borderWidth: 1,
-                    yAxisID: 'y1',
-                },
-            ],
+    const chartConfig = {
+        words: {
+            label: 'Words',
+            color: '#2563eb',
         },
-        options: {
-            scales: {
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    grid: {
-                        drawOnChartArea: false, // only want the grid lines for one axis to show up
-                    },
-                },
-            },
+        fics: {
+            label: 'Fics',
+            color: '#60a5fa',
         },
+    } satisfies Chart.ChartConfig;
+
+    let activeChart = $state<keyof typeof chartConfig>('words');
+    const activeSeries = $derived([
+        {
+            key: activeChart,
+            label: chartConfig[activeChart].label,
+            color: chartConfig[activeChart].color,
+        },
+    ]);
+    const total = $derived({
+        words: stats?.reduce((acc, curr) => acc + curr.words, 0) ?? 0,
+        fics: stats?.reduce((acc, curr) => acc + curr.fics, 0) ?? 0,
     });
 </script>
 
 <Card.Root>
+    <Card.Header class="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
+        <div class="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
+            <Card.Title>Reading stats for last 6 months</Card.Title>
+            <Card.Description>Click on a total block to switch units</Card.Description>
+        </div>
+        <div class="flex">
+            {#each ['words', 'fics'] as key (key)}
+                {@const chart = key as keyof typeof chartConfig}
+                <button
+                    data-active={activeChart === chart}
+                    class="data-[active=true]:bg-muted/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
+                    onclick={() => (activeChart = chart)}
+                >
+                    <span class="text-muted-foreground text-xs">
+                        Total {chartConfig[chart].label}
+                    </span>
+                    <span class="text-lg font-bold leading-none sm:text-3xl">
+                        {total[key as keyof typeof total].toLocaleString()}
+                    </span>
+                </button>
+            {/each}
+        </div>
+    </Card.Header>
     <Card.Content class="p-1">
-        <SimpleChart {chartConfig}></SimpleChart>
+        <Chart.Container config={chartConfig} class="min-h-[200px] w-full">
+            <BarChart
+                data={stats}
+                tooltip={false}
+                labels={{ placement: 'outside' }}
+                orientation="horizontal"
+                axis="y"
+                y="month"
+                seriesLayout="group"
+                padding={{ left: 40, right: 40 }}
+                series={activeSeries}
+                props={{
+                    bars: {
+                        stroke: 'none',
+                        radius: 5,
+                        rounded: 'all',
+                        initialWidth: 0,
+                        initialX: 0,
+                        motion: {
+                            x: { type: 'tween', duration: 500, easing: cubicInOut },
+                            width: { type: 'tween', duration: 500, easing: cubicInOut },
+                        },
+                    },
+                    yAxis: { format: d => d.slice(0, 3) },
+                }}
+            ></BarChart>
+        </Chart.Container>
     </Card.Content>
-    <Card.Footer class="p-1 flex justify-around">
-        <div>Total fics: {totalFics}</div>
-        <div>Total words: {totalWords.toLocaleString('en-us')}K</div>
-    </Card.Footer>
 </Card.Root>
 
 <style></style>
