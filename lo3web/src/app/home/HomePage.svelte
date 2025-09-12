@@ -26,13 +26,13 @@
 
     let abandoned = $state(false);
     let spicy = $state(false);
-    let impression = $state<UserImpression | undefined>(undefined);
+    let impression = $state<UserImpression | ''>('');
     let note = $state<string | undefined>(undefined);
 
     function onFinishedPressed(fic: FicCardData) {
         selectedKey = fic.key;
         spicy = fic.details.spicy;
-        impression = fic.details.impression;
+        impression = fic.details.impression ?? '';
         open = true;
     }
 
@@ -48,7 +48,7 @@
         try {
             await finishFic(finishInfo).updates(getHomePage());
         } catch (e) {
-            alert(JSON.stringify(e));
+            alert(e);
         }
         open = false;
         isLoading = false;
@@ -57,7 +57,6 @@
     function onOpenChange(isOpen: boolean) {
         if (!isOpen) {
             abandoned = false;
-            impression = undefined;
             note = undefined;
         }
     }
