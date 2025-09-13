@@ -95,7 +95,7 @@
                     >
                         <Tabs.List class="grid w-full grid-cols-2">
                             {#each Object.values(StatUnit) as un}
-                                <Tabs.Trigger value={un} class="flex gap-1">By {un}</Tabs.Trigger>
+                                <Tabs.Trigger value={un} class="flex gap-1">By {un}s</Tabs.Trigger>
                             {/each}
                         </Tabs.List>
                     </Tabs.Root>
@@ -141,9 +141,15 @@
                 {/if}
             </div>
         </Card.Content>
+        <Card.Footer class="flex flex-wrap gap-x-3 gap-y-2 justify-around">
+            {#each series as { label, color }}
+                <div class="flex gap-1">
+                    <div class="h-4 w-4 rounded-full" style:background-color={color}></div>
+                    <span class="text-xs">{label}</span>
+                </div>
+            {/each}
+        </Card.Footer>
     </Card.Root>
-
-    <div>TODO legend</div>
     <div>TODO table</div>
 </div>
 

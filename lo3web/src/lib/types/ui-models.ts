@@ -15,6 +15,6 @@ export interface User {
 }
 
 export enum StatUnit {
-    Fics = 'fic count',
-    Words = 'word count',
+    Fics = 'fic',
+    Words = 'word',
 }
