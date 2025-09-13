@@ -5,7 +5,7 @@ import { get } from './api-utils';
 
 const controller = 'stats';
 
-export const getTagStats = query(StatTagFieldSchema, async tagField => {
+export const getTagFieldStats = query(StatTagFieldSchema, async tagField => {
     const user = getUser();
-    return get(controller, `${user.id}/${tagField}/stats`) as Promise<TagFieldStats>;
+    return get(controller, `${user.id}/stats/${tagField}`) as Promise<TagFieldStats>;
 });

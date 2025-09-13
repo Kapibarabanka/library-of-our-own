@@ -12,6 +12,6 @@
         <p>Loading fic...</p>
     {/snippet}
     {#snippet failed(error)}
-        <p>Error: {JSON.stringify(error)}</p>
+        <p>Error: {error}</p>
     {/snippet}
 </svelte:boundary>

@@ -27,7 +27,7 @@
 
 <div class="flex flex-col gap-1">
     <div class="flex gap-1">
-        <Select.Root type="single" name="favoriteFruit" bind:value={tagInclusion}>
+        <Select.Root type="single" bind:value={tagInclusion}>
             <Select.Trigger class="w-[110px]">
                 {tagInclusion}
             </Select.Trigger>

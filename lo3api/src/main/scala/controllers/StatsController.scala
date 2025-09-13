@@ -8,6 +8,8 @@ import zio.http.{Response, Route}
 
 protected[api] case class StatsController() extends Controller:
 
-  val tagStats = StatsClient.tagStats.implement { (userId, tagField) => StatsService.getTagStats(userId, tagField) }
+  val tagFieldStats = StatsClient.tagFieldStats.implement { (userId, tagField) =>
+    StatsService.getTagFieldStats(userId, tagField)
+  }
 
-  override val routes: List[Route[Any, Response]] = List(tagStats)
+  override val routes: List[Route[Any, Response]] = List(tagFieldStats)

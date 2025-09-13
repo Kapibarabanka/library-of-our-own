@@ -13,3 +13,8 @@ export interface User {
     name: string;
     photoUrl: string | null;
 }
+
+export enum StatUnit {
+    Fics = 'fic count',
+    Words = 'word count',
+}

@@ -8,9 +8,8 @@
     import Todo from 'lucide-svelte/icons/list-todo';
     import Library from 'lucide-svelte/icons/library-big';
     import Hash from 'lucide-svelte/icons/hash';
-    import Heart from 'lucide-svelte/icons/heart';
-    import Earth from 'lucide-svelte/icons/earth';
     import LogOut from 'lucide-svelte/icons/log-out';
+    import ChartPie from 'lucide-svelte/icons/chart-pie';
     const sidebar = useSidebar();
 
     function toLibrary(field: BoolField | null) {
@@ -20,24 +19,6 @@
         }
         sidebar.toggle();
     }
-
-    const statsPages = [
-        {
-            title: 'Ships Stats',
-            url: 'ships',
-            icon: Heart,
-        },
-        {
-            title: 'Fandoms Stats',
-            url: 'fandoms',
-            icon: Earth,
-        },
-        {
-            title: 'Tags Stats',
-            url: 'tags',
-            icon: Hash,
-        },
-    ];
 </script>
 
 <Sidebar.Root>
@@ -102,13 +83,20 @@
             <Sidebar.GroupLabel>Stats</Sidebar.GroupLabel>
             <Sidebar.GroupContent>
                 <Sidebar.Menu>
-                    {#each statsPages as statPage (statPage.title)}
+                    <Sidebar.MenuItem>
                         <Sidebar.MenuButton onclick={() => sidebar.toggle()}>
                             {#snippet child({ props })}
-                                <a href={'/stats/' + statPage.url} {...props}><statPage.icon />{statPage.title}</a>
+                                <a href="/stats/general" {...props}><ChartPie />General</a>
                             {/snippet}
                         </Sidebar.MenuButton>
-                    {/each}
+                    </Sidebar.MenuItem>
+                    <Sidebar.MenuItem>
+                        <Sidebar.MenuButton onclick={() => sidebar.toggle()}>
+                            {#snippet child({ props })}
+                                <a href="/stats/fields" {...props}><Hash />By Fields</a>
+                            {/snippet}
+                        </Sidebar.MenuButton>
+                    </Sidebar.MenuItem>
                 </Sidebar.Menu>
             </Sidebar.GroupContent>
         </Sidebar.Group>

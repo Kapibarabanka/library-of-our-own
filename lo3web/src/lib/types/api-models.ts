@@ -29,12 +29,20 @@ export enum StatTagField {
 }
 export const StatTagFieldSchema = z.enum(StatTagField);
 
-export interface TagDataset {
-    tagValue: string;
-    counts: number[];
+export interface TagDataPoint {
+    label: string;
+    value: number;
 }
+
+export interface TagDataset {
+    timeLabel: string;
+    byFics: TagDataPoint[];
+    byWords: TagDataPoint[];
+}
+
 export interface TagFieldStats {
-    months: string[];
-    byFics: TagDataset[];
-    byWords: TagDataset[];
+    allLabels: string[];
+    labelsByFics: string[];
+    labelsByWords: string[];
+    datasets: TagDataset[];
 }

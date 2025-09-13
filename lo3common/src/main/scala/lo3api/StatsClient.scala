@@ -11,11 +11,11 @@ import zio.http.codec.PathCodec.string
 object StatsClient extends MyClient:
   override protected val clientName = "stats"
 
-  val tagStats = endpoint(GET, string("userId") / string("tagField") / "stats")
+  val tagFieldStats = endpoint(GET, string("userId") / "stats" / string("tagField"))
     .transformIn { case (userId, tagStr) => (userId, StatTagField.valueOf(tagStr.toLowerCase.capitalize)) } {
       (userId, tagField) => (userId, tagField.toString)
     }
     .out[TagFieldStats]
     .outError[Lo3Error](Status.InternalServerError)
 
-  override val allEndpoints = List(tagStats)
+  override val allEndpoints = List(tagFieldStats)
