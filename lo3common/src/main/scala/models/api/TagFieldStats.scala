@@ -5,8 +5,8 @@ import zio.schema.{DeriveSchema, Schema}
 
 case class TagFieldStats(
     allLabels: Set[String],
-    labelsByFics: Set[String],
-    labelsByWords: Set[String],
+    topByFics: List[TagDataPoint],
+    topByWords: List[TagDataPoint],
     datasets: List[TagDataset]
 )
 

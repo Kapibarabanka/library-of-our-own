@@ -30,20 +30,28 @@ object StatsService:
         .groupMap((tag, _) => tag)((_, words) => words)
         .toList
         .map((tag, wordsList) => (tag, wordsList.length, wordsList.sum))
-      val topByFics    = totalsByTag.sortBy(-_._2).slice(0, topCount).map(_._1)
-      val topByWords   = totalsByTag.sortBy(-_._3).slice(0, topCount).map(_._1)
-      val allTopLabels = (topByWords ++ topByFics).toSet
+      val topByFics    = totalsByTag.sortBy(-_._2).slice(0, topCount).map((label, count, _) => (label, count))
+      val topByWords   = totalsByTag.sortBy(-_._3).slice(0, topCount).map((label, _, count) => (label, count))
+      val allTopLabels = (topByWords ++ topByFics).map(_._1).toSet
       val datasets = tagDataByTime.map((tl, data) => {
         val topData = data.filter((label, _) => allTopLabels.contains(label))
         val byFics = allTopLabels.map(tag =>
-          TagDataPoint(tag, if topByFics.contains(tag) then topData.count((label, _) => label == tag) else 0)
+          TagDataPoint(tag, if topByFics.exists(_._1 == tag) then topData.count((label, _) => label == tag) else 0)
         )
         val byWords = allTopLabels.map(tag =>
-          TagDataPoint(tag, if topByWords.contains(tag) then topData.filter((label, _) => label == tag).map(_._2).sum else 0)
+          TagDataPoint(
+            tag,
+            if topByWords.exists(_._1 == tag) then topData.filter((label, _) => label == tag).map(_._2).sum else 0
+          )
         )
         TagDataset(timeLabel = tl.toString, byFics = byFics.toList, byWords = byWords.toList)
       })
-      TagFieldStats(allTopLabels, labelsByFics = topByFics.toSet, labelsByWords = topByWords.toSet, datasets)
+      TagFieldStats(
+        allTopLabels,
+        topByFics = topByFics.map((l, c) => TagDataPoint(l, c)),
+        topByWords = topByWords.map((l, c) => TagDataPoint(l, c)),
+        datasets
+      )
     })
 
   private def getHalfYearData(userId: String): IO[DbError, List[(Month, List[FicCard])]] =

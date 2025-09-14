@@ -42,7 +42,7 @@ export interface TagDataset {
 
 export interface TagFieldStats {
     allLabels: string[];
-    labelsByFics: string[];
-    labelsByWords: string[];
+    topByFics: TagDataPoint[];
+    topByWords: TagDataPoint[];
     datasets: TagDataset[];
 }

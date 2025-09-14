@@ -32,11 +32,20 @@
             .map((l, idx) => ({ label: l, color: colors[idx] }))
             .reduce((a, { label, color }) => ({ ...a, [label]: { label, color } }), {})
     );
+    let currentTop = $derived(unit === StatUnit.Words ? stats.topByWords : stats.topByFics);
     let series = $derived(
-        (unit === StatUnit.Words ? stats.labelsByWords : stats.labelsByFics).map(l => ({
-            key: l,
-            label: l,
-            color: chartConfig[l].color,
+        currentTop.map(({ label }) => ({
+            key: label,
+            label: label,
+            color: chartConfig[label].color,
+        }))
+    );
+
+    let legend = $derived(
+        currentTop.map(({ label, value }) => ({
+            label,
+            total: value,
+            color: chartConfig[label].color,
         }))
     );
 
@@ -142,15 +151,14 @@
             </div>
         </Card.Content>
         <Card.Footer class="flex flex-wrap gap-x-3 gap-y-2 justify-around">
-            {#each series as { label, color }}
+            {#each legend as { label, color, total }}
                 <div class="flex gap-1">
                     <div class="h-4 w-4 rounded-full" style:background-color={color}></div>
-                    <span class="text-xs">{label}</span>
+                    <span class="text-xs">{label} ({total.toLocaleString('en-us')} {unit}s)</span>
                 </div>
             {/each}
         </Card.Footer>
     </Card.Root>
-    <div>TODO table</div>
 </div>
 
 <style></style>
