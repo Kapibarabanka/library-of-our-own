@@ -51,7 +51,7 @@
     {/if}
     <div>
         {#if pageState.hasApplied}
-            <Label class="pl-3">Applied filters:</Label>
+            <Label>Applied filters:</Label>
             {#each pageState.appliedFilters.includedTagFilters as [tagType, includedTags]}
                 {#each includedTags as tag}
                     <BadgeTag

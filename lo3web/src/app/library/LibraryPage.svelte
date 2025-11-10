@@ -34,7 +34,7 @@
             Found {pageState.filteredCards.length} fics
         </Label>
         <div id="fics" class="flex flex-col gap-2">
-            {#each pageState.filteredCards as cardData}
+            {#each pageState.filteredCards as cardData (cardData.key)}
                 <FicCard {cardData}></FicCard>
             {/each}
         </div>

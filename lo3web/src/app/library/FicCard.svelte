@@ -16,6 +16,7 @@
     import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
     import { toast } from 'svelte-sonner';
     import { startedToday } from '$api/fics-details.remote';
+    import IconBadge from '$lib/components/IconBadge.svelte';
 
     let { cardData }: { cardData: FicCardData } = $props();
     const tagTypes = [TagField.Warning, TagField.Fandom, TagField.Ship, TagField.Character, TagField.Tag];
@@ -30,7 +31,9 @@
     <Card.Header>
         <Card.Title class="text-base">
             <div class="flex">
-                <a href={cardData.ao3Info.link} target="_blank" class="flex-1">{cardData.ao3Info.title}</a>
+                <a href={`/fic/${cardData.key.ficType.toLowerCase()}-${cardData.key.ficId}`} class="flex-1"
+                    >{cardData.ao3Info.title}</a
+                >
                 <DropdownMenu.Root>
                     <DropdownMenu.Trigger>
                         {#snippet child({ props })}
@@ -50,6 +53,20 @@
                                 Open on AO3
                             </DropdownMenu.Item>
                             <DropdownMenu.Item onclick={() => startReading()}>Start reading</DropdownMenu.Item>
+                            {#if !cardData.details.isOnKindle}
+                                <DropdownMenu.Item onclick={() => toast('not implemented yet')}>
+                                    Send to Kindle
+                                </DropdownMenu.Item>
+                            {/if}
+                            {#if cardData.details.backlog}
+                                <DropdownMenu.Item onclick={() => toast('not implemented yet')}>
+                                    Remove from backlog
+                                </DropdownMenu.Item>
+                            {:else}
+                                <DropdownMenu.Item onclick={() => toast('not implemented yet')}>
+                                    Add to backlog
+                                </DropdownMenu.Item>
+                            {/if}
                         </DropdownMenu.Group>
                     </DropdownMenu.Content>
                 </DropdownMenu.Root>
@@ -103,7 +120,7 @@
                 ></ImpressionBadge>
             {/if}
             {#if cardData.details.spicy}
-                <Badge class="px-1 text-[15px] leading-4" variant="outline">🔥</Badge>
+                <IconBadge icon="🔥"></IconBadge>
             {/if}
         </div>
 

@@ -88,9 +88,22 @@ export interface FicNote {
     text: string;
 }
 
+export interface ReadDates {
+    startDate: string;
+    finishDate?: string | undefined;
+    isAbandoned: boolean;
+}
+
+export interface ReadDatesInfo {
+    readDates: ReadDates[];
+    canStart: boolean;
+    canFinish: boolean;
+}
+
 export interface Fic {
-    key: UserFicKey;
+    userId: string;
     ao3Info: Ao3FicInfo;
     details: FicDetails;
+    readDatesInfo: ReadDatesInfo;
     notes: FicNote[];
 }

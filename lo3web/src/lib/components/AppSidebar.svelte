@@ -36,6 +36,7 @@
                 </Sidebar.MenuButton>
             </Sidebar.MenuItem>
         </Sidebar.Menu>
+        <Sidebar.MenuButton onclick={() => sidebar.toggle()}>Close sidebar</Sidebar.MenuButton>
     </Sidebar.Header>
     <Sidebar.Content>
         <Sidebar.Group>
