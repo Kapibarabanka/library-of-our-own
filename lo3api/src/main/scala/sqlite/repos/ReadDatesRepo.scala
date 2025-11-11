@@ -16,7 +16,7 @@ class ReadDatesRepo(db: Lo3Db):
     dates     <- db.run(filterDates(key).sortBy(_.id).result)
     maybeLast <- ZIO.succeed[Option[ReadDatesDoc]](dates.lastOption)
   } yield ReadDatesInfo(
-    readDates = dates.map(_.toModel).toList,
+    readDates = dates.map(_.toModel).toList.reverse,
     canStart = canStart(maybeLast),
     canFinish = canFinish(maybeLast)
   )

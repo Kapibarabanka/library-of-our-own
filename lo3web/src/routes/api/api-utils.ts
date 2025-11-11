@@ -28,9 +28,18 @@ export async function post(controller: string, endpoint: string, data: unknown) 
     }
 }
 
-export async function patch(controller: string, endpoint: string, params?: object) {
+export async function patch(controller: string, endpoint: string, params?: object, body?: object) {
     const resp = await fetch(getUrl(controller, endpoint, params), {
         method: 'PATCH',
+        ...(body
+            ? {
+                  headers: {
+                      Accept: 'application/json',
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(body),
+              }
+            : {}),
     });
     if (!resp.ok) {
         const message = resp.bodyUsed ? JSON.stringify(await resp.json()) : resp.statusText;

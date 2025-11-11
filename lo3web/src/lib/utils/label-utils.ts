@@ -1,4 +1,5 @@
 import { Rating, UserImpression } from '$lib/types/domain-models';
+import moment from 'moment';
 
 export function shortRating(rating: Rating) {
     switch (rating) {
@@ -19,4 +20,8 @@ export function shortImpression(impression: UserImpression) {
         default:
             return impression;
     }
+}
+
+export function formatDate(date: string) {
+    return moment(date).format('D MMM, YYYY');
 }

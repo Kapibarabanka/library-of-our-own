@@ -52,13 +52,14 @@ export interface Ao3FicInfo {
     complete: boolean;
 }
 
-export interface FicDetails {
-    backlog: boolean;
-    isOnKindle: boolean;
-    impression?: UserImpression;
-    spicy: boolean;
-    recordCreated: string;
-}
+export const FicDetailsSchema = z.object({
+    backlog: z.boolean(),
+    isOnKindle: z.boolean(),
+    impression: UserImpressionSchema.optional(),
+    spicy: z.boolean(),
+    recordCreated: z.string().optional(),
+});
+export type FicDetails = z.infer<typeof FicDetailsSchema>;
 
 export interface UserFicKey {
     userId: string;
