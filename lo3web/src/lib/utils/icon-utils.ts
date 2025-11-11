@@ -5,7 +5,7 @@ export function getRatingBackground(rating: Rating) {
         case Rating.General:
             return 'bg-lime-300';
         case Rating.Teen:
-            return 'bg-yellow-300';
+            return 'bg-yellow-200';
         case Rating.Mature:
             return 'bg-orange-300';
         case Rating.Explicit:

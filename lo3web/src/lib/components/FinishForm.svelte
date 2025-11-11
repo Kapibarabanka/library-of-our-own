@@ -5,12 +5,10 @@
     import { Button } from '$ui/button';
     import { Checkbox } from '$ui/checkbox';
     import Textarea from '$ui/textarea/textarea.svelte';
-    import { shortImpression } from '$lib/utils/label-utils';
-    import { getImpressionIcon } from '$lib/utils/icon-utils';
     import LoaderCircle from 'lucide-svelte/icons/loader-circle';
-    import * as Tabs from '$lib/components/ui/tabs';
     import type { FinishInfo } from '$lib/types/api-models';
     import { finishFic } from '$api/fics-details.remote';
+    import ImpressionInput from './ImpressionInput.svelte';
 
     let { key, details, onSubmitted }: { key: UserFicKey; details: FicDetails; onSubmitted: () => void } = $props();
 
@@ -64,16 +62,7 @@
                     <span class="text-sm font-medium leading-none">🔥 Spicy</span>
                 </Label>
             </div>
-            <Tabs.Root bind:value={impression} class="max-w-[500px]">
-                <Tabs.List class="grid w-full grid-cols-5">
-                    {#each Object.values(UserImpression) as impr}
-                        <Tabs.Trigger value={impr} class="flex gap-1">
-                            {getImpressionIcon(impr)}
-                            <span class="text-[12px]">{shortImpression(impr)}</span>
-                        </Tabs.Trigger>
-                    {/each}
-                </Tabs.List>
-            </Tabs.Root>
+            <ImpressionInput bind:impression></ImpressionInput>
             <Textarea bind:value={note} class="text-sm" id="note" placeholder="Add a note if you want to" />
         </div>
         <Sheet.Footer>

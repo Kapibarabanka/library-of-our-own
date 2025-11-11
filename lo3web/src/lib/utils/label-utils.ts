@@ -15,7 +15,7 @@ export function shortRating(rating: Rating) {
 export function shortImpression(impression: UserImpression) {
     switch (impression) {
         case UserImpression.Never:
-            return 'Nope';
+            return 'Never';
         default:
             return impression;
     }
