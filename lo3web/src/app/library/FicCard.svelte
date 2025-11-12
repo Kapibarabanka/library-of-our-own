@@ -92,7 +92,7 @@
             {@const tags = getTagsByField(cardData.ao3Info, tagField)}
             {#if tags.length}
                 <div>
-                    <span class="font-semibold">{tagField + 's: '}</span>
+                    <span class="font-semibold text-sm">{tagField + 's: '}</span>
                     {#each tags as tag}
                         <Tag label={tag} onclick={() => pageState.withTagFilter(tagField, TagInclusion.Include, tag)}
                         ></Tag>

@@ -9,6 +9,8 @@ import kapibarabanka.lo3.common.models.domain.{DbError, Note, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.IO
 
+import java.time.LocalDateTime
+
 class NotesRepo(db: Lo3Db):
   private val comments = TableQuery[CommentsTable]
 
@@ -20,7 +22,7 @@ class NotesRepo(db: Lo3Db):
 
   def getAllNotes(key: UserFicKey): IO[DbError, List[Note]] = for {
     comments <- db.run(filterNotes(key).result)
-  } yield comments.map(_.toModel).toList.sortBy(_.date)
+  } yield comments.map(_.toModel).toList.sortBy(_.date)(Ordering[LocalDateTime].reverse)
 
   private def filterNotes(key: UserFicKey) =
     comments.filter(d => d.userId === key.userId && d.ficId === key.ficId && d.ficIsSeries === key.ficIsSeries)

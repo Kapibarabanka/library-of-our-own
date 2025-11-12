@@ -6,9 +6,9 @@
     import { getFic } from '$api/fics.remote';
     import * as Card from '$ui/card';
     import * as Tabs from '$ui/tabs';
-    import moment from 'moment';
     import { formatDate } from '$lib/utils/label-utils';
     import FicActions from './FicActions.svelte';
+    import FicNotes from './FicNotes.svelte';
 
     let { fic }: { fic: Fic } = $props();
     let key = getUserFicKey(fic);
@@ -59,7 +59,7 @@
             <FicActions {fic} updateFic={async () => await updateFic()}></FicActions>
         </Tabs.Content>
         <Tabs.Content value="history">
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-2">
                 {#each formattedDates as readDate}
                     <Item.Root variant="outline" size="sm">
                         <Item.Content>
@@ -73,17 +73,7 @@
             </div>
         </Tabs.Content>
         <Tabs.Content value="notes">
-            <!-- <Button>Add Note</Button> -->
-            <div class="flex flex-col gap-2">
-                {#each fic.notes ?? [] as note}
-                    <Card.Root>
-                        <Card.Header>
-                            <Card.Title>{moment(note.date).format('MMM Do, YYYY')}</Card.Title>
-                        </Card.Header>
-                        <Card.Content>{note.text}</Card.Content>
-                    </Card.Root>
-                {/each}
-            </div>
+            <FicNotes {fic} />
         </Tabs.Content>
         <Tabs.Content value="info">
             <!-- <Button>Update</Button>

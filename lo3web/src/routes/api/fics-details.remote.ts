@@ -1,8 +1,9 @@
 import { command } from '$app/server';
 import { FinishInfoSchema } from '$lib/types/api-models';
-import { FicDetailsSchema, UserFicKeySchema } from '$lib/types/domain-models';
+import { FicDetailsSchema, UserFicKeySchema, type FicNote } from '$lib/types/domain-models';
 import { patch, post } from '$api/api-utils';
 import z from 'zod';
+import moment from 'moment';
 
 const base = 'fic-details';
 
@@ -20,3 +21,9 @@ export const patchDetails = command(
         await patch(base, 'patch-details', key, details);
     }
 );
+
+export const addNote = command(z.object({ key: UserFicKeySchema, text: z.string() }), async ({ key, text }) => {
+    const note: FicNote = { date: moment().toISOString().slice(0, -1), text };
+    await patch(base, 'add-note', key, note);
+    return note;
+});
