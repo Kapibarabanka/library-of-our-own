@@ -27,15 +27,15 @@ case class KindleController(ao3InfoService: Ao3InfoService, bot: MyBotApi, clien
   val sendToKindle = KindleClient.sendToKindle.implement { (key, needToLog) =>
     for {
       log        <- if (needToLog) LogMessage.create("Working on it...", bot, key.userId) else ZIO.succeed(EmptyLog())
-      ficTitle   <- getTitle(key.ficId, key.ficType)
-      fileName   <- saveFic(key.ficId, key.ficType, ficTitle, log)
-      _          <- log.edit("Sending to Kindle...")
       maybeEmail <- Lo3Data.users.getKindleEmail(key.userId)
       email <- maybeEmail match
         case Some(value) => ZIO.succeed(value)
         case None        => ZIO.fail(KindleEmailNotSet())
+      _        <- Lo3Data.details.setOnKindle(key, true)
+      ficTitle <- getTitle(key.ficId, key.ficType)
+      fileName <- saveFic(key.ficId, key.ficType, ficTitle, log)
+      _        <- log.edit("Sending to Kindle...")
       _ <- ZIO.attempt(MailClient.sendFile(File(fileName), ficTitle + ".epub", email)).mapError(e => EmailError(e.getMessage))
-      _ <- Lo3Data.details.setOnKindle(key, true)
       _ <- log.delete
     } yield ()
   }

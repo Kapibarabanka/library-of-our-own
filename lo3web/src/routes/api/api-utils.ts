@@ -12,14 +12,18 @@ export async function get(controller: string, endpoint: string, params?: object)
     }
 }
 
-export async function post(controller: string, endpoint: string, data: unknown) {
-    const resp = await fetch(getUrl(controller, endpoint), {
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
+export async function post(controller: string, endpoint: string, params?: object, body?: unknown) {
+    const resp = await fetch(getUrl(controller, endpoint, params), {
         method: 'POST',
-        body: JSON.stringify(data),
+        ...(body
+            ? {
+                  headers: {
+                      Accept: 'application/json',
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(body),
+              }
+            : {}),
     });
     if (!resp.ok) {
         const message = resp.bodyUsed ? JSON.stringify(await resp.json()) : resp.statusText;

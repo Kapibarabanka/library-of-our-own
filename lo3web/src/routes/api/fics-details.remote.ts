@@ -7,7 +7,7 @@ import z from 'zod';
 const base = 'fic-details';
 
 export const finishFic = command(FinishInfoSchema, async finishInfo => {
-    await post(base, 'finish-fic', finishInfo);
+    await post(base, 'finish-fic', undefined, finishInfo);
 });
 
 export const startedToday = command(UserFicKeySchema, async key => {
