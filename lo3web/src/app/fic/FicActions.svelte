@@ -12,7 +12,7 @@
     import { Label } from '$ui/label';
     import ImpressionInput from '$lib/components/ImpressionInput.svelte';
     import { formatDate } from '$lib/utils/label-utils';
-    import SendToKindleDialog from '$lib/components/SendToKindleDialog.svelte';
+    import KindleDialog from '$lib/components/KindleDialog.svelte';
 
     let { fic, updateFic }: { fic: Fic; updateFic: () => Promise<void> } = $props();
     let key = getUserFicKey(fic);
@@ -31,8 +31,7 @@
 
     let sheetOpened = $state(false);
     let rateDialogOpen = $state(false);
-    let sendDialogOpen = $state(false);
-    let removeFromKindleOpen = $state(false);
+    let kindleDialogOpen = $state(false);
 
     async function startReading() {
         await startedToday(key);
@@ -63,15 +62,6 @@
             details: { ...fic.details, backlog: !fic.details.backlog },
         });
         await updateFic();
-    }
-
-    async function markNotOnKindle() {
-        await patchDetails({
-            key,
-            details: { ...fic.details, isOnKindle: false },
-        });
-        await updateFic();
-        removeFromKindleOpen = false;
     }
 </script>
 
@@ -142,34 +132,16 @@
             <Item.Title>{isOnKindle ? 'On Kindle' : 'Not on Kindle'}</Item.Title>
         </Item.Content>
         <Item.Actions>
-            {#if isOnKindle}
-                <Dialog.Root bind:open={removeFromKindleOpen}>
-                    <Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                        Mark as "Not on Kindle"
-                    </Dialog.Trigger>
-                    <Dialog.Content class="sm:max-w-[425px]">
-                        <Dialog.Header>
-                            <Dialog.Title>Please confirm</Dialog.Title>
-                        </Dialog.Header>
-                        This action won't remove the document from your Kindle library, just mark it as "Not on Kindle" in
-                        this site's database.
-                        <Dialog.Footer>
-                            <div class="flex gap-2 justify-between">
-                                <Button variant="outline" onclick={() => (removeFromKindleOpen = false)}>Cancel</Button>
-                                <Button onclick={() => markNotOnKindle()}>Confirm</Button>
-                            </div>
-                        </Dialog.Footer>
-                    </Dialog.Content>
-                </Dialog.Root>
-            {:else}
-                <Button variant="outline" size="sm" onclick={() => (sendDialogOpen = true)}>Send to Kindle</Button>
-                <SendToKindleDialog
-                    bind:open={sendDialogOpen}
-                    ficName={fic.ao3Info.title}
-                    ficKey={key}
-                    onSent={async () => await updateFic()}
-                ></SendToKindleDialog>
-            {/if}
+            <Button variant="outline" size="sm" onclick={() => (kindleDialogOpen = true)}>
+                {isOnKindle ? 'Mark as "Not on Kindle"' : 'Send to Kindle'}
+            </Button>
+            <KindleDialog
+                bind:open={kindleDialogOpen}
+                ficName={fic.ao3Info.title}
+                ficKey={key}
+                details={fic.details}
+                onSubmitted={async () => await updateFic()}
+            ></KindleDialog>
         </Item.Actions>
     </Item.Root>
 </div>
