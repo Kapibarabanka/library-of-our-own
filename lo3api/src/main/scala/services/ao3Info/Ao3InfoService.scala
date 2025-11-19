@@ -176,7 +176,7 @@ case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
               doc.relationships.map(allShips(_)).filter(r => r.isInstanceOf[String]).map(_.asInstanceOf[String]).toList,
             characters = doc.characters.map(allCharacters(_)).toSet,
             freeformTags = doc.freeformTags.map(allFreeformTags(_)).toList,
-            link = Ao3Url.work(id),
+            link = Ao3Url.work(doc.id),
             date = SingleDate(doc.stats.date),
             words = doc.stats.words,
             chaptersWritten = doc.stats.chaptersWritten.get,
