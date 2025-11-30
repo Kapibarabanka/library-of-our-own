@@ -30,6 +30,7 @@ export async function post(controller: string, endpoint: string, params?: object
         console.log(resp);
         error(resp.status, message);
     }
+    return resp.json();
 }
 
 export async function patch(controller: string, endpoint: string, params?: object, body?: object) {

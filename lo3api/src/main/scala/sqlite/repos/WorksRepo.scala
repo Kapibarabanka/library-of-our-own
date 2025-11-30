@@ -5,8 +5,8 @@ import sqlite.docs.*
 import sqlite.services.Lo3Db
 import sqlite.tables.*
 
-import kapibarabanka.lo3.common.models.ao3.{Fandom, FicType, Rating, Work}
-import kapibarabanka.lo3.common.models.domain.{DbError, FicDetails, Ao3FicInfo}
+import kapibarabanka.lo3.common.models.ao3.{Ao3Url, Fandom, FicType, Rating, Work}
+import kapibarabanka.lo3.common.models.domain.{Ao3FicInfo, DbError, FicDetails}
 import slick.dbio.Effect
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
@@ -19,6 +19,12 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
   private val ficDetails        = TableQuery[FicsDetailsTable]
+
+  def fixLinks(): IO[DbError, Unit] = for {
+    allWorks <- db.run(works.result)
+    links    <- ZIO.succeed(allWorks.map(w => (w.id, Ao3Url.work(w.id))))
+    _        <- db.run(DBIO.sequence(links.map((id, link) => works.filter(_.id === id).map(_.link).update(link))))
+  } yield ()
 
   def exists(id: String): IO[DbError, Boolean] =
     db.run(works.filter(_.id === id).result).map(docs => docs.headOption.nonEmpty)

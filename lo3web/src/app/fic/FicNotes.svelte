@@ -2,7 +2,7 @@
     import { addNote } from '$api/fics-details.remote';
     import type { Fic } from '$lib/types/domain-models';
     import { getUserFicKey } from '$lib/utils/fic-utils';
-    import { formatDate, formatDateTime } from '$lib/utils/label-utils';
+    import { formatDateTime } from '$lib/utils/label-utils';
     import { Button } from '$ui/button';
     import * as Card from '$ui/card';
     import { Textarea } from '$ui/textarea';

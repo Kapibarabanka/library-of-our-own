@@ -9,6 +9,7 @@
     import { formatDate } from '$lib/utils/label-utils';
     import FicActions from './FicActions.svelte';
     import FicNotes from './FicNotes.svelte';
+    import FicInfo from './FicInfo.svelte';
 
     let { fic }: { fic: Fic } = $props();
     let key = getUserFicKey(fic);
@@ -76,8 +77,7 @@
             <FicNotes {fic} />
         </Tabs.Content>
         <Tabs.Content value="info">
-            <!-- <Button>Update</Button>
-                <div>{JSON.stringify(fic.ao3Info)}</div> -->
+            <FicInfo {fic} />
         </Tabs.Content>
     </Tabs.Root>
 </div>

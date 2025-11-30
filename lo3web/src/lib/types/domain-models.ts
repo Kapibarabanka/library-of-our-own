@@ -49,6 +49,7 @@ export interface Ao3FicInfo {
     relationships?: string[];
     tags?: string[];
     words: number;
+    partsWritten: number;
     complete: boolean;
 }
 

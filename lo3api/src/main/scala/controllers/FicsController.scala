@@ -51,9 +51,9 @@ protected[api] case class FicsController(ao3InfoService: Ao3InfoService, bot: My
     )
   }
 
-  val updateAo3Info = FicsClient.updateAo3Info.implement { key =>
+  val updateAo3Info = FicsClient.updateAo3Info.implement { (key, needToLog) =>
     for {
-      log    <- if (key.userId.nonEmpty) LogMessage.create("Working on it...", bot, key.userId) else ZIO.succeed(EmptyLog())
+      log    <- if (needToLog) LogMessage.create("Working on it...", bot, key.userId) else ZIO.succeed(EmptyLog())
       result <- ao3InfoService.updateAo3Info(key.ficId, key.ficType, log)
       _      <- log.delete
     } yield result

@@ -34,10 +34,10 @@ object FicsClient extends MyClient:
     .out[HomePageData]
     .outError[Lo3Error](Status.InternalServerError)
 
-  val updateAo3Info = endpoint(POST, "update-ao3-info")
+  val updateAo3Info = (endpoint(POST, "update-ao3-info")
     .out[Ao3FicInfo]
     .outError[Lo3Error](Status.InternalServerError)
-    |> withKey
+    |> withKey).query(HttpCodec.query[Boolean]("needToLog"))
 
   val toggleParser = endpoint(POST, "toggle-parser")
     .out[String]

@@ -88,7 +88,7 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
 
   private def updateFic(query: CallbackQuery) =
     val action = for {
-      updatedInfo <- Lo3Api.run(FicsClient.updateAo3Info(fic.key))
+      updatedInfo <- Lo3Api.run(FicsClient.updateAo3Info(fic.key, true))
       _           <- bot.answerCallbackQuery(query)
     } yield ExistingFicBotState(fic.copy(ao3Info = updatedInfo), true)
     action |> sendOnError("updating fic data")
