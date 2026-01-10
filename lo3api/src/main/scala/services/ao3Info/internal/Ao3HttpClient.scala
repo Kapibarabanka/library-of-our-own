@@ -68,7 +68,7 @@ case class Ao3HttpClientImpl(
       body         <- getBody(response, entityName)
       existingBody <- if (body.contains("Error 404")) ZIO.fail(NotFoundOnAo3(entityName)) else ZIO.succeed(body)
       nonRestrictedBody <-
-        if (body.contains("ERROR: restricted work")) ZIO.fail(RestrictedWork(entityName)) else ZIO.succeed(existingBody)
+        if (body.contains("ERROR: restricted work")) ZIO.fail(RestrictedWork(url)) else ZIO.succeed(existingBody)
     } yield nonRestrictedBody
   }
 
