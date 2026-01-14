@@ -13,11 +13,14 @@
     import ImpressionInput from '$lib/components/ImpressionInput.svelte';
     import { formatDate } from '$lib/utils/label-utils';
     import KindleDialog from '$lib/components/KindleDialog.svelte';
+    import { getContext } from 'svelte';
+    import type { User } from '$lib/types/ui-models';
 
     let { fic, updateFic }: { fic: Fic; updateFic: () => Promise<void> } = $props();
     let key = getUserFicKey(fic);
     let spicy = $state(fic.details.spicy);
     let impression = $state<UserImpression | ''>(fic.details.impression ?? '');
+    let emailSet = !!getContext<User>('user').kindleEmail;
 
     let formattedImpression = $derived(
         [
@@ -69,7 +72,7 @@
     {#if fic.readDatesInfo.canStart}
         <Item.Root variant="default" size="sm">
             <Item.Content>
-                <Button variant="outline" onclick={() => startReading()}>Start reading</Button>
+                <Button variant="default" class="md:w-fit" onclick={() => startReading()}>Start reading</Button>
             </Item.Content>
         </Item.Root>
     {:else if fic.readDatesInfo.canFinish}
@@ -132,7 +135,7 @@
             <Item.Title>{isOnKindle ? 'On Kindle' : 'Not on Kindle'}</Item.Title>
         </Item.Content>
         <Item.Actions>
-            <Button variant="outline" size="sm" onclick={() => (kindleDialogOpen = true)}>
+            <Button disabled={!emailSet} variant="outline" size="sm" onclick={() => (kindleDialogOpen = true)}>
                 {isOnKindle ? 'Mark as "Not on Kindle"' : 'Send to Kindle'}
             </Button>
             <KindleDialog

@@ -12,6 +12,7 @@ export interface User {
     id: string;
     name: string;
     photoUrl: string | null;
+    kindleEmail: string | undefined;
 }
 
 export enum StatUnit {

@@ -1,4 +1,4 @@
-import type { User, UserCookie } from '$lib/types/ui-models';
+import type { UserCookie } from '$lib/types/ui-models';
 import { MAIN_BOT } from '$env/static/private';
 import * as crypto from 'crypto';
 import { getRequestEvent } from '$app/server';
@@ -26,14 +26,10 @@ export function tryGetUserCookie() {
     return tryParseCookie(cookie);
 }
 
-export function getUser(): User {
+export function checkAuthAndGetUserId(): string {
     const maybeCookie = tryGetUserCookie();
     if (maybeCookie) {
-        return {
-            id: maybeCookie.id,
-            name: maybeCookie.username ?? [maybeCookie.first_name, maybeCookie.last_name].join(' '),
-            photoUrl: maybeCookie.photo_url,
-        };
+        return maybeCookie.id;
     } else {
         error(401);
     }

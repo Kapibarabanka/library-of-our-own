@@ -56,21 +56,25 @@
             <Tabs.Trigger value="notes">Notes</Tabs.Trigger>
             <Tabs.Trigger class="whitespace-normal" value="info">Information from Ao3</Tabs.Trigger>
         </Tabs.List>
-        <Tabs.Content value="actions" class="bg-muted/50">
+        <Tabs.Content value="actions" class="bg-muted/50 md:max-w-[700px]">
             <FicActions {fic} updateFic={async () => await updateFic()}></FicActions>
         </Tabs.Content>
         <Tabs.Content value="history">
             <div class="flex flex-col gap-2">
-                {#each formattedDates as readDate}
-                    <Item.Root variant="outline" size="sm">
-                        <Item.Content>
-                            <div class="flex gap-2 justify-between">
-                                <span>{readDate.date}</span>
-                                <span>{readDate.status} </span>
-                            </div>
-                        </Item.Content>
-                    </Item.Root>
-                {/each}
+                {#if formattedDates?.length}
+                    {#each formattedDates as readDate}
+                        <Item.Root variant="outline" size="sm" class="w-full md:w-[700px]">
+                            <Item.Content>
+                                <div class="flex gap-2 justify-between">
+                                    <span>{readDate.date}</span>
+                                    <span>{readDate.status} </span>
+                                </div>
+                            </Item.Content>
+                        </Item.Root>
+                    {/each}
+                {:else}
+                    <span>You haven't read this fic yet</span>
+                {/if}
             </div>
         </Tabs.Content>
         <Tabs.Content value="notes">

@@ -16,9 +16,9 @@
     }
 </script>
 
-<div class="flex flex-col gap-3 p-2">
-    <Tabs.Root value="filter" class="max-w-[500px]">
-        <Tabs.List class="grid w-full grid-cols-2">
+<div class="flex flex-col gap-3">
+    <Tabs.Root value="filter" class="w-full">
+        <Tabs.List class="grid  grid-cols-2 max-w-[500px]">
             <Tabs.Trigger value="filter">Filter</Tabs.Trigger>
             <Tabs.Trigger value="sort">Sort</Tabs.Trigger>
         </Tabs.List>

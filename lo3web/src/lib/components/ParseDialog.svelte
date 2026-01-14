@@ -79,10 +79,8 @@
             </Dialog.Description>
             <Input class="flex-1 text-sm" placeholder="Paste link here" bind:value={inputValue}></Input>
             <Dialog.Footer>
-                <div class="flex gap-2 justify-between">
-                    <Button variant="outline" onclick={() => close()}>Cancel</Button>
-                    <Button onclick={() => parse()}>Parse</Button>
-                </div>
+                <Button onclick={() => parse()}>Parse</Button>
+                <Button variant="outline" onclick={() => close()}>Cancel</Button>
             </Dialog.Footer>{/if}
     </Dialog.Content>
 </Dialog.Root>

@@ -18,10 +18,13 @@
     import { patchDetails, startedToday } from '$api/fics-details.remote';
     import IconBadge from '$lib/components/IconBadge.svelte';
     import KindleDialog from '$lib/components/KindleDialog.svelte';
+    import { getContext } from 'svelte';
+    import type { User } from '$lib/types/ui-models';
 
     let { cardData, onPatchedDetails }: { cardData: FicCardData; onPatchedDetails: (details: FicDetails) => void } =
         $props();
     const tagTypes = [TagField.Warning, TagField.Fandom, TagField.Ship, TagField.Character, TagField.Tag];
+    let emailSet = !!getContext<User>('user').kindleEmail;
 
     let kindleDialogOpen = $state(false);
 
@@ -67,7 +70,7 @@
                             </DropdownMenu.Item>
                             <DropdownMenu.Item onclick={() => startReading()}>Start reading</DropdownMenu.Item>
                             {#if !cardData.details.isOnKindle}{/if}
-                            <DropdownMenu.Item onclick={() => (kindleDialogOpen = true)}>
+                            <DropdownMenu.Item disabled={!emailSet} onclick={() => (kindleDialogOpen = true)}>
                                 {cardData.details.isOnKindle ? 'Mark as "Not on Kindle"' : 'Send to Kindle'}
                             </DropdownMenu.Item>
                             <DropdownMenu.Item onclick={() => toggleBacklog()}>

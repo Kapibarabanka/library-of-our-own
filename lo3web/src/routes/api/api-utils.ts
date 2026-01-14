@@ -13,7 +13,6 @@ export async function tryGet(
     if (!resp.ok) {
         const respClone = resp.clone();
         const recoverableError = await asRecoverableError(resp, expectedErrors);
-        console.log(recoverableError);
         if (recoverableError == null) {
             error(resp.status, await respClone.text());
         }

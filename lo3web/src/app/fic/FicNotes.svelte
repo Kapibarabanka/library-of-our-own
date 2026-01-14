@@ -29,7 +29,7 @@
 
 <div class="flex flex-col gap-2">
     {#if !addingNote}
-        <Button variant="outline" onclick={() => (addingNote = true)}>Add Note</Button>
+        <Button class="md:w-fit" variant="outline" onclick={() => (addingNote = true)}>Add Note</Button>
     {:else}
         <Card.Root>
             <Card.Header>

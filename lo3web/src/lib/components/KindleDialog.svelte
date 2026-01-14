@@ -78,10 +78,8 @@
             {/if}
             <Dialog.Footer>
                 {#if !confirmed}
-                    <div class="flex gap-2 justify-between">
-                        <Button variant="outline" onclick={() => close()}>Cancel</Button>
-                        <Button onclick={() => confirm()}>Confirm</Button>
-                    </div>
+                    <Button onclick={() => confirm()}>Confirm</Button>
+                    <Button variant="outline" onclick={() => close()}>Cancel</Button>
                 {:else}
                     <Button onclick={() => close()}>Close</Button>
                 {/if}

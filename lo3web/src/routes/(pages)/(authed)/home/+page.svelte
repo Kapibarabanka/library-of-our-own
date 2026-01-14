@@ -9,6 +9,6 @@
         <p>Loading home page...</p>
     {/snippet}
     {#snippet failed(error)}
-        <p>Error: {error}</p>
+        <p>Error in home page: {error}</p>
     {/snippet}
 </svelte:boundary>
