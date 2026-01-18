@@ -19,21 +19,6 @@ protected[api] case class FicDetailsController() extends Controller:
     Lo3Data.readDates.addStartDate(key, LocalDate.now().toString)
   }
 
-  val finishedToday = FicDetailsClient.finishedToday.implement { key =>
-    for {
-      _ <- Lo3Data.readDates.addFinishDate(key, LocalDate.now().toString)
-      _ <- Lo3Data.details.setBacklog(key, false)
-    } yield ()
-  }
-
-  val abandonedToday = FicDetailsClient.abandonedToday.implement { key =>
-    for {
-      _ <- Lo3Data.readDates.addFinishDate(key, LocalDate.now().toString)
-      _ <- Lo3Data.readDates.setIsAbandoned(key, true)
-      _ <- Lo3Data.details.setBacklog(key, false)
-    } yield ()
-  }
-
   val finishFic = FicDetailsClient.finishFic.implement { finishInfo =>
     for {
       _       <- Lo3Data.readDates.addFinishDate(finishInfo.key, LocalDate.now().toString, finishInfo.abandoned)
@@ -53,7 +38,5 @@ protected[api] case class FicDetailsController() extends Controller:
       patchDetails,
       addNote,
       startedToday,
-      finishedToday,
-      abandonedToday,
       finishFic
     )

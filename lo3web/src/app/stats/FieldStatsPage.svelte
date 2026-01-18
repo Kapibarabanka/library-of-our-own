@@ -30,7 +30,7 @@
     let chartConfig: Chart.ChartConfig = $derived(
         stats.allLabels
             .map((l, idx) => ({ label: l, color: colors[idx] }))
-            .reduce((a, { label, color }) => ({ ...a, [label]: { label, color } }), {})
+            .reduce((a, { label, color }) => ({ ...a, [label]: { label, color } }), {}),
     );
     let currentTop = $derived(unit === StatUnit.Words ? stats.topByWords : stats.topByFics);
     let series = $derived(
@@ -38,7 +38,7 @@
             key: label,
             label: label,
             color: chartConfig[label].color,
-        }))
+        })),
     );
 
     let legend = $derived(
@@ -46,7 +46,7 @@
             label,
             total: value,
             color: chartConfig[label].color,
-        }))
+        })),
     );
 
     let data = $derived(
@@ -55,14 +55,14 @@
                 (a, { label, value }) => ({ ...a, [label]: value }),
                 {
                     timeLabel: ds.timeLabel,
-                }
-            )
-        )
+                },
+            ),
+        ),
     );
     let showChart = $state(true);
 </script>
 
-<div class="flex flex-col gap-4 p-4">
+<div class="flex flex-col gap-4">
     <Card.Root>
         <Card.Header class="px-4">
             <div class="flex flex-wrap justify-between gap-2">

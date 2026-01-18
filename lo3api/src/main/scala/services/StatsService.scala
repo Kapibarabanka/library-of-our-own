@@ -5,7 +5,7 @@ import sqlite.services.Lo3Data
 import sqlite.tables.ReadDatesTable
 
 import kapibarabanka.lo3.common.models.api.*
-import kapibarabanka.lo3.common.models.domain.{DbError, FicCard}
+import kapibarabanka.lo3.common.models.domain.{Ao3FicInfo, DbError, Fic}
 import slick.jdbc.PostgresProfile.api.*
 import zio.IO
 
@@ -23,7 +23,7 @@ object StatsService:
   def getTagFieldStats(userId: String, tagField: StatTagField): IO[DbError, TagFieldStats] =
     val data = getHalfYearData(userId)
     data.map(allData => {
-      val tagDataByTime = allData.map((m, cards) => (m, cards.flatMap(c => getTagFieldWordCount(c, tagField, firstOnly))))
+      val tagDataByTime = allData.map((m, cards) => (m, cards.flatMap(f => getTagFieldWordCount(f.ao3Info, tagField, firstOnly))))
       // (tagVal, ficCount, wordCount)
       val totalsByTag = tagDataByTime
         .flatMap((_, t) => t)
@@ -54,33 +54,22 @@ object StatsService:
       )
     })
 
-  private def getHalfYearData(userId: String): IO[DbError, List[(Month, List[FicCard])]] =
+  private def getHalfYearData(userId: String): IO[DbError, List[(Month, List[Fic])]] =
     val today       = LocalDate.now()
     val startDate   = today.minusMonths(5)
     val datesFilter = (d: ReadDatesTable) => d.endDate.asColumnOf[String] >= startDate.toString && !d.isAbandoned
-    val datesAndFics = for {
-      datesDocs <- Lo3Data.readDates.getReadDocs(
-        userId,
-        datesFilter
-      )
-      fics <- Lo3Data.fics.getFilteredCards(
-        userId,
-        None,
-        Some(datesFilter)
-      )
-    } yield (datesDocs, fics)
-    datesAndFics.map((datesDocs, fics) => {
-      val ficsByKey      = fics.map(f => ((f.key.ficId, f.key.ficIsSeries), f)).toMap
-      val datesWithFics  = datesDocs.map(d => (LocalDate.parse(d.endDate.get), ficsByKey(d.ficId, d.ficIsSeries)))
+    val ficsIO      = Lo3Data.fics.getFilteredFics(userId, None, Some(datesFilter))
+    ficsIO.map(fics => {
+      val datesWithFics  = fics.flatMap(fic => fic.readDatesInfo.readDates.map(d => (d.finishDate.get, fic)))
       val monthsWithFics = datesWithFics.map((d, f) => ((d.getMonth, d.getYear), f))
       val withYears      = monthsWithFics.groupMap((m, _) => m)((_, f) => f).toList.map((d, f) => (d._1, d._2, f))
       withYears.sortBy((m, y, _) => (y, m)).map((m, _, f) => (m, f))
     })
 
-  private def getTagFieldWordCount(ficCard: FicCard, field: StatTagField, firstOnly: Boolean) = (field match
+  private def getTagFieldWordCount(info: Ao3FicInfo, field: StatTagField, firstOnly: Boolean) = (field match
     case StatTagField.Ship =>
-      if (firstOnly) ficCard.ao3Info.relationships.headOption.map(List(_)).getOrElse(List()) else ficCard.ao3Info.relationships
+      if (firstOnly) info.relationships.headOption.map(List(_)).getOrElse(List()) else info.relationships
     case StatTagField.Fandom =>
-      if (firstOnly) ficCard.ao3Info.fandoms.headOption.map(List(_)).getOrElse(List()) else ficCard.ao3Info.fandoms.toList
-    case StatTagField.Tag => ficCard.ao3Info.tags
-  ).map(t => (t, ficCard.ao3Info.words))
+      if (firstOnly) info.fandoms.headOption.map(List(_)).getOrElse(List()) else info.fandoms.toList
+    case StatTagField.Tag => info.tags
+  ).map(t => (t, info.words))

@@ -1,9 +1,9 @@
 <script lang="ts">
-    import FieldStats from '@app/stats/FieldStats.svelte';
+    import FieldStatsPage from '@app/stats/FieldStatsPage.svelte';
 </script>
 
 <svelte:boundary>
-    <FieldStats />
+    <FieldStatsPage />
     {#snippet pending()}
         <p>Loading stats...</p>
     {/snippet}

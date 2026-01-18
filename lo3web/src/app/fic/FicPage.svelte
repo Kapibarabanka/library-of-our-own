@@ -21,8 +21,8 @@
                       date: `${formatDate(rd.startDate)} - ${formatDate(rd.finishDate)}`,
                       status: rd.isAbandoned ? 'Abandoned' : 'Finished',
                   }
-                : { date: `Started on ${formatDate(rd.startDate)}`, status: '' }
-        ) ?? []
+                : { date: `Started on ${formatDate(rd.startDate)}`, status: '' },
+        ) ?? [],
     );
 
     async function updateFic() {
@@ -30,7 +30,7 @@
     }
 </script>
 
-<div class="flex flex-col p-4 gap-3">
+<div class="flex flex-col gap-3">
     <Card.Root>
         <Card.Header>
             <Card.Title class="text-lg">

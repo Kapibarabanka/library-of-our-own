@@ -13,13 +13,8 @@ class ReadDatesRepo(db: Lo3Db):
   private val readDates = TableQuery[ReadDatesTable]
 
   def getReadDatesInfo(key: UserFicKey): IO[DbError, ReadDatesInfo] = for {
-    dates     <- db.run(filterDates(key).sortBy(_.id).result)
-    maybeLast <- ZIO.succeed[Option[ReadDatesDoc]](dates.lastOption)
-  } yield ReadDatesInfo(
-    readDates = dates.map(_.toModel).toList.reverse,
-    canStart = canStart(maybeLast),
-    canFinish = canFinish(maybeLast)
-  )
+    dates <- db.run(filterDates(key).result)
+  } yield ReadDatesInfo.fromDates(dates.map(_.toModel))
 
   def getReadDocs(userId: String, datesFilter: ReadDatesTable => Rep[Boolean]): IO[DbError, List[ReadDatesDoc]] =
     db.run(readDates.filter(d => d.userId === userId && datesFilter(d)).result).map(_.toList)
@@ -44,30 +39,6 @@ class ReadDatesRepo(db: Lo3Db):
         case None =>
           db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, None, Some(endDate), isAbandoned))
     } yield ()
-
-  def setIsAbandoned(key: UserFicKey, value: Boolean): IO[DbError, Unit] =
-    for {
-      startDates <- db.run(
-        filterDates(key)
-          .sortBy(_.startDate.desc)
-          .result
-      )
-      _ <- startDates.headOption match
-        case Some(startDateDoc) => db.run(readDates.filter(_.id === startDateDoc.id).map(_.isAbandoned).update(value))
-        case None               => ZIO.unit
-    } yield ()
-
-  private def canStart(maybeLastDate: Option[ReadDatesDoc]) =
-    maybeLastDate match
-      case None      => true
-      case Some(doc) => doc.endDate.isDefined
-
-  private def canFinish(maybeLastDate: Option[ReadDatesDoc]) =
-    maybeLastDate match
-      case None      => false
-      case Some(doc) => doc.endDate.isEmpty
-
-  private def lastDatesRecord(key: UserFicKey) = filterDates(key).sortBy(_.id.desc).take(1)
 
   private def filterDates(key: UserFicKey) =
     readDates.filter(d => d.userId === key.userId && d.ficId === key.ficId && d.ficIsSeries === key.ficIsSeries)

@@ -1,14 +1,17 @@
 package kapibarabanka.lo3.api
 package sqlite.repos
 
-import sqlite.docs.{FicDetailsDoc, SeriesDoc}
+import sqlite.docs.{FicDetailsDoc, ReadDatesDoc, SeriesDoc}
 import sqlite.services.Lo3Db
 import sqlite.tables.*
 
 import kapibarabanka.lo3.common.models.ao3.{FicType, Rating}
 import kapibarabanka.lo3.common.models.domain.*
+import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
+
+import java.time.LocalDateTime
 
 class FicsRepo(db: Lo3Db):
   private val works             = TableQuery[WorksTable]
@@ -20,6 +23,7 @@ class FicsRepo(db: Lo3Db):
   private val series            = TableQuery[SeriesTable]
   private val seriesToWorks     = TableQuery[SeriesToWorksTable]
   private val readDates         = TableQuery[ReadDatesTable]
+  private val comments          = TableQuery[CommentsTable]
 
   def getFilteredCards(
       userId: String,
@@ -43,7 +47,66 @@ class FicsRepo(db: Lo3Db):
     filteredDetailsIO.flatMap(details => if (details.isEmpty) ZIO.succeed(List()) else collectCardsData(userId, details.distinct))
   }
 
-  private def collectCardsData(userId: String, details: Seq[FicDetailsDoc]): IO[DbError, List[FicCard]] = for {
+  def getFilteredFics(
+      userId: String,
+      detailsFilter: Option[FicsDetailsTable => Rep[Boolean]],
+      datesFilter: Option[ReadDatesTable => Rep[Boolean]]
+  ): IO[DbError, List[Fic]] = {
+    val filteredDates = datesFilter match
+      case Some(filter) => db.run(readDates.filter(d => d.userId === userId && filter(d)).result)
+      case None         => db.run(readDates.filter(d => d.userId === userId).result)
+    val filteredDetails = detailsFilter match
+      case Some(filter) => db.run(ficDetails.filter(d => d.userId === userId && filter(d)).result)
+      case None         => db.run(ficDetails.filter(d => d.userId === userId).result)
+    for {
+      allDates           <- filteredDates.map(dates => dates.groupMap(d => getKey(d.ficId, d.ficIsSeries))(d => d))
+      allDetails         <- filteredDetails.map(details => details.map(d => (getKey(d.ficId, d.ficIsSeries), d)).toMap)
+      commonKeys         <- ZIO.succeed(allDates.keySet.intersect(allDetails.keySet))
+      intersectedDetails <- ZIO.succeed(allDetails.filter((key, _) => commonKeys.contains(key)).values.toList)
+      intersectedDates   <- ZIO.succeed(allDates.filter((key, _) => commonKeys.contains(key)).values.flatten.toList)
+      result <- if (intersectedDetails.isEmpty) ZIO.succeed(List()) else collectFics(userId, intersectedDetails, intersectedDates)
+    } yield result.toList
+  }
+
+  private def collectCardsData(userId: String, details: Seq[FicDetailsDoc]): IO[DbError, List[FicCard]] =
+    val detailsByKey = details.map(d => (getKey(d.ficId, d.ficIsSeries), d.toModel)).toMap
+    for {
+      allInfos <- collectAllInfos(details)
+    } yield allInfos
+      .map(info => FicCard(UserFicKey(userId, info.id, info.ficType), info, detailsByKey((info.id, info.ficType))))
+      .toList
+
+  private def collectFics(userId: String, details: Seq[FicDetailsDoc], dates: Seq[ReadDatesDoc]) =
+    val detailsByKey = details.map(d => (getKey(d.ficId, d.ficIsSeries), d.toModel)).toMap
+    val datesByKey   = dates.groupMap(d => getKey(d.ficId, d.ficIsSeries))(d => d.toModel)
+    for {
+      allNotes <- collectAllNotes(userId, details)
+      notesByKey <- ZIO.succeed(
+        allNotes.groupMap(n => getKey(n.ficId, n.ficIsSeries))(n => n.toModel)
+      )
+      allInfos <- collectAllInfos(details)
+      infosWithAll <- ZIO.succeed(
+        allInfos
+          .map(i => (i, (i.id, i.ficType)))
+          .map((info, key) => (info, detailsByKey(key), datesByKey(key), notesByKey.getOrElse(key, Seq())))
+      )
+    } yield infosWithAll.map((info, details, dates, notes) =>
+      Fic(
+        userId = userId,
+        ao3Info = info,
+        readDatesInfo = ReadDatesInfo.fromDates(dates),
+        notes = notes.toList.sortBy(_.date)(Ordering[LocalDateTime].reverse),
+        details = details
+      )
+    )
+
+  private def collectAllNotes(userId: String, details: Seq[FicDetailsDoc]) =
+    val keys = details.map(d => (d.ficId, d.ficIsSeries)).toSet
+    for {
+      allUserNotes <- db.run(comments.filter(_.userId === userId).result)
+    } yield allUserNotes.filter(d => keys.contains((d.ficId, d.ficIsSeries)))
+
+  private def collectAllInfos(details: Seq[FicDetailsDoc]) = for {
     seriesIds      <- ZIO.succeed(details.filter(_.ficIsSeries).map(_.ficId))
     seriesDocs     <- db.run(series.filter(_.id.inSet(seriesIds)).result)
     seriesWorksIds <- db.run(seriesToWorks.filter(_.seriesId.inSet(seriesIds)).map(_.workId).result).map(_.distinct)
@@ -51,10 +114,7 @@ class FicsRepo(db: Lo3Db):
     worksInfos     <- collectWorks(workIds)
     seriesInfos    <- collectSeries(seriesDocs, worksInfos)
     allInfos       <- ZIO.succeed(seriesInfos ++ worksInfos.filter(w => !seriesWorksIds.contains(w.id)))
-    detailsByKey   <- ZIO.succeed(details.map(d => ((d.ficId, if (d.ficIsSeries) FicType.Series else FicType.Work), d)).toMap)
   } yield allInfos
-    .map(info => FicCard(UserFicKey(userId, info.id, info.ficType), info, detailsByKey((info.id, info.ficType)).toModel))
-    .toList
 
   private def collectWorks(workIds: Seq[String]) = for {
     workDocs <- db.run(works.filter(_.id.inSet(workIds)).result)
@@ -119,3 +179,5 @@ class FicsRepo(db: Lo3Db):
       )
     )
   )
+
+  private def getKey(id: String, isSeries: Boolean) = (id, if (isSeries) FicType.Series else FicType.Work)

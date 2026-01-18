@@ -28,16 +28,6 @@ object FicDetailsClient extends MyClient:
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey
 
-  val finishedToday = endpoint(Method.PATCH, "finished-today")
-    .out[Unit]
-    .outError[Lo3Error](Status.InternalServerError)
-    |> withKey
-
-  val abandonedToday = endpoint(Method.PATCH, "abandoned-today")
-    .out[Unit]
-    .outError[Lo3Error](Status.InternalServerError)
-    |> withKey
-  
   val finishFic = endpoint(POST, "finish-fic")
     .in[FinishInfo]
     .out[Unit]
@@ -48,7 +38,5 @@ object FicDetailsClient extends MyClient:
       patchDetails,
       addNote,
       startedToday,
-      finishedToday,
-      abandonedToday,
       finishFic
     )

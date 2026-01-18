@@ -10,6 +10,7 @@ import kapibarabanka.lo3.common.models.domain.{Fic, FicDetails, UserFicKey, User
 import kapibarabanka.lo3.common.models.tg.MessageData
 import kapibarabanka.lo3.common.models.tg.TgError.*
 import kapibarabanka.lo3.common.lo3api.{FicDetailsClient, FicsClient, KindleClient}
+import kapibarabanka.lo3.common.models.api.FinishInfo
 import kapibarabanka.lo3.common.services.BotWithChatId
 import scalaz.Scalaz.ToIdOps
 import telegramium.bots.*
@@ -32,9 +33,15 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
       case Buttons.addToBacklog.callbackData      => patchDetails(fic.details.copy(backlog = true), query)
       case Buttons.removeFromBacklog.callbackData => patchDetails(fic.details.copy(backlog = false), query)
 
-      case Buttons.markAsStartedToday.callbackData   => patchDates(key => Lo3Api.run(FicDetailsClient.startedToday(key)))(query)
-      case Buttons.markAsFinishedToday.callbackData  => patchDates(key => Lo3Api.run(FicDetailsClient.finishedToday(key)))(query)
-      case Buttons.markAsAbandonedToday.callbackData => patchDates(key => Lo3Api.run(FicDetailsClient.abandonedToday(key)))(query)
+      case Buttons.markAsStartedToday.callbackData => patchDates(key => Lo3Api.run(FicDetailsClient.startedToday(key)))(query)
+      case Buttons.markAsFinishedToday.callbackData =>
+        patchDates(key =>
+          Lo3Api.run(FicDetailsClient.finishFic(FinishInfo(key, false, fic.details.spicy, fic.details.impression, None)))
+        )(query)
+      case Buttons.markAsAbandonedToday.callbackData =>
+        patchDates(key =>
+          Lo3Api.run(FicDetailsClient.finishFic(FinishInfo(key, true, fic.details.spicy, fic.details.impression, None)))
+        )(query)
 
       case Buttons.rateNever.callbackData => patchDetails(fic.details.copy(impression = Some(UserImpression.Never)), query)
       case Buttons.rateMeh.callbackData   => patchDetails(fic.details.copy(impression = Some(UserImpression.Meh)), query)
