@@ -52,7 +52,7 @@ trait StateProcessor(currentState: BotState, bot: BotWithChatId) extends WithErr
     text match
       case "/backlog"         => backLogCommand()
       case "/help" | "/start" => bot.sendText(MessageText.help).map(_ => StartBotState(true))
-      case "/setKindleEmail"  => ZIO.succeed(SetEmailBotState())
+      case "/set_email"       => ZIO.succeed(SetEmailBotState())
       case "/feedback"        => ZIO.succeed(FeedbackBotState())
       case _                  => getStateWithFic(text)
 
