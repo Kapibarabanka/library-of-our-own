@@ -16,11 +16,11 @@ object ReadDatesInfo:
   implicit val schema: Schema[ReadDatesInfo] = DeriveSchema.gen
   def fromDates(dates: Seq[ReadDates]): ReadDatesInfo =
     val sortedDates = dates.toList.sortBy(_.startDate)(Ordering[LocalDate].reverse)
-    val maybeLast   = sortedDates.lastOption
-    val canStart = maybeLast match
+    val maybeHead   = sortedDates.headOption
+    val canStart = maybeHead match
       case None       => true
       case Some(date) => date.finishDate.isDefined
-    val canFinish = maybeLast match
+    val canFinish = maybeHead match
       case None       => false
       case Some(date) => date.finishDate.isEmpty
     ReadDatesInfo(sortedDates, canStart, canFinish)
