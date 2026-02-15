@@ -13,7 +13,7 @@
         <span class="text-sm leading-none">Your impression</span>
     </Label>
     <Tabs.Root id="impression" bind:value={impression} class="max-w-[500px]">
-        <Tabs.List class="grid w-full grid-cols-5">
+        <Tabs.List class="w-full justify-between">
             {#each Object.values(UserImpression) as impr}
                 <Tabs.Trigger value={impr} class="flex gap-1">
                     {getImpressionIcon(impr)}

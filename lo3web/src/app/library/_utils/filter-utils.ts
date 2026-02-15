@@ -33,7 +33,6 @@ export function sortCards(cards: FicCardData[], sortBy: SortBy, direction: SortD
                 return direction === SortDirection.Asc ? aImpr - bImpr : bImpr - aImpr;
             });
     }
-    return cards;
 }
 
 function impressionToNumber(impression?: UserImpression | undefined) {

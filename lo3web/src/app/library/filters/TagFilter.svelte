@@ -1,9 +1,11 @@
 <script lang="ts">
     import { TagInclusion, type TagField } from '../_types/filter-enums';
-    import * as Select from '$ui/select';
+    import * as Tabs from '$ui/tabs';
     import { Label } from '$ui/label';
     import { Input } from '$lib/components/ui/input';
     import { filterState, pageState } from '../state.svelte';
+    import Badge from '$ui/badge/badge.svelte';
+
     let { filteredField }: { filteredField: TagField } = $props();
     let tagInclusion = $state(TagInclusion.Include);
 
@@ -27,24 +29,19 @@
 
 <div class="flex flex-col gap-1">
     <div class="flex gap-1">
-        <Select.Root type="single" bind:value={tagInclusion}>
-            <Select.Trigger class="w-[110px]">
-                {tagInclusion}
-            </Select.Trigger>
-            <Select.Content>
-                <Select.Group>
-                    <Select.Item value={TagInclusion.Include} label={TagInclusion.Include}></Select.Item>
-                    <Select.Item value={TagInclusion.Exclude} label={TagInclusion.Exclude}></Select.Item>
-                </Select.Group>
-            </Select.Content>
-        </Select.Root>
+        <Tabs.Root id="impression" bind:value={tagInclusion}>
+            <Tabs.List>
+                <Tabs.Trigger value={TagInclusion.Include}>{TagInclusion.Include}</Tabs.Trigger>
+                <Tabs.Trigger value={TagInclusion.Exclude}>{TagInclusion.Exclude}</Tabs.Trigger>
+            </Tabs.List>
+        </Tabs.Root>
         <Input class="flex-1 text-sm" placeholder="Type to filter.." bind:value={filterValue}></Input>
     </div>
     <div>
         {#if filteredValues.length > count}
-            <Label for="tags" class="text-center text-xs text-muted-foreground">
+            <Label for="tags" class="text-center text-xs text-muted-foreground mb-1 mt-2">
                 Showing top {count}
-                {filteredField.toLowerCase()}s, filter to see more
+                {filteredField.toLowerCase()}, filter to see more
             </Label>
         {/if}
         <div class="p-1 flex flex-col max-h-52 h-fit rounded-md border overflow-y-scroll">
@@ -54,7 +51,11 @@
                 {#each visibleItems as tagFilterItem}
                     <button
                         class="cursor-pointer text-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-                        onclick={() => handleSelection(tagFilterItem.value)}>{tagFilterItem.label}</button
+                        onclick={() => handleSelection(tagFilterItem.value)}
+                        >{tagFilterItem.value}
+                        <Badge class="h-5 min-w-5 rounded-full px-1 font-medium" variant="outline"
+                            >{tagFilterItem.count}</Badge
+                        ></button
                     >
                 {/each}
             {/if}

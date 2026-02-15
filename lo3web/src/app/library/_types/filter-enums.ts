@@ -12,7 +12,7 @@ export enum TagField {
     warnings = 'warnings',
 }
 export const tagFieldLabels: Record<TagField, string> = {
-    [TagField.relationships]: 'Ship',
+    [TagField.relationships]: 'Relationship',
     [TagField.tags]: 'Tag',
     [TagField.fandoms]: 'Fandom',
     [TagField.characters]: 'Character',
