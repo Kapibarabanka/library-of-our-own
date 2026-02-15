@@ -1,14 +1,14 @@
 <script lang="ts">
     import * as Select from '$ui/select';
     import { SortBy, SortDirection } from './_types/filter-enums';
-    import { pageState } from './state.svelte';
+    import { filterState } from './state.svelte';
 </script>
 
 <div class="flex flex-col gap-2">
     <div id="sort-by" class="flex gap-1">
-        <Select.Root type="single" bind:value={pageState.sortBy}>
+        <Select.Root type="single" bind:value={filterState.sortBy}>
             <Select.Trigger class="w-full">
-                {pageState.sortBy}
+                {filterState.sortBy}
             </Select.Trigger>
             <Select.Content>
                 <Select.Group>
@@ -18,9 +18,9 @@
                 </Select.Group>
             </Select.Content>
         </Select.Root>
-        <Select.Root type="single" bind:value={pageState.sortDirection}>
+        <Select.Root type="single" bind:value={filterState.sortDirection}>
             <Select.Trigger class="w-full">
-                {pageState.sortDirection}
+                {filterState.sortDirection}
             </Select.Trigger>
             <Select.Content>
                 <Select.Group>

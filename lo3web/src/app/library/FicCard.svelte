@@ -7,7 +7,7 @@
     import * as Card from '$ui/card';
     import { BoolField, TagField, TagInclusion } from './_types/filter-enums';
     import { getTagsByField } from './_utils/filter-utils';
-    import { pageState } from './state.svelte';
+    import { filterState } from './state.svelte';
     import RefreshCw from 'lucide-svelte/icons/refresh-cw';
     import Ellipsis from 'lucide-svelte/icons/ellipsis-vertical';
     import Tablet from 'lucide-svelte/icons/tablet';
@@ -85,7 +85,7 @@
             >{cardData.key.ficType.toLowerCase()} by {#each cardData.ao3Info.authors ?? ['Anonymous'] as author}
                 <Tag
                     label={author}
-                    onclick={() => pageState.withTagFilter(TagField.Author, TagInclusion.Include, author)}
+                    onclick={() => filterState.withTagFilter(TagField.Author, TagInclusion.Include, author)}
                 ></Tag>
             {/each}
         </Card.Description>
@@ -97,7 +97,7 @@
                 <div>
                     <span class="font-semibold text-sm">{tagField + 's: '}</span>
                     {#each tags as tag}
-                        <Tag label={tag} onclick={() => pageState.withTagFilter(tagField, TagInclusion.Include, tag)}
+                        <Tag label={tag} onclick={() => filterState.withTagFilter(tagField, TagInclusion.Include, tag)}
                         ></Tag>
                     {/each}
                 </div>
@@ -108,7 +108,7 @@
         <div class="flex gap-2">
             <RatingIcon
                 rating={cardData.ao3Info.rating}
-                onclick={() => pageState.appliedFilters.allowedRatings.add(cardData.ao3Info.rating)}
+                onclick={() => filterState.allowedRatings.add(cardData.ao3Info.rating)}
             ></RatingIcon>
             {#if !cardData.ao3Info.complete}
                 <Badge class="px-1.5" variant="outline"><RefreshCw size={15}></RefreshCw></Badge>
@@ -117,7 +117,7 @@
                 <Badge
                     class="px-1.5"
                     variant="outline"
-                    onclick={() => pageState.appliedFilters.boolFilters.set(BoolField.OnKindle, true)}
+                    onclick={() => filterState.boolFilters.set(BoolField.OnKindle, true)}
                 >
                     <Tablet size={15}></Tablet>
                 </Badge>
@@ -125,7 +125,7 @@
             {#if cardData.details.impression}
                 <ImpressionBadge
                     impression={cardData.details.impression}
-                    onclick={() => pageState.appliedFilters.allowedImpressions.add(cardData.details.impression!)}
+                    onclick={() => filterState.allowedImpressions.add(cardData.details.impression!)}
                 ></ImpressionBadge>
             {/if}
             {#if cardData.details.spicy}

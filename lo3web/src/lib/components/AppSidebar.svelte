@@ -2,7 +2,7 @@
     import * as Sidebar from '$lib/components/ui/sidebar/index.js';
     import { useSidebar } from '$lib/components/ui/sidebar/index.js';
     import { BoolField } from '@app/library/_types/filter-enums';
-    import { pageState as libraryState } from '@app/library/state.svelte';
+    import { filterState } from '@app/library/state.svelte';
     import House from 'lucide-svelte/icons/house';
     import Tablet from 'lucide-svelte/icons/tablet';
     import Todo from 'lucide-svelte/icons/list-todo';
@@ -20,9 +20,9 @@
     const sidebar = useSidebar();
 
     function toLibrary(field: BoolField | null) {
-        libraryState.clearFilters();
+        filterState.clearFilters();
         if (field) {
-            libraryState.appliedFilters.boolFilters.set(field, true);
+            filterState.boolFilters.set(field, true);
         }
         sidebar.setOpenMobile(false);
     }

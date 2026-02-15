@@ -3,79 +3,102 @@ import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { BoolField, SortBy, SortDirection, TagField, TagInclusion, type TagFilterItem } from './_types/filter-enums';
 import { getTagsByField, sortCards, tagFieldToProperty } from './_utils/filter-utils';
 
-interface AppliedFilters {
-    includedTagFilters: SvelteMap<TagField, SvelteSet<string>>;
-    excludedTagFilters: SvelteMap<TagField, SvelteSet<string>>;
-    boolFilters: SvelteMap<BoolField, boolean>;
-    allowedRatings: SvelteSet<Rating>;
-    allowedImpressions: SvelteSet<UserImpression>;
-}
-
 const emptyTagFilters: () => [TagField, SvelteSet<string>][] = () =>
     Object.values(TagField).map(tagField => [tagField, new SvelteSet()]);
 
-export class FicCardsPageState {
-    public allCards = $state<FicCardData[]>([]);
-    public appliedFilters = $state<AppliedFilters>({
-        boolFilters: new SvelteMap<BoolField, boolean>(),
-        includedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
-        excludedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
-        allowedRatings: new SvelteSet<Rating>(),
-        allowedImpressions: new SvelteSet<UserImpression>(),
-    });
+export class AppliedFiltersState {
+    public includedTagFilters: SvelteMap<TagField, SvelteSet<string>> = new SvelteMap<TagField, SvelteSet<string>>(
+        emptyTagFilters(),
+    );
+    public excludedTagFilters: SvelteMap<TagField, SvelteSet<string>> = new SvelteMap<TagField, SvelteSet<string>>(
+        emptyTagFilters(),
+    );
+    public boolFilters: SvelteMap<BoolField, boolean> = new SvelteMap<BoolField, boolean>();
+    public allowedRatings: SvelteSet<Rating> = new SvelteSet<Rating>();
+    public allowedImpressions: SvelteSet<UserImpression> = new SvelteSet<UserImpression>();
 
     public sortBy = $state(SortBy.DateAdded);
     public sortDirection = $state(SortDirection.Desc);
 
-    public hasIncluded = $derived(
-        ![...this.appliedFilters.includedTagFilters.values()].every(values => ![...values].length)
-    );
-    public hasExcluded = $derived(
-        ![...this.appliedFilters.excludedTagFilters.values()].every(values => ![...values].length)
-    );
+    public hasIncluded = $derived(!this.includedTagFilters.values().every(values => ![...values].length));
+    public hasExcluded = $derived(!this.excludedTagFilters.values().every(values => ![...values].length));
     public hasApplied = $derived(
-        !!this.appliedFilters.boolFilters.size ||
+        !!this.boolFilters.size ||
             this.hasIncluded ||
             this.hasExcluded ||
-            !!this.appliedFilters.allowedRatings.size ||
-            !!this.appliedFilters.allowedImpressions.size
+            !!this.allowedRatings.size ||
+            !!this.allowedImpressions.size,
     );
 
+    public withTagFilter(field: TagField, inclusion: TagInclusion, tag: string) {
+        console.log('yoy');
+        const map = inclusion === TagInclusion.Include ? this.includedTagFilters : this.excludedTagFilters;
+        const set = map.get(field);
+        if (set) {
+            set.add(tag);
+        }
+    }
+
+    public withoutTagFilter(field: TagField, inclusion: TagInclusion, tag: string) {
+        const map = inclusion === TagInclusion.Include ? this.includedTagFilters : this.excludedTagFilters;
+        const set = map.get(field);
+        if (set) {
+            set.delete(tag);
+        }
+    }
+
+    public clearFilters() {
+        this.boolFilters.clear();
+        for (const tagField of Object.values(TagField)) {
+            this.includedTagFilters.get(tagField)?.clear();
+            this.excludedTagFilters.get(tagField)?.clear();
+        }
+        this.allowedImpressions.clear();
+        this.allowedRatings.clear();
+    }
+}
+
+export const filterState = new AppliedFiltersState();
+
+export class FicCardsPageState {
+    public allCards = $state<FicCardData[]>([]);
+
     public filteredCards = $derived.by(() => {
-        let filteredCards = [...this.allCards];
-        for (const [tagType, filterValues] of this.appliedFilters.includedTagFilters) {
+        let filteredCards = [...$state.snapshot(this.allCards)];
+        for (const [tagType, filterValues] of filterState.includedTagFilters) {
             const prop = tagFieldToProperty(tagType);
             filteredCards = filteredCards.filter(card => {
                 const cardTags: string[] = card.ao3Info[prop] ?? [];
                 return [...filterValues].every(filterValue => cardTags.includes(filterValue));
             });
         }
-        for (const [tagField, filterValues] of this.appliedFilters.excludedTagFilters) {
+        for (const [tagField, filterValues] of filterState.excludedTagFilters) {
             const prop = tagFieldToProperty(tagField);
             filteredCards = filteredCards.filter(card => {
                 const cardTags: string[] = card.ao3Info[prop] ?? [];
                 return [...filterValues].every(filterValue => !cardTags.includes(filterValue));
             });
         }
-        for (const [field, value] of this.appliedFilters.boolFilters) {
+        for (const [field, value] of filterState.boolFilters) {
             filteredCards = filteredCards.filter(card => boolFilterApplies(card, field, value));
         }
-        if (this.appliedFilters.allowedRatings.size) {
-            filteredCards = filteredCards.filter(card => this.appliedFilters.allowedRatings.has(card.ao3Info.rating));
+        if (filterState.allowedRatings.size) {
+            filteredCards = filteredCards.filter(card => filterState.allowedRatings.has(card.ao3Info.rating));
         }
-        if (this.appliedFilters.allowedImpressions.size) {
+        if (filterState.allowedImpressions.size) {
             filteredCards = filteredCards.filter(
-                card => card.details.impression && this.appliedFilters.allowedImpressions.has(card.details.impression)
+                card => card.details.impression && filterState.allowedImpressions.has(card.details.impression),
             );
         }
-        return sortCards(filteredCards, this.sortBy, this.sortDirection);
+
+        return sortCards(filteredCards, filterState.sortBy, filterState.sortDirection);
     });
 
     public tagFilters = $derived.by(() => {
         const result = new Map<TagField, TagFilterItem[]>();
         for (const tagField of Object.values(TagField)) {
-            const includedApplied = this.appliedFilters.includedTagFilters.get(tagField);
-            const excludedApplied = this.appliedFilters.excludedTagFilters.get(tagField);
+            const includedApplied = filterState.includedTagFilters.get(tagField);
+            const excludedApplied = filterState.excludedTagFilters.get(tagField);
             result.set(
                 tagField,
                 [
@@ -93,43 +116,11 @@ export class FicCardsPageState {
                         lowercase: value.toLocaleLowerCase(),
                     }))
                     .filter(item => !includedApplied?.has(item.value) && !excludedApplied?.has(item.value))
-                    .toSorted((a, b) => b.count - a.count)
+                    .toSorted((a, b) => b.count - a.count),
             );
         }
         return result;
     });
-
-    public withTagFilter(field: TagField, inclusion: TagInclusion, tag: string) {
-        const map =
-            inclusion === TagInclusion.Include
-                ? this.appliedFilters.includedTagFilters
-                : this.appliedFilters.excludedTagFilters;
-        const set = map.get(field);
-        if (set) {
-            set.add(tag);
-        }
-    }
-
-    public withoutTagFilter(field: TagField, inclusion: TagInclusion, tag: string) {
-        const map =
-            inclusion === TagInclusion.Include
-                ? this.appliedFilters.includedTagFilters
-                : this.appliedFilters.excludedTagFilters;
-        const set = map.get(field);
-        if (set) {
-            set.delete(tag);
-        }
-    }
-
-    public clearFilters() {
-        this.appliedFilters = {
-            boolFilters: new SvelteMap<BoolField, boolean>(),
-            includedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
-            excludedTagFilters: new SvelteMap<TagField, SvelteSet<string>>(emptyTagFilters()),
-            allowedRatings: new SvelteSet<Rating>(),
-            allowedImpressions: new SvelteSet<UserImpression>(),
-        };
-    }
 }
 
 export const pageState = new FicCardsPageState();

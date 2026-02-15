@@ -2,7 +2,7 @@
     import ImpressionBadge from '$lib/components/ImpressionBadge.svelte';
     import { UserImpression } from '$lib/types/domain-models';
     import Label from '$ui/label/label.svelte';
-    import { pageState } from '../state.svelte';
+    import { filterState } from '../state.svelte';
 </script>
 
 <div class="flex flex-col gap-1">
@@ -12,7 +12,7 @@
             <ImpressionBadge
                 {impression}
                 withLabel={true}
-                onclick={() => pageState.appliedFilters.allowedImpressions.add(impression)}
+                onclick={() => filterState.allowedImpressions.add(impression)}
             ></ImpressionBadge>
         {/each}
     </div>

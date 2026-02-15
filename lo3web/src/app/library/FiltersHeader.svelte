@@ -8,7 +8,7 @@
         TagInclusion,
         type FilterableField,
     } from './_types/filter-enums';
-    import { pageState } from './state.svelte';
+    import { filterState } from './state.svelte';
     import * as Select from '$ui/select';
     import Label from '$ui/label/label.svelte';
     import BadgeTag from '$lib/components/BadgeTag.svelte';
@@ -50,48 +50,37 @@
         <ImpressionFilter></ImpressionFilter>
     {/if}
     <div>
-        {#if pageState.hasApplied}
+        {#if filterState.hasApplied}
             <Label>Applied filters:</Label>
-            {#each pageState.appliedFilters.includedTagFilters as [tagType, includedTags]}
+            {#each filterState.includedTagFilters as [tagType, includedTags]}
                 {#each includedTags as tag}
                     <BadgeTag
                         label={tag}
                         striked={false}
-                        onclick={() => pageState.withoutTagFilter(tagType, TagInclusion.Include, tag)}
+                        onclick={() => filterState.withoutTagFilter(tagType, TagInclusion.Include, tag)}
                     ></BadgeTag>
                 {/each}
             {/each}
-            {#each pageState.appliedFilters.excludedTagFilters as [tagType, excludedTags]}
+            {#each filterState.excludedTagFilters as [tagType, excludedTags]}
                 {#each excludedTags as tag}
                     <BadgeTag
                         label={tag}
                         striked={true}
-                        onclick={() => pageState.withoutTagFilter(tagType, TagInclusion.Exclude, tag)}
+                        onclick={() => filterState.withoutTagFilter(tagType, TagInclusion.Exclude, tag)}
                     ></BadgeTag>
                 {/each}
             {/each}
-            {#each pageState.appliedFilters.boolFilters as [field, value]}
-                <BadgeTag
-                    label={field}
-                    striked={!value}
-                    onclick={() => pageState.appliedFilters.boolFilters.delete(field)}
+            {#each filterState.boolFilters as [field, value]}
+                <BadgeTag label={field} striked={!value} onclick={() => filterState.boolFilters.delete(field)}
                 ></BadgeTag>
             {/each}
-            {#each pageState.appliedFilters.allowedRatings as rating}
-                <BadgeTag
-                    label={''}
-                    striked={false}
-                    onclick={() => pageState.appliedFilters.allowedRatings.delete(rating)}
-                >
+            {#each filterState.allowedRatings as rating}
+                <BadgeTag label={''} striked={false} onclick={() => filterState.allowedRatings.delete(rating)}>
                     <RatingIcon {rating}></RatingIcon>
                 </BadgeTag>
             {/each}
-            {#each pageState.appliedFilters.allowedImpressions as impression}
-                <BadgeTag
-                    label={''}
-                    striked={false}
-                    onclick={() => pageState.appliedFilters.allowedImpressions.delete(impression)}
-                >
+            {#each filterState.allowedImpressions as impression}
+                <BadgeTag label={''} striked={false} onclick={() => filterState.allowedImpressions.delete(impression)}>
                     <ImpressionBadge {impression}></ImpressionBadge>
                 </BadgeTag>
             {/each}

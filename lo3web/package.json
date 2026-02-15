@@ -18,7 +18,7 @@
         "@internationalized/date": "^3.10.1",
         "@lucide/svelte": "^0.561.0",
         "@sveltejs/adapter-auto": "^4.0.0",
-        "@sveltejs/kit": "2.49.0",
+        "@sveltejs/kit": "2.49.5",
         "@sveltejs/vite-plugin-svelte": "^5.0.0",
         "@tailwindcss/container-queries": "^0.1.1",
         "@tailwindcss/forms": "^0.5.10",
@@ -47,7 +47,7 @@
         "vite": "^6.0.0"
     },
     "dependencies": {
-        "@sveltejs/adapter-node": "^5.2.12",
+        "@sveltejs/adapter-node": "5.5.1",
         "@tailwindcss/postcss": "^4.1.13",
         "@tanstack/table-core": "^8.21.2",
         "dotenv": "^16.4.7",

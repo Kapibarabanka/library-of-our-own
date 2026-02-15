@@ -10,7 +10,7 @@
         "sourceMap": true,
         "strict": true,
         "moduleResolution": "bundler",
-        "target": "ES5",
+        "target": "ES2015",
         "experimentalDecorators": true
     }
     // Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias

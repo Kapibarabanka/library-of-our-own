@@ -1,9 +1,9 @@
 <script lang="ts">
     import { TagInclusion, type TagField } from '../_types/filter-enums';
     import * as Select from '$ui/select';
-    import { pageState } from '../state.svelte';
     import { Label } from '$ui/label';
     import { Input } from '$lib/components/ui/input';
+    import { filterState, pageState } from '../state.svelte';
     let { filteredField }: { filteredField: TagField } = $props();
     let tagInclusion = $state(TagInclusion.Include);
 
@@ -21,7 +21,7 @@
 
     function handleSelection(tag: string) {
         filterValue = '';
-        pageState.withTagFilter(filteredField, tagInclusion, tag);
+        filterState.withTagFilter(filteredField, tagInclusion, tag);
     }
 </script>
 
