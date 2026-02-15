@@ -12,7 +12,7 @@
     import FicInfo from './FicInfo.svelte';
 
     let { fic }: { fic: Fic } = $props();
-    let key = getUserFicKey(fic);
+    let key = $derived(getUserFicKey(fic));
 
     let formattedDates = $derived(
         fic.readDatesInfo?.readDates?.map(rd =>
@@ -49,42 +49,43 @@
             <span>{formattedWords} words </span>
         </Card.Footer>
     </Card.Root>
-
-    <Tabs.Root value="actions">
-        <Tabs.List class="h-fit">
-            <Tabs.Trigger value="actions">Actions</Tabs.Trigger>
-            <Tabs.Trigger class="whitespace-normal" value="history">Reading history</Tabs.Trigger>
-            <Tabs.Trigger value="notes">Notes</Tabs.Trigger>
-            <Tabs.Trigger class="whitespace-normal" value="info">Information from Ao3</Tabs.Trigger>
-        </Tabs.List>
-        <Tabs.Content value="actions" class="bg-muted/50 md:max-w-[700px]">
-            <FicActions {fic} updateFic={async () => await updateFic()}></FicActions>
-        </Tabs.Content>
-        <Tabs.Content value="history">
-            <div class="flex flex-col gap-2">
-                {#if formattedDates?.length}
-                    {#each formattedDates as readDate}
-                        <Item.Root variant="outline" size="sm" class="w-full md:w-[700px]">
-                            <Item.Content>
-                                <div class="flex gap-2 justify-between">
-                                    <span>{readDate.date}</span>
-                                    <span>{readDate.status} </span>
-                                </div>
-                            </Item.Content>
-                        </Item.Root>
-                    {/each}
-                {:else}
-                    <span>You haven't read this fic yet</span>
-                {/if}
-            </div>
-        </Tabs.Content>
-        <Tabs.Content value="notes">
-            <FicNotes {fic} />
-        </Tabs.Content>
-        <Tabs.Content value="info">
-            <FicInfo bind:fic />
-        </Tabs.Content>
-    </Tabs.Root>
+    {#key key}
+        <Tabs.Root value="actions">
+            <Tabs.List class="h-fit">
+                <Tabs.Trigger value="actions">Actions</Tabs.Trigger>
+                <Tabs.Trigger class="whitespace-normal" value="history">Reading history</Tabs.Trigger>
+                <Tabs.Trigger value="notes">Notes</Tabs.Trigger>
+                <Tabs.Trigger class="whitespace-normal" value="info">Information from Ao3</Tabs.Trigger>
+            </Tabs.List>
+            <Tabs.Content value="actions" class="bg-muted/50 md:max-w-[700px]">
+                <FicActions {fic} updateFic={async () => await updateFic()}></FicActions>
+            </Tabs.Content>
+            <Tabs.Content value="history">
+                <div class="flex flex-col gap-2">
+                    {#if formattedDates?.length}
+                        {#each formattedDates as readDate}
+                            <Item.Root variant="outline" size="sm" class="w-full md:w-[700px]">
+                                <Item.Content>
+                                    <div class="flex gap-2 justify-between">
+                                        <span>{readDate.date}</span>
+                                        <span>{readDate.status} </span>
+                                    </div>
+                                </Item.Content>
+                            </Item.Root>
+                        {/each}
+                    {:else}
+                        <span>You haven't read this fic yet</span>
+                    {/if}
+                </div>
+            </Tabs.Content>
+            <Tabs.Content value="notes">
+                <FicNotes bind:fic />
+            </Tabs.Content>
+            <Tabs.Content value="info">
+                <FicInfo bind:fic />
+            </Tabs.Content>
+        </Tabs.Root>
+    {/key}
 </div>
 
 <style></style>

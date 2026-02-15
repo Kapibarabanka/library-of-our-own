@@ -4,7 +4,7 @@ package utils
 import kapibarabanka.lo3.common.models.domain.*
 import scalaz.Scalaz.ToIdOps
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 object MessageText {
@@ -97,7 +97,7 @@ object MessageText {
         }
         .mkString("\n")
 
-  private def format(date: LocalDate) = date.format(DateTimeFormatter.ofPattern("dd MMM uuuu"))
+  private def format(date: LocalDateTime) = date.format(DateTimeFormatter.ofPattern("dd MMM uuuu"))
 
   private def formatShip(shipName: String) =
     shipName.replace("/", s"  ${Emoji.romantic}  ").replace(" & ", s"  ${Emoji.platonic}  ")

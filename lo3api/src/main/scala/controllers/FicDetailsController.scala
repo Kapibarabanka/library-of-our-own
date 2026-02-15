@@ -8,7 +8,7 @@ import kapibarabanka.lo3.common.lo3api.FicDetailsClient
 import zio.*
 import zio.http.*
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.LocalDateTime
 
 protected[api] case class FicDetailsController() extends Controller:
   val patchDetails = FicDetailsClient.patchDetails.implement { (key, details) => Lo3Data.details.patchDetails(key, details) }
@@ -16,12 +16,12 @@ protected[api] case class FicDetailsController() extends Controller:
   val addNote = FicDetailsClient.addNote.implement { (key, note) => Lo3Data.notes.addNote(key, note) }
 
   val startedToday = FicDetailsClient.startedToday.implement { key =>
-    Lo3Data.readDates.addStartDate(key, LocalDate.now().toString)
+    Lo3Data.readDates.addStartDate(key, LocalDateTime.now().toString)
   }
 
   val finishFic = FicDetailsClient.finishFic.implement { finishInfo =>
     for {
-      _       <- Lo3Data.readDates.addFinishDate(finishInfo.key, LocalDate.now().toString, finishInfo.abandoned)
+      _       <- Lo3Data.readDates.addFinishDate(finishInfo.key, LocalDateTime.now().toString, finishInfo.abandoned)
       details <- Lo3Data.details.getOrCreateDetails(finishInfo.key)
       newDetails <- ZIO.succeed(
         details.copy(backlog = false, impression = finishInfo.impression.orElse(details.impression), spicy = finishInfo.spicy)

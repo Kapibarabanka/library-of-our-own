@@ -3,7 +3,7 @@ package models.domain
 
 import zio.schema.{DeriveSchema, Schema}
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 case class ReadDatesInfo(
     readDates: List[ReadDates] = List(),
@@ -15,7 +15,7 @@ case class ReadDatesInfo(
 object ReadDatesInfo:
   implicit val schema: Schema[ReadDatesInfo] = DeriveSchema.gen
   def fromDates(dates: Seq[ReadDates]): ReadDatesInfo =
-    val sortedDates = dates.toList.sortBy(_.startDate)(Ordering[LocalDate].reverse)
+    val sortedDates = dates.toList.sortBy(_.startDate)(Ordering[LocalDateTime].reverse)
     val maybeHead   = sortedDates.headOption
     val canStart = maybeHead match
       case None       => true

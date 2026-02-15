@@ -16,11 +16,12 @@
     import { getContext } from 'svelte';
     import type { User } from '$lib/types/ui-models';
 
+    let emailSet = !!getContext<User>('user').kindleEmail;
+
     let { fic, updateFic }: { fic: Fic; updateFic: () => Promise<void> } = $props();
     let key = getUserFicKey(fic);
     let spicy = $state(fic.details.spicy);
     let impression = $state<UserImpression | ''>(fic.details.impression ?? '');
-    let emailSet = !!getContext<User>('user').kindleEmail;
 
     let formattedImpression = $derived(
         [
@@ -28,7 +29,7 @@
                 ? [getImpressionIcon(fic.details.impression) + ' ' + fic.details.impression]
                 : []),
             ...(fic.details.spicy ? ['🔥 Spicy'] : []),
-        ].join(' and ')
+        ].join(' and '),
     );
     let isOnKindle = $derived(fic.details.isOnKindle);
 

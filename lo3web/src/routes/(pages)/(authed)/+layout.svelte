@@ -5,6 +5,7 @@
     import Button from '$ui/button/button.svelte';
     import { Toaster } from '$ui/sonner';
     import { setContext } from 'svelte';
+    import Plus from 'lucide-svelte/icons/plus';
     import '../../../app.css';
 
     let { children, data } = $props();
@@ -22,7 +23,7 @@
                 <Sidebar.Trigger size="icon" />
                 <h4 class="scroll-m-20 text-xl font-semibold tracking-tight">Library of our own</h4>
             </div>
-            <Button size="sm" onclick={() => (parseDialogOpen = true)}>Parse fic</Button>
+            <Button size="sm" onclick={() => (parseDialogOpen = true)}><Plus />Add fic</Button>
         </div>
         <div class="p-4">
             {@render children?.()}
