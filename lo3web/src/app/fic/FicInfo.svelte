@@ -2,7 +2,7 @@
     import { updateAo3Info } from '$api/fics.remote';
     import Tag from '$lib/components/Tag.svelte';
     import { FicType, type Fic } from '$lib/types/domain-models';
-    import { getFicKey } from '$lib/utils/fic-utils';
+    import { getKeyFromFic } from '$lib/utils/fic-utils';
     import { Button } from '$ui/button';
     import * as Card from '$ui/card';
     import * as Item from '$ui/item';
@@ -13,19 +13,14 @@
     let multiple = $derived(fic.ao3Info.partsWritten === 1 ? '' : 's');
     let completed = $derived(fic.ao3Info.complete ? 'Completed' : 'Not completed');
     let completionInfo = $derived(`${completed}, ${fic.ao3Info.partsWritten} ${partType}${multiple}`);
-
-    // #each is not updated if we don't forcibly update the state of parent object
-    // derived info didn't work either
-    let info = $state(fic.ao3Info);
-    let warnings = $derived(info.warnings?.at(0) ? info.warnings : ['No Archive Warnings Apply']);
+    let warnings = $derived(fic.ao3Info.warnings?.at(0) ? fic.ao3Info.warnings : ['No Archive Warnings Apply']);
 
     let loading = $state(false);
 
     async function updateInfo() {
         loading = true;
-        const newInfo = await updateAo3Info(getFicKey(fic));
-        fic.ao3Info = newInfo;
-        info = newInfo;
+        const newInfo = await updateAo3Info(getKeyFromFic(fic));
+        fic = { ...fic, ao3Info: newInfo };
         loading = false;
     }
 </script>
@@ -62,11 +57,11 @@
     <Card.Root>
         <Card.Content>
             {@render infoBlock('Warnings', warnings)}
-            {@render infoBlock('Categories', info.categories)}
-            {@render infoBlock('Fandoms', info.fandoms)}
-            {@render infoBlock('Relationships', info.relationships)}
-            {@render infoBlock('Characters', info.characters)}
-            {@render infoBlock('Additionsl Tags', info.tags)}</Card.Content
+            {@render infoBlock('Categories', fic.ao3Info.categories)}
+            {@render infoBlock('Fandoms', fic.ao3Info.fandoms)}
+            {@render infoBlock('Relationships', fic.ao3Info.relationships)}
+            {@render infoBlock('Characters', fic.ao3Info.characters)}
+            {@render infoBlock('Additionsl Tags', fic.ao3Info.tags)}</Card.Content
         >
     </Card.Root>
 </div>

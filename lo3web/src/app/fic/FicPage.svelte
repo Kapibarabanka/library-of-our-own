@@ -24,6 +24,7 @@
                 : { date: `Started on ${formatDate(rd.startDate)}`, status: '' },
         ) ?? [],
     );
+    let formattedWords = $derived(fic.ao3Info.words.toLocaleString('en-us'));
 
     async function updateFic() {
         fic = await getFic(key);
@@ -45,7 +46,7 @@
         </Card.Content>
         <Card.Footer class="gap-2 justify-between">
             <RatingIcon rating={fic.ao3Info.rating} variant="full"></RatingIcon>
-            <span>{fic.ao3Info.words.toLocaleString('en-us')} words </span>
+            <span>{formattedWords} words </span>
         </Card.Footer>
     </Card.Root>
 
@@ -81,7 +82,7 @@
             <FicNotes {fic} />
         </Tabs.Content>
         <Tabs.Content value="info">
-            <FicInfo {fic} />
+            <FicInfo bind:fic />
         </Tabs.Content>
     </Tabs.Root>
 </div>

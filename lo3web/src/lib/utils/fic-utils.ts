@@ -1,4 +1,4 @@
-import type { Fic, FicKey, UserFicKey } from '$lib/types/domain-models';
+import type { Ao3FicInfo, Fic, FicKey, UserFicKey } from '$lib/types/domain-models';
 
 export function getUserFicKey(fic: Fic): UserFicKey {
     return {
@@ -8,9 +8,13 @@ export function getUserFicKey(fic: Fic): UserFicKey {
     };
 }
 
-export function getFicKey(fic: Fic): FicKey {
+export function getKeyFromFic(fic: Fic): FicKey {
+    return getFicKeyFromInfo(fic.ao3Info);
+}
+
+export function getFicKeyFromInfo(ao3Info: Ao3FicInfo): FicKey {
     return {
-        ficId: fic.ao3Info.id,
-        ficType: fic.ao3Info.ficType,
+        ficId: ao3Info.id,
+        ficType: ao3Info.ficType,
     };
 }
