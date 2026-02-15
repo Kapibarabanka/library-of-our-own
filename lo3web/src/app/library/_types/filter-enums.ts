@@ -4,13 +4,21 @@ export enum TagInclusion {
 }
 
 export enum TagField {
-    Ship = 'Ship',
-    Tag = 'Tag',
-    Fandom = 'Fandom',
-    Character = 'Character',
-    Author = 'Author',
-    Warning = 'Warning',
+    relationships = 'relationships',
+    tags = 'tags',
+    fandoms = 'fandoms',
+    characters = 'characters',
+    authors = 'authors',
+    warnings = 'warnings',
 }
+export const tagFieldLabels: Record<TagField, string> = {
+    [TagField.relationships]: 'Ship',
+    [TagField.tags]: 'Tag',
+    [TagField.fandoms]: 'Fandom',
+    [TagField.characters]: 'Character',
+    [TagField.authors]: 'Author',
+    [TagField.warnings]: 'Warning',
+};
 
 export enum BoolField {
     Backlog = 'In Reading List',
@@ -32,10 +40,10 @@ export enum FilterType {
 }
 
 export type FilterableField = TagField | BoolField | CustomField;
-export const filterableFields: FilterableField[] = [
-    ...Object.values(TagField),
-    ...Object.values(BoolField),
-    ...Object.values(CustomField),
+export const filterableFields: { field: FilterableField; label: string }[] = [
+    ...Object.values(TagField).map(field => ({ field, label: tagFieldLabels[field] })),
+    ...Object.values(BoolField).map(field => ({ field, label: field })),
+    ...Object.values(CustomField).map(field => ({ field, label: field })),
 ];
 
 export type TagFilterItem = {

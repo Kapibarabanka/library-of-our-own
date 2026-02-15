@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getTagFieldStats } from '$api/stats.remote';
-    import { StatTagField } from '$lib/types/api-models';
+    import { StatTagField, type TagFieldStats } from '$lib/types/api-models';
     import * as Tabs from '$ui/tabs';
     import * as Select from '$ui/select';
     import * as Card from '$ui/card';
@@ -8,6 +8,7 @@
     import { cubicInOut } from 'svelte/easing';
     import * as Chart from '$lib/components/ui/chart';
     import { StatUnit } from '$lib/types/ui-models';
+    import { onMount } from 'svelte';
 
     const chartRedrawDealy = 3;
     const colors = [
@@ -23,7 +24,16 @@
         '#FDFDC4',
     ];
     const initialTag = StatTagField.Ship;
-    let stats = $state(await getTagFieldStats(initialTag));
+
+    let stats = $state<TagFieldStats>({ allLabels: [], topByFics: [], topByWords: [], datasets: [] });
+
+    async function fetchInitial() {
+        stats = await getTagFieldStats(initialTag);
+    }
+
+    onMount(() => {
+        fetchInitial();
+    });
 
     let field: StatTagField = $state(initialTag);
     let unit: StatUnit = $state(StatUnit.Words);

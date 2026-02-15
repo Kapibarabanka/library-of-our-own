@@ -1,29 +1,5 @@
-import { UserImpression, type Ao3FicInfo, type FicCardData } from '$lib/types/domain-models';
+import { UserImpression, type FicCardData } from '$lib/types/domain-models';
 import { BoolField, FilterType, SortBy, SortDirection, TagField, type FilterableField } from '../_types/filter-enums';
-
-export type TagFieldName = 'relationships' | 'tags' | 'fandoms' | 'characters' | 'authors' | 'warnings';
-
-export function tagFieldToProperty(tagType: TagField): TagFieldName {
-    switch (tagType) {
-        case TagField.Ship:
-            return 'relationships';
-        case TagField.Fandom:
-            return 'fandoms';
-        case TagField.Character:
-            return 'characters';
-        case TagField.Author:
-            return 'authors';
-        case TagField.Warning:
-            return 'warnings';
-        default:
-            return 'tags';
-    }
-}
-
-export function getTagsByField(fic: Ao3FicInfo, tagField: TagField): string[] {
-    const prop = tagFieldToProperty(tagField);
-    return fic[prop] ?? [];
-}
 
 export function getFilterType(filteredField: FilterableField): FilterType {
     if (Object.values(TagField).includes(filteredField as TagField)) return FilterType.Tag;
@@ -36,9 +12,9 @@ export function sortCards(cards: FicCardData[], sortBy: SortBy, direction: SortD
         case SortBy.DateAdded:
             return cards.sort((a, b) => {
                 let result = 0;
-                if (a.details.recordCreated > b.details.recordCreated) {
+                if ((a.details.recordCreated ?? 0) > (b.details.recordCreated ?? 0)) {
                     result = 1;
-                } else if (a.details.recordCreated < b.details.recordCreated) {
+                } else if ((a.details.recordCreated ?? 0) < (b.details.recordCreated ?? 0)) {
                     result = -1;
                 }
                 if (direction === SortDirection.Desc) {
@@ -48,7 +24,7 @@ export function sortCards(cards: FicCardData[], sortBy: SortBy, direction: SortD
             });
         case SortBy.WordCount:
             return cards.sort((a, b) =>
-                direction === SortDirection.Asc ? a.ao3Info.words - b.ao3Info.words : b.ao3Info.words - a.ao3Info.words
+                direction === SortDirection.Asc ? a.ao3Info.words - b.ao3Info.words : b.ao3Info.words - a.ao3Info.words,
             );
         case SortBy.Impression:
             return cards.sort((a, b) => {

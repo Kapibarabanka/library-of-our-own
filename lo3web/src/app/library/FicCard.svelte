@@ -5,8 +5,7 @@
     import { type FicCardData, type FicDetails } from '$lib/types/domain-models';
     import Badge from '$ui/badge/badge.svelte';
     import * as Card from '$ui/card';
-    import { BoolField, TagField, TagInclusion } from './_types/filter-enums';
-    import { getTagsByField } from './_utils/filter-utils';
+    import { BoolField, TagField, tagFieldLabels, TagInclusion } from './_types/filter-enums';
     import { filterState } from './state.svelte';
     import RefreshCw from 'lucide-svelte/icons/refresh-cw';
     import Ellipsis from 'lucide-svelte/icons/ellipsis-vertical';
@@ -21,11 +20,19 @@
     import { getContext } from 'svelte';
     import type { User } from '$lib/types/ui-models';
 
+    const tagsToShow = [
+        TagField.warnings,
+        TagField.fandoms,
+        TagField.relationships,
+        TagField.characters,
+        TagField.tags,
+    ];
+    const tagsWithLabels = tagsToShow.map(field => ({ field, label: tagFieldLabels[field] }));
+
     let { cardData, onPatchedDetails }: { cardData: FicCardData; onPatchedDetails: (details: FicDetails) => void } =
         $props();
-    const tagTypes = [TagField.Warning, TagField.Fandom, TagField.Ship, TagField.Character, TagField.Tag];
-    let emailSet = !!getContext<User>('user').kindleEmail;
 
+    let emailSet = !!getContext<User>('user').kindleEmail;
     let kindleDialogOpen = $state(false);
 
     async function startReading() {
@@ -85,19 +92,19 @@
             >{cardData.key.ficType.toLowerCase()} by {#each cardData.ao3Info.authors ?? ['Anonymous'] as author}
                 <Tag
                     label={author}
-                    onclick={() => filterState.withTagFilter(TagField.Author, TagInclusion.Include, author)}
+                    onclick={() => filterState.withTagFilter(TagField.authors, TagInclusion.Include, author)}
                 ></Tag>
             {/each}
         </Card.Description>
     </Card.Header>
     <Card.Content class="py-2">
-        {#each tagTypes as tagField}
-            {@const tags = getTagsByField(cardData.ao3Info, tagField)}
+        {#each tagsWithLabels as { field, label }}
+            {@const tags = cardData.ao3Info[field] ?? []}
             {#if tags.length}
                 <div>
-                    <span class="font-semibold text-sm">{tagField + 's: '}</span>
+                    <span class="font-semibold text-sm">{label + 's: '}</span>
                     {#each tags as tag}
-                        <Tag label={tag} onclick={() => filterState.withTagFilter(tagField, TagInclusion.Include, tag)}
+                        <Tag label={tag} onclick={() => filterState.withTagFilter(field, TagInclusion.Include, tag)}
                         ></Tag>
                     {/each}
                 </div>

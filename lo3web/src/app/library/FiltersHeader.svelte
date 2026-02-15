@@ -5,6 +5,7 @@
         filterableFields,
         FilterType,
         TagField,
+        tagFieldLabels,
         TagInclusion,
         type FilterableField,
     } from './_types/filter-enums';
@@ -20,20 +21,21 @@
     import RatingFilter from './filters/RatingFilter.svelte';
     import ImpressionFilter from './filters/ImpressionFilter.svelte';
 
-    let filteredField: FilterableField = $state(TagField.Ship);
+    let filteredField: FilterableField = $state(TagField.relationships);
     let filterType = $derived(getFilterType(filteredField));
+    let fieldLabel = $derived(filterType === FilterType.Tag ? tagFieldLabels[filteredField] : filteredField);
 </script>
 
 <div class="flex flex-col gap-2">
     <div id="filter-type">
         <Select.Root type="single" bind:value={filteredField}>
             <Select.Trigger class="w-full">
-                {filteredField}
+                {fieldLabel}
             </Select.Trigger>
             <Select.Content preventScroll={true}>
                 <Select.Group>
-                    {#each filterableFields as filterableField}
-                        <Select.Item value={filterableField} label={filterableField}></Select.Item>
+                    {#each filterableFields as { field, label }}
+                        <Select.Item value={field} {label}></Select.Item>
                     {/each}
                 </Select.Group>
             </Select.Content>

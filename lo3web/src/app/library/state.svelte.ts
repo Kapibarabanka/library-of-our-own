@@ -1,7 +1,7 @@
 import { FicType, Rating, UserImpression, type FicCardData } from '$lib/types/domain-models';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { BoolField, SortBy, SortDirection, TagField, TagInclusion, type TagFilterItem } from './_types/filter-enums';
-import { getTagsByField, sortCards, tagFieldToProperty } from './_utils/filter-utils';
+import { sortCards } from './_utils/filter-utils';
 
 const emptyTagFilters: () => [TagField, SvelteSet<string>][] = () =>
     Object.values(TagField).map(tagField => [tagField, new SvelteSet()]);
@@ -31,7 +31,6 @@ export class AppliedFiltersState {
     );
 
     public withTagFilter(field: TagField, inclusion: TagInclusion, tag: string) {
-        console.log('yoy');
         const map = inclusion === TagInclusion.Include ? this.includedTagFilters : this.excludedTagFilters;
         const set = map.get(field);
         if (set) {
@@ -65,17 +64,15 @@ export class FicCardsPageState {
 
     public filteredCards = $derived.by(() => {
         let filteredCards = [...$state.snapshot(this.allCards)];
-        for (const [tagType, filterValues] of filterState.includedTagFilters) {
-            const prop = tagFieldToProperty(tagType);
+        for (const [TagField, filterValues] of filterState.includedTagFilters) {
             filteredCards = filteredCards.filter(card => {
-                const cardTags: string[] = card.ao3Info[prop] ?? [];
+                const cardTags: string[] = card.ao3Info[TagField] ?? [];
                 return [...filterValues].every(filterValue => cardTags.includes(filterValue));
             });
         }
         for (const [tagField, filterValues] of filterState.excludedTagFilters) {
-            const prop = tagFieldToProperty(tagField);
             filteredCards = filteredCards.filter(card => {
-                const cardTags: string[] = card.ao3Info[prop] ?? [];
+                const cardTags: string[] = card.ao3Info[tagField] ?? [];
                 return [...filterValues].every(filterValue => !cardTags.includes(filterValue));
             });
         }
@@ -103,7 +100,7 @@ export class FicCardsPageState {
                 tagField,
                 [
                     ...this.filteredCards
-                        .flatMap(c => getTagsByField(c.ao3Info, tagField))
+                        .flatMap(c => c.ao3Info[tagField] ?? [])
                         .reduce(function (storage, item) {
                             storage.set(item, (storage.get(item) ?? 0) + 1);
                             return storage;
