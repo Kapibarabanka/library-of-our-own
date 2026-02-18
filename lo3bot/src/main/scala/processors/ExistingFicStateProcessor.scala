@@ -55,7 +55,7 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
 
       case Buttons.addComment.callbackData => bot.answerCallbackQuery(query).map(_ => CommentBotState(fic))
 
-      case Buttons.update.callbackData       => updateFic(query)
+      case Buttons.syncWithAo3.callbackData       => syncWithAo3(query)
       case Buttons.sendToKindle.callbackData => sendToKindle(query)
 
       case _ => unknownCallbackQuery(query).map(_ => currentState.withoutStartup)
@@ -93,9 +93,9 @@ case class ExistingFicStateProcessor(currentState: ExistingFicBotState, bot: Bot
     } yield ExistingFicBotState(updatedfic, true)
     action |> sendOnError("sending fic to email")
 
-  private def updateFic(query: CallbackQuery) =
+  private def syncWithAo3(query: CallbackQuery) =
     val action = for {
-      updatedInfo <- Lo3Api.run(FicsClient.updateAo3Info(fic.key, true))
+      updatedInfo <- Lo3Api.run(FicsClient.syncWithAo3(fic.key, true))
       _           <- bot.answerCallbackQuery(query)
     } yield ExistingFicBotState(fic.copy(ao3Info = updatedInfo), true)
     action |> sendOnError("updating fic data")

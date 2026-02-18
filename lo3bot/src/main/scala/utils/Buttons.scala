@@ -15,7 +15,7 @@ object Buttons:
         ).flatten,
         getDatesButtons(fic.readDatesInfo),
         List(rateNever, rateMeh, rateOk, rateNice, rateBrilliant),
-        List(addComment, update, if (fic.details.spicy) rateNotSpicy else rateSpicy)
+        List(addComment, syncWithAo3, if (fic.details.spicy) rateNotSpicy else rateSpicy)
       )
     )
   )
@@ -32,7 +32,7 @@ object Buttons:
     List(
       if (info.canStart) Some(markAsStartedToday) else None,
       if (info.canFinish) Some(markAsAbandonedToday) else None,
-      if (info.canFinish) Some(markAsFinishedToday) else None,
+      if (info.canFinish) Some(markAsFinishedToday) else None
     ).flatten
 
   // for existing
@@ -40,8 +40,8 @@ object Buttons:
   val removeFromBacklog = InlineKeyboardButton(s"${Emoji.cross} Remove from backlog", callbackData = Some("removeFromBacklog"))
   val sendToKindle      = InlineKeyboardButton(s"${Emoji.kindle} Send to Kindle", callbackData = Some("sendToKindle"))
 
-  val addComment = InlineKeyboardButton(s"${Emoji.comment} Add note", callbackData = Some("addComment"))
-  val update     = InlineKeyboardButton(s"${Emoji.refresh} Update", callbackData = Some("update"))
+  val addComment  = InlineKeyboardButton(s"${Emoji.comment} Add note", callbackData = Some("addComment"))
+  val syncWithAo3 = InlineKeyboardButton(s"${Emoji.refresh} Sync with Ao3", callbackData = Some("update"))
 
   // read dates
   val markAsStartedToday   = InlineKeyboardButton(s"${Emoji.start} Start", callbackData = Some("markAsStartedToday"))
