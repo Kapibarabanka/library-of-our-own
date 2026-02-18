@@ -96,7 +96,7 @@
                     <Sidebar.MenuItem>
                         <Sidebar.MenuButton onclick={() => toLibrary(BoolField.Backlog)}>
                             {#snippet child({ props })}
-                                <a href="/library" {...props}><Todo />Reading List</a>
+                                <a href="/library" {...props}><Todo />Backlog</a>
                             {/snippet}
                         </Sidebar.MenuButton>
                     </Sidebar.MenuItem>

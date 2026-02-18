@@ -1,4 +1,21 @@
 import { Rating, UserImpression } from '$lib/types/domain-models';
+import { BoolField, CustomField, TagField, type FilterableField } from '@app/library/_types/filter-enums';
+import {
+    Heart,
+    Tablet,
+    ListTodo,
+    Hash,
+    Earth,
+    User,
+    BookUser,
+    TriangleAlert,
+    Flame,
+    BookCopy,
+    Calculator,
+    IdCard,
+    MessageCircleHeart,
+    type Icon as IconType,
+} from '@lucide/svelte';
 
 export function getRatingBackground(rating: Rating) {
     switch (rating) {
@@ -29,3 +46,18 @@ export function getImpressionIcon(impression: UserImpression) {
             return '🦄';
     }
 }
+export const filterIcons: Record<FilterableField, typeof IconType> = {
+    [TagField.relationships]: Heart,
+    [TagField.tags]: Hash,
+    [TagField.fandoms]: Earth,
+    [TagField.characters]: User,
+    [TagField.authors]: BookUser,
+    [TagField.warnings]: TriangleAlert,
+    [BoolField.Backlog]: ListTodo,
+    [BoolField.OnKindle]: Tablet,
+    [BoolField.Spicy]: Flame,
+    [BoolField.Series]: BookCopy,
+    [CustomField.Words]: Calculator,
+    [CustomField.Rating]: IdCard,
+    [CustomField.Impression]: MessageCircleHeart,
+};

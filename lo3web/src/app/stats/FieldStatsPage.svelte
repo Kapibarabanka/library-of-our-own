@@ -9,6 +9,8 @@
     import * as Chart from '$lib/components/ui/chart';
     import { StatUnit } from '$lib/types/ui-models';
     import { onMount } from 'svelte';
+    import { statFieldsItems, statToFields } from './stats-enums';
+    import { tagFieldLabels } from '@app/library/_types/filter-enums';
 
     const chartRedrawDealy = 3;
     const colors = [
@@ -36,6 +38,8 @@
     });
 
     let field: StatTagField = $state(initialTag);
+    let selectedItem = $derived(statFieldsItems[field]);
+
     let unit: StatUnit = $state(StatUnit.Words);
     let chartConfig: Chart.ChartConfig = $derived(
         stats.allLabels
@@ -91,13 +95,21 @@
                             showChart = true;
                         }}
                     >
-                        <Select.Trigger class="w-[110px]">
-                            {field}
+                        <Select.Trigger class="w-[160px]">
+                            {#if selectedItem}
+                                <div class="flex items-center">
+                                    <selectedItem.icon size={16} class="mr-2" /><span>{selectedItem.label}</span>
+                                </div>
+                            {:else}
+                                {field}
+                            {/if}
                         </Select.Trigger>
                         <Select.Content>
                             <Select.Group>
-                                {#each Object.values(StatTagField) as tagField}
-                                    <Select.Item value={tagField} label={tagField}></Select.Item>
+                                {#each Object.entries(statFieldsItems) as [statField, item]}
+                                    <Select.Item value={statField}>
+                                        <item.icon size={16} class="mr-2" /><span>{item.label}</span>
+                                    </Select.Item>
                                 {/each}
                             </Select.Group>
                         </Select.Content>

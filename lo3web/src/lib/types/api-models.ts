@@ -25,7 +25,7 @@ export interface HomePageData {
 export enum StatTagField {
     Ship = 'Ship',
     Fandom = 'Fandom',
-    Tag = 'Tag',
+    Freeform = 'Freeform',
 }
 export const StatTagFieldSchema = z.enum(StatTagField);
 

@@ -48,7 +48,7 @@
             <FicCard cardData={homePage.randomFicFromBacklog} onPatchedDetails={details => onPatchedDetails(details)}
             ></FicCard>
         {:else}
-            <p>No fics in the reading list yet</p>
+            <p>No fics in the backlog yet</p>
         {/if}
     </div>
     <Separator />

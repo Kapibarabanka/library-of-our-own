@@ -123,11 +123,11 @@
     </Item.Root>
     <Item.Root variant="default" size="sm">
         <Item.Content>
-            <Item.Title>{fic.details.backlog ? 'In reading list' : 'Not in reading list'}</Item.Title>
+            <Item.Title>{fic.details.backlog ? 'In backlog' : 'Not in backlog'}</Item.Title>
         </Item.Content>
         <Item.Actions>
             <Button variant="outline" size="sm" onclick={() => toggleBacklog()}>
-                {fic.details.backlog ? 'Remove from reading list' : 'Add to reading list'}
+                {fic.details.backlog ? 'Remove from backlog' : 'Add to backlog'}
             </Button>
         </Item.Actions>
     </Item.Root>

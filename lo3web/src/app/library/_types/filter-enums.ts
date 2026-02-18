@@ -13,7 +13,7 @@ export enum TagField {
 }
 export const tagFieldLabels: Record<TagField, string> = {
     [TagField.relationships]: 'Relationship',
-    [TagField.tags]: 'Tag',
+    [TagField.tags]: 'Freeform Tag',
     [TagField.fandoms]: 'Fandom',
     [TagField.characters]: 'Character',
     [TagField.authors]: 'Author',
@@ -21,7 +21,7 @@ export const tagFieldLabels: Record<TagField, string> = {
 };
 
 export enum BoolField {
-    Backlog = 'In Reading List',
+    Backlog = 'In Backlog',
     OnKindle = 'On Kindle',
     Spicy = 'Spicy',
     Series = 'Series',
@@ -40,11 +40,14 @@ export enum FilterType {
 }
 
 export type FilterableField = TagField | BoolField | CustomField;
-export const filterableFields: { field: FilterableField; label: string }[] = [
+export const ao3Fields = [
     ...Object.values(TagField).map(field => ({ field, label: tagFieldLabels[field] })),
-    ...Object.values(BoolField).map(field => ({ field, label: field })),
-    ...Object.values(CustomField).map(field => ({ field, label: field })),
+    ...[CustomField.Rating, CustomField.Words, BoolField.Series].map(field => ({ field, label: field })),
 ];
+export const userFields = [CustomField.Impression, BoolField.Spicy, BoolField.Backlog, BoolField.OnKindle].map(
+    field => ({ field, label: field }),
+);
+export const filterableFields: { field: FilterableField; label: string }[] = [...ao3Fields, ...userFields];
 
 export type TagFilterItem = {
     value: string;

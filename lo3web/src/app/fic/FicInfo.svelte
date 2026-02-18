@@ -49,7 +49,7 @@
                 {#if loading}
                     <Spinner />
                 {/if}
-                Update
+                Sync with Ao3
             </Button>
         </Item.Actions>
     </Item.Root>

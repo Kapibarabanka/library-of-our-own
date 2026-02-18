@@ -1,5 +1,6 @@
 <script lang="ts">
     import {
+        ao3Fields,
         BoolField,
         CustomField,
         filterableFields,
@@ -7,6 +8,7 @@
         TagField,
         tagFieldLabels,
         TagInclusion,
+        userFields,
         type FilterableField,
     } from './_types/filter-enums';
     import { filterState } from './state.svelte';
@@ -20,22 +22,45 @@
     import BoolFilter from './filters/BoolFilter.svelte';
     import RatingFilter from './filters/RatingFilter.svelte';
     import ImpressionFilter from './filters/ImpressionFilter.svelte';
+    import { filterIcons } from '$lib/utils/icon-utils';
+
+    const ao3FieldsWithIcons = ao3Fields.map(f => ({ ...f, icon: filterIcons[f.field] }));
+    const userFieldsWithIcons = userFields.map(f => ({ ...f, icon: filterIcons[f.field] }));
+    const allFieldsWithIcons = filterableFields.map(f => ({ ...f, icon: filterIcons[f.field] }));
+    const itemsByField = new Map(allFieldsWithIcons.map(item => [item.field, item]));
 
     let filteredField: FilterableField = $state(TagField.relationships);
     let filterType = $derived(getFilterType(filteredField));
-    let fieldLabel = $derived(filterType === FilterType.Tag ? tagFieldLabels[filteredField] : filteredField);
+    let selectedItem = $derived(itemsByField.get(filteredField));
 </script>
 
 <div class="flex flex-col gap-2">
     <div id="filter-type">
         <Select.Root type="single" bind:value={filteredField}>
             <Select.Trigger class="w-full">
-                {fieldLabel}
+                {#if selectedItem}
+                    <div class="flex items-center">
+                        <selectedItem.icon size={16} class="mr-2" /><span>{selectedItem.label}</span>
+                    </div>
+                {:else}
+                    {filteredField}
+                {/if}
             </Select.Trigger>
             <Select.Content preventScroll={true}>
                 <Select.Group>
-                    {#each filterableFields as { field, label }}
-                        <Select.Item value={field} {label}></Select.Item>
+                    <Select.Label>Ao3 Data</Select.Label>
+                    {#each ao3FieldsWithIcons as item}
+                        <Select.Item value={item.field}>
+                            <item.icon size={16} class="mr-2" /><span>{item.label}</span>
+                        </Select.Item>
+                    {/each}
+                </Select.Group>
+                <Select.Group>
+                    <Select.Label>Your Data</Select.Label>
+                    {#each userFieldsWithIcons as item}
+                        <Select.Item value={item.field}>
+                            <item.icon size={16} class="mr-2" /><span>{item.label}</span>
+                        </Select.Item>
                     {/each}
                 </Select.Group>
             </Select.Content>

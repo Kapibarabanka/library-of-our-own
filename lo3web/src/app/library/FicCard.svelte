@@ -45,7 +45,7 @@
             key: cardData.key,
             details: { ...cardData.details, backlog: !cardData.details.backlog },
         });
-        toast(cardData.details.backlog ? 'Removed from reading list' : 'Added to reading list');
+        toast(cardData.details.backlog ? 'Removed from backlog' : 'Added to backlog');
         onPatchedDetails({ ...cardData.details, backlog: !cardData.details.backlog });
     }
 </script>
@@ -81,7 +81,7 @@
                                 {cardData.details.isOnKindle ? 'Mark as "Not on Kindle"' : 'Send to Kindle'}
                             </DropdownMenu.Item>
                             <DropdownMenu.Item onclick={() => toggleBacklog()}>
-                                {cardData.details.backlog ? 'Remove from reading list' : 'Add to reading list'}
+                                {cardData.details.backlog ? 'Remove from backlog' : 'Add to backlog'}
                             </DropdownMenu.Item>
                         </DropdownMenu.Group>
                     </DropdownMenu.Content>
