@@ -41,8 +41,8 @@ class TagService(html: HtmlService):
   } yield Fandom.fromNameInWork(canonicalName)
 
   def freeformTag(nameInWork: String): IO[Lo3Error, FreeformTag] = for {
-    canonicalName <- getCanonicalTagName(nameInWork)
-  } yield FreeformTag(canonicalName)
+    _ <- getCanonicalTagName(nameInWork)
+  } yield FreeformTag(nameInWork)
 
   def canonize[TTag](tagNames: Seq[String])(
       canonize: String => IO[Lo3Error, TTag]
