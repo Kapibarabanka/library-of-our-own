@@ -51,10 +51,10 @@ protected[api] case class FicsController(ao3InfoService: Ao3InfoService, bot: My
     )
   }
 
-  val updateAo3Info = FicsClient.updateAo3Info.implement { (key, needToLog) =>
+  val syncWithAo3 = FicsClient.syncWithAo3.implement { (key, needToLog) =>
     for {
       log    <- if (needToLog) LogMessage.create("Working on it...", bot, key.userId) else ZIO.succeed(EmptyLog())
-      result <- ao3InfoService.updateAo3Info(key.ficId, key.ficType, log)
+      result <- ao3InfoService.syncWithAo3(key.ficId, key.ficType, log)
       _      <- log.delete
     } yield result
   }
@@ -62,4 +62,4 @@ protected[api] case class FicsController(ao3InfoService: Ao3InfoService, bot: My
   val toggleParser = FicsClient.toggleParser.implement { _ => ao3InfoService.toggleParser().map(use => s"Now useParser is $use") }
 
   override val routes: List[Route[Any, Response]] =
-    List(getAllCards, getFicByLink, getFicByKey, getHomePage, updateAo3Info, toggleParser)
+    List(getAllCards, getFicByLink, getFicByKey, getHomePage, syncWithAo3, toggleParser)

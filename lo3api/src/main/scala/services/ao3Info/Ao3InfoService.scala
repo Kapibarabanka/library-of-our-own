@@ -18,7 +18,7 @@ trait Ao3InfoService:
       htmlFileName: Option[String] = None,
       log: OptionalLog = EmptyLog()
   ): IO[Lo3Error, Ao3FicInfo]
-  def updateAo3Info(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, Ao3FicInfo]
+  def syncWithAo3(id: String, ficType: FicType, log: OptionalLog = EmptyLog()): IO[Lo3Error, Ao3FicInfo]
   def downloadLink(workId: String): IO[Lo3Error, String]
   def seriesWorks(seriesId: String): IO[Lo3Error, List[String]]
   def ficName(id: String, ficType: FicType): IO[Lo3Error, String]
@@ -53,7 +53,7 @@ case class Ao3InfoServiceImpl(ao3: Ao3HttpClient) extends Ao3InfoService:
     }
   } yield link
 
-  override def updateAo3Info(id: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, Ao3FicInfo] = ficType match
+  override def syncWithAo3(id: String, ficType: FicType, log: OptionalLog): IO[Lo3Error, Ao3FicInfo] = ficType match
     case FicType.Work =>
       for {
         updatedWork <- parseWork(id, log, None)

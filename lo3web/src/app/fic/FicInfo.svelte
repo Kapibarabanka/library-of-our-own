@@ -7,6 +7,8 @@
     import * as Card from '$ui/card';
     import * as Item from '$ui/item';
     import { Spinner } from '$ui/spinner';
+    import { ao3Fields } from '@app/library/_types/filter-enums';
+    import { Tags } from '@lucide/svelte';
 
     let { fic = $bindable() }: { fic: Fic } = $props();
     let partType = $derived(fic.ao3Info.ficType === FicType.Work ? 'chapter' : 'work');
@@ -41,7 +43,12 @@
         <Item.Content>
             <Item.Title>{completionInfo}</Item.Title>
             <Item.Description class="text-xs">
-                Click to update fic in our database if new {partType}s were posted
+                {#if fic.ao3Info.ficType === FicType.Work}
+                    Click to update fic in our database if new {partType}s were posted
+                {:else}
+                    This will only update the list of works in this series. If after sync tags below don't correspond
+                    with Ao3, try syncing each work separately
+                {/if}
             </Item.Description>
         </Item.Content>
         <Item.Actions>

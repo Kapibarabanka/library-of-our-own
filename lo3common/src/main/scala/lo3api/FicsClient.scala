@@ -34,7 +34,7 @@ object FicsClient extends MyClient:
     .out[HomePageData]
     .outError[Lo3Error](Status.InternalServerError)
 
-  val updateAo3Info = (endpoint(POST, "update-ao3-info")
+  val syncWithAo3 = (endpoint(POST, "sync-with-ao3")
     .out[Ao3FicInfo]
     .outError[Lo3Error](Status.InternalServerError)
     |> withKey).query(HttpCodec.query[Boolean]("needToLog"))
@@ -43,4 +43,4 @@ object FicsClient extends MyClient:
     .out[String]
 
   override val allEndpoints: List[Endpoint[_, _, _, _, _]] =
-    List(getAllCards, getFicByLink, getFicByKey, getHomePage, updateAo3Info, toggleParser)
+    List(getAllCards, getFicByLink, getFicByKey, getHomePage, syncWithAo3, toggleParser)

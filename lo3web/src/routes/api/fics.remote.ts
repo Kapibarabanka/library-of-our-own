@@ -45,5 +45,5 @@ export const updateAo3Info = command(FicKeySchema, async key => {
         userId,
         ...key,
     };
-    return post(base, 'update-ao3-info', { ...userFicKey, needToLog: false }) as Promise<Ao3FicInfo>;
+    return post(base, 'sync-with-ao3', { ...userFicKey, needToLog: false }) as Promise<Ao3FicInfo>;
 });

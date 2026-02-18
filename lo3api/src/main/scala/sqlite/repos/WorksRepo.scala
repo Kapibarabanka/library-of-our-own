@@ -40,20 +40,20 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
       case None => add(work)
       case Some(existing) =>
         for {
-          newTagsOnly <- ZIO.succeed(
-            work.copy(
-              fandoms = work.fandoms.filterNot(f => existing.fandoms.contains(f.fullName)),
-              freeformTags = work.freeformTags.filterNot(t => existing.tags.contains(t.name)),
-              characters = work.characters.filterNot(c => existing.characters.contains(c.fullName)),
-              relationships = work.relationships.filterNot(r => existing.relationships.contains(r.fullName))
+          _ <- db.run(
+            DBIO.seq(
+              worksToShips.filter(_.workId === work.id).delete,
+              worksToTags.filter(_.workId === work.id).delete,
+              worksToFandoms.filter(_.workId === work.id).delete,
+              worksToCharacters.filter(_.workId === work.id).delete
             )
           )
           updatedFic <- db
             .run(
               DBIO
                 .sequence(
-                  Seq(works.filter(_.id === work.id).update(WorkDoc.fromModel(newTagsOnly))) ++ getAddingAction(
-                    newTagsOnly,
+                  Seq(works.filter(_.id === work.id).update(WorkDoc.fromModel(work))) ++ getAddingAction(
+                    work,
                     false
                   )
                 )
