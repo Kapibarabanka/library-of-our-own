@@ -1,11 +1,11 @@
 <script lang="ts">
     import * as Card from '$ui/card';
-    import type { MonthStats } from '$lib/types/api-models';
+    import type { CountStats, MonthStats } from '$lib/types/api-models';
     import * as Chart from '$lib/components/ui/chart/index.js';
     import { BarChart } from 'layerchart';
     import { cubicInOut } from 'svelte/easing';
 
-    let { stats }: { stats: MonthStats[] } = $props();
+    let { stats }: { stats: CountStats } = $props();
 
     const chartConfig = {
         words: {
@@ -18,6 +18,7 @@
         },
     } satisfies Chart.ChartConfig;
 
+    let monthStats = $derived(stats?.stats);
     let activeChart = $state<keyof typeof chartConfig>('words');
     const activeSeries = $derived([
         {
@@ -27,8 +28,8 @@
         },
     ]);
     const total = $derived({
-        words: stats?.reduce((acc, curr) => acc + curr.words, 0) ?? 0,
-        fics: stats?.reduce((acc, curr) => acc + curr.fics, 0) ?? 0,
+        words: monthStats?.reduce((acc, curr) => acc + curr.words, 0) ?? 0,
+        fics: stats?.totalFics ?? 0,
     });
 </script>
 
@@ -59,7 +60,7 @@
     <Card.Content class="p-1">
         <Chart.Container config={chartConfig} class="min-h-[200px] w-full">
             <BarChart
-                data={stats}
+                data={monthStats}
                 tooltip={false}
                 labels={{ placement: 'outside' }}
                 orientation="horizontal"

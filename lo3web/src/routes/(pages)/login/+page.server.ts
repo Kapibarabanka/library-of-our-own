@@ -1,6 +1,7 @@
 import type { UserCookie } from '$lib/types/ui-models.js';
 import { cookieIsValid, tryGetUserCookie, userCookieName } from '$lib/utils/auth-utils.js';
 import { redirect } from '@sveltejs/kit';
+import moment from 'moment';
 
 export function load({ cookies, url }) {
     const hash = url.searchParams.get('hash');
@@ -16,7 +17,11 @@ export function load({ cookies, url }) {
             auth_date: url.searchParams.get('auth_date'),
         };
         if (cookieIsValid(userCookie)) {
-            cookies.set(userCookieName, JSON.stringify(userCookie), { path: '/', secure: false });
+            cookies.set(userCookieName, JSON.stringify(userCookie), {
+                path: '/',
+                secure: false,
+                expires: moment().add(3, 'month').toDate(),
+            });
             redirect(303, '/home');
         }
     } else if (tryGetUserCookie()) {

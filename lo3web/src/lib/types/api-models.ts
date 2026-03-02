@@ -16,10 +16,15 @@ export interface MonthStats {
     words: number;
 }
 
+export interface CountStats {
+    stats: MonthStats[];
+    totalFics: number;
+}
+
 export interface HomePageData {
     currentlyReading: FicCardData[];
     randomFicFromBacklog?: FicCardData | null;
-    generalStats: MonthStats[];
+    generalStats: CountStats;
 }
 
 export enum StatTagField {
