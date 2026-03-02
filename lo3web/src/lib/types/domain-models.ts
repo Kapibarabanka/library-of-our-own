@@ -35,6 +35,11 @@ export enum UserImpression {
 }
 export const UserImpressionSchema = z.enum(UserImpression);
 
+export interface FreeformTag {
+    nameInWork: string;
+    canonicalName: string;
+}
+
 export interface Ao3FicInfo {
     id: string;
     link: string;
@@ -47,7 +52,7 @@ export interface Ao3FicInfo {
     fandoms?: string[];
     characters?: string[];
     relationships?: string[];
-    tags?: string[];
+    freeformTags?: FreeformTag[];
     words: number;
     partsWritten: number;
     complete: boolean;

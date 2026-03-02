@@ -17,7 +17,7 @@ case class Ao3FicInfo(
     fandoms: Set[String] = Set(),
     characters: Set[String] = Set(),
     relationships: List[String] = List(),
-    tags: List[String] = List(),
+    freeformTags: List[FreeformTag] = List(),
     words: Int,
     complete: Boolean,
     partsWritten: Int,

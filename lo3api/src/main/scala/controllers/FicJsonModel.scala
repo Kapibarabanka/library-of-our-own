@@ -36,7 +36,7 @@ object FicJsonModel:
     fandoms = record.ao3Info.fandoms,
     characters = record.ao3Info.characters,
     relationships = record.ao3Info.relationships,
-    tags = record.ao3Info.tags ++ record.specialTags,
+    tags = record.ao3Info.freeformTags.map(_.nameInWork) ++ record.specialTags,
     words = record.ao3Info.words,
     complete = record.ao3Info.complete
   )

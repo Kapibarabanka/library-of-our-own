@@ -97,7 +97,7 @@ class SeriesRepo(db: Lo3Db, worksRepo: WorksRepo):
         fandoms = works.flatMap(_.fandoms).toSet,
         characters = works.flatMap(_.characters).toSet,
         relationships = works.flatMap(_.relationships).toList.distinct,
-        tags = works.flatMap(_.tags).toList.distinct,
+        freeformTags = works.flatMap(_.freeformTags).toList.distinct,
         words = works.map(_.words).sum,
         complete = doc.complete,
         partsWritten = works.length,

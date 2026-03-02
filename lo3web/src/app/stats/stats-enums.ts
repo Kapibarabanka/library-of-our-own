@@ -5,7 +5,7 @@ import { TagField, tagFieldLabels } from '@app/library/_types/filter-enums';
 export const statToFields: Record<StatTagField, TagField> = {
     [StatTagField.Ship]: TagField.relationships,
     [StatTagField.Fandom]: TagField.fandoms,
-    [StatTagField.Freeform]: TagField.tags,
+    [StatTagField.Freeform]: TagField.freeformTags,
 };
 
 export const statFieldsItems = Object.fromEntries(

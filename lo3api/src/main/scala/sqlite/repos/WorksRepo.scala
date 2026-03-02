@@ -6,7 +6,7 @@ import sqlite.services.Lo3Db
 import sqlite.tables.*
 
 import kapibarabanka.lo3.common.models.ao3.{Ao3Url, Fandom, FicType, Rating, Work}
-import kapibarabanka.lo3.common.models.domain.{Ao3FicInfo, DbError, FicDetails}
+import kapibarabanka.lo3.common.models.domain.{Ao3FicInfo, DbError, FicDetails, FreeformTag}
 import slick.dbio.Effect
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
@@ -19,6 +19,7 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
   private val shipsToCharacters = TableQuery[ShipsToCharactersTable]
   private val worksToShips      = TableQuery[WorksToShipsTable]
   private val ficDetails        = TableQuery[FicsDetailsTable]
+  private val canonicalTags     = TableQuery[CanonicalTagsTable]
 
   def fixLinks(): IO[DbError, Unit] = for {
     allWorks <- db.run(works.result)
@@ -99,7 +100,11 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
     fandoms       <- db.run(worksToFandoms.filter(_.workId === doc.id).map(_.fandom).result)
     characters    <- db.run(worksToCharacters.filter(_.workId === doc.id).map(_.character).result)
     relationships <- db.run(worksToShips.filter(_.workId === doc.id).map(_.shipName).result)
-    tags          <- db.run(worksToTags.filter(_.workId === doc.id).map(_.tagName).result)
+    tags          <- db.run(worksToTags.filter(_.workId === doc.id).map(_.tagName).result).map(_.toList.distinct)
+    canonicalTags <- db
+      .run(canonicalTags.filter(_.nameInWork inSet tags).result)
+      .map(list => list.map(t => (t.nameInWork, t.canonicalName)).toMap)
+    freeformTags <- ZIO.succeed(tags.map(t => FreeformTag(t, canonicalTags.getOrElse(t, t))))
   } yield Ao3FicInfo(
     id = doc.id,
     ficType = FicType.Work,
@@ -112,7 +117,7 @@ class WorksRepo(db: Lo3Db, tagsRepo: TagsRepo):
     fandoms = fandoms.toSet,
     characters = characters.toSet,
     relationships = relationships.distinct.toList,
-    tags = tags.toList.distinct,
+    freeformTags = freeformTags,
     words = doc.words,
     complete = doc.complete,
     partsWritten = doc.partsWritten,

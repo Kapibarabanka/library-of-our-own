@@ -64,15 +64,15 @@ export class FicCardsPageState {
 
     public filteredCards = $derived.by(() => {
         let filteredCards = [...$state.snapshot(this.allCards)];
-        for (const [TagField, filterValues] of filterState.includedTagFilters) {
+        for (const [tagField, filterValues] of filterState.includedTagFilters) {
             filteredCards = filteredCards.filter(card => {
-                const cardTags: string[] = card.ao3Info[TagField] ?? [];
+                const cardTags: string[] = getFilterableTags(card, tagField);
                 return [...filterValues].every(filterValue => cardTags.includes(filterValue));
             });
         }
         for (const [tagField, filterValues] of filterState.excludedTagFilters) {
             filteredCards = filteredCards.filter(card => {
-                const cardTags: string[] = card.ao3Info[tagField] ?? [];
+                const cardTags: string[] = getFilterableTags(card, tagField);
                 return [...filterValues].every(filterValue => !cardTags.includes(filterValue));
             });
         }
@@ -100,7 +100,7 @@ export class FicCardsPageState {
                 tagField,
                 [
                     ...this.filteredCards
-                        .flatMap(c => c.ao3Info[tagField] ?? [])
+                        .flatMap(c => getFilterableTags(c, tagField))
                         .reduce(function (storage, item) {
                             storage.set(item, (storage.get(item) ?? 0) + 1);
                             return storage;
@@ -133,4 +133,10 @@ function boolFilterApplies(card: FicCardData, boolField: BoolField, value: boole
         case BoolField.Series:
             return (card.key.ficType === FicType.Series) === value;
     }
+}
+
+function getFilterableTags(card: FicCardData, tagField: TagField): string[] {
+    return tagField === TagField.freeformTags
+        ? (card.ao3Info.freeformTags?.map(t => t.canonicalName) ?? [])
+        : (card.ao3Info[tagField] ?? []);
 }

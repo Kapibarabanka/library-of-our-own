@@ -25,7 +25,7 @@
         TagField.fandoms,
         TagField.relationships,
         TagField.characters,
-        TagField.tags,
+        TagField.freeformTags,
     ];
     const tagsWithLabels = tagsToShow.map(field => ({ field, label: tagFieldLabels[field] }));
 
@@ -99,15 +99,31 @@
     </Card.Header>
     <Card.Content class="py-2">
         {#each tagsWithLabels as { field, label }}
-            {@const tags = cardData.ao3Info[field] ?? []}
-            {#if tags.length}
-                <div>
-                    <span class="font-semibold text-sm">{label + 's: '}</span>
-                    {#each tags as tag}
-                        <Tag label={tag} onclick={() => filterState.withTagFilter(field, TagInclusion.Include, tag)}
-                        ></Tag>
-                    {/each}
-                </div>
+            {#if field === TagField.freeformTags}
+                {@const tags = cardData.ao3Info.freeformTags ?? []}
+                {#if tags.length}
+                    <div>
+                        <span class="font-semibold text-sm">{label + 's: '}</span>
+                        {#each tags as tag}
+                            <Tag
+                                label={tag.nameInWork}
+                                onclick={() =>
+                                    filterState.withTagFilter(field, TagInclusion.Include, tag.canonicalName)}
+                            ></Tag>
+                        {/each}
+                    </div>
+                {/if}
+            {:else}
+                {@const tags = cardData.ao3Info[field] ?? []}
+                {#if tags.length}
+                    <div>
+                        <span class="font-semibold text-sm">{label + 's: '}</span>
+                        {#each tags as tag}
+                            <Tag label={tag} onclick={() => filterState.withTagFilter(field, TagInclusion.Include, tag)}
+                            ></Tag>
+                        {/each}
+                    </div>
+                {/if}
             {/if}
         {/each}
     </Card.Content>

@@ -68,7 +68,10 @@
             {@render infoBlock('Fandoms', fic.ao3Info.fandoms)}
             {@render infoBlock('Relationships', fic.ao3Info.relationships)}
             {@render infoBlock('Characters', fic.ao3Info.characters)}
-            {@render infoBlock('Additionsl Tags', fic.ao3Info.tags)}</Card.Content
+            {@render infoBlock(
+                'Additionsl Tags',
+                fic.ao3Info.freeformTags?.map(ft => ft.nameInWork),
+            )}</Card.Content
         >
     </Card.Root>
 </div>

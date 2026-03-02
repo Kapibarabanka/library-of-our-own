@@ -5,7 +5,7 @@ import sqlite.docs.CanonicalTagDoc
 
 import slick.jdbc.PostgresProfile.api.*
 
-class CanonicalTagsTable(tag: Tag) extends Table[CanonicalTagDoc](tag, TagsTable.name):
+class CanonicalTagsTable(tag: Tag) extends Table[CanonicalTagDoc](tag, CanonicalTagsTable.name):
   def nameInWork    = column[String]("nameInWork", O.PrimaryKey, O.Unique)
   def canonicalName = column[String]("canonicalName")
   def filterable    = column[Boolean]("filterable")

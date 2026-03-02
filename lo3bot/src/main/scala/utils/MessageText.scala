@@ -43,7 +43,7 @@ object MessageText {
                     |<i>${ao3Info.authors.mkString(", ")}</i>
                     |
                     |${ao3Info.relationships.map(formatShip).mkString("\n")}""".stripMargin
-    val tags   = ao3Info.tags.mkString(",   ")
+    val tags   = ao3Info.freeformTags.map(_.nameInWork).mkString(",   ")
     val s      = if (ao3Info.partsWritten.toString.last == '1' && ao3Info.partsWritten != 11) "" else "s"
     val footer = s"${f"${ao3Info.partsWritten}%,d"} ${if (isSeries) "work" else "chapter"}$s, ${f"${ao3Info.words}%,d"} words"
     val withTags =

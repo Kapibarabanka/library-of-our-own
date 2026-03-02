@@ -5,7 +5,7 @@ export enum TagInclusion {
 
 export enum TagField {
     relationships = 'relationships',
-    tags = 'tags',
+    freeformTags = 'freeformTags',
     fandoms = 'fandoms',
     characters = 'characters',
     authors = 'authors',
@@ -13,7 +13,7 @@ export enum TagField {
 }
 export const tagFieldLabels: Record<TagField, string> = {
     [TagField.relationships]: 'Relationship',
-    [TagField.tags]: 'Freeform Tag',
+    [TagField.freeformTags]: 'Freeform Tag',
     [TagField.fandoms]: 'Fandom',
     [TagField.characters]: 'Character',
     [TagField.authors]: 'Author',

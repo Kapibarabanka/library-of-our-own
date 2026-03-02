@@ -66,11 +66,12 @@ class TagService(html: HtmlService):
       case Some(name) => ZIO.succeed(name)
       case None =>
         for {
-          doc       <- html.tag(tagName)
-          canonical <- ZIO.succeed(doc.canonicalName.getOrElse(tagName))
-          _         <- ZIO.log(s"Canonical name for'$tagName' is '${canonical}'")
-          _         <- Lo3Data.tags.addCanonical(tagName, canonical, doc.isFilterable)
-        } yield canonical
+          doc <- html.tag(tagName)
+          _   <- ZIO.log(s"Canonical name for'$tagName' is ${doc.canonicalName.getOrElse("not found")}")
+          _ <-
+            if doc.canonicalName.isEmpty then ZIO.unit
+            else Lo3Data.tags.addCanonical(tagName, doc.canonicalName.get, doc.isFilterable)
+        } yield doc.canonicalName.getOrElse(tagName)
   } yield canonicalName
 
   private def characterWithLabel(name: String, label: Option[String]): IO[Lo3Error, Character] =

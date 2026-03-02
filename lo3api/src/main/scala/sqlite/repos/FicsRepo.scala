@@ -24,6 +24,7 @@ class FicsRepo(db: Lo3Db):
   private val seriesToWorks     = TableQuery[SeriesToWorksTable]
   private val readDates         = TableQuery[ReadDatesTable]
   private val comments          = TableQuery[CommentsTable]
+  private val canonicalTags     = TableQuery[CanonicalTagsTable]
 
   def getFilteredCards(
       userId: String,
@@ -116,40 +117,50 @@ class FicsRepo(db: Lo3Db):
     allInfos       <- ZIO.succeed(seriesInfos ++ worksInfos.filter(w => !seriesWorksIds.contains(w.id)))
   } yield allInfos
 
-  private def collectWorks(workIds: Seq[String]) = for {
-    workDocs <- db.run(works.filter(_.id.inSet(workIds)).result)
-    fandomsByWork <- db
-      .run(worksToFandoms.filter(_.workId.inSet(workIds)).map(d => (d.workId, d.fandom)).result)
-      .map(seq => seq.groupMap((id, _) => id)((_, f) => f))
-    charactersByWork <- db
-      .run(worksToCharacters.filter(_.workId.inSet(workIds)).map(d => (d.workId, d.character)).result)
-      .map(seq => seq.groupMap((id, _) => id)((_, c) => c))
-    shipsByWork <- db
-      .run(worksToShips.filter(_.workId.inSet(workIds)).map(d => (d.workId, d.shipName)).result)
-      .map(seq => seq.groupMap((id, _) => id)((_, s) => s))
-    tagsByWork <- db
-      .run(worksToTags.filter(_.workId.inSet(workIds)).map(d => (d.workId, d.tagName)).result)
-      .map(seq => seq.groupMap((id, _) => id)((_, t) => t))
-  } yield workDocs.map(work =>
-    Ao3FicInfo(
-      id = work.id,
-      ficType = FicType.Work,
-      link = work.link,
-      title = work.title,
-      authors = work.authors.split(", ").toList,
-      rating = Rating.withName(work.rating),
-      categories = work.categories.split(", ").toSet,
-      warnings = if (work.warnings.isBlank) Set() else work.warnings.split(", ").toSet,
-      fandoms = fandomsByWork.getOrElse(work.id, Seq()).toSet,
-      characters = charactersByWork.getOrElse(work.id, Seq()).toSet,
-      relationships = shipsByWork.getOrElse(work.id, Seq()).toList.distinct,
-      tags = tagsByWork.getOrElse(work.id, Seq()).toList.distinct,
-      words = work.words,
-      complete = work.complete,
-      partsWritten = work.partsWritten,
-      downloadLink = work.downloadLink
+  private def collectWorks(workIds: Seq[String]) = {
+    val tagQuery = for {
+      (tag, canonical) <- worksToTags joinLeft canonicalTags on (_.tagName === _.nameInWork)
+      if tag.workId inSet workIds
+    } yield (tag.workId, tag.tagName, canonical)
+    for {
+      workDocs <- db.run(works.filter(_.id.inSet(workIds)).result)
+      fandomsByWork <- db
+        .run(worksToFandoms.filter(_.workId.inSet(workIds)).map(d => (d.workId, d.fandom)).result)
+        .map(seq => seq.groupMap((id, _) => id)((_, f) => f))
+      charactersByWork <- db
+        .run(worksToCharacters.filter(_.workId.inSet(workIds)).map(d => (d.workId, d.character)).result)
+        .map(seq => seq.groupMap((id, _) => id)((_, c) => c))
+      shipsByWork <- db
+        .run(worksToShips.filter(_.workId.inSet(workIds)).map(d => (d.workId, d.shipName)).result)
+        .map(seq => seq.groupMap((id, _) => id)((_, s) => s))
+      freeformByWork <- db
+        .run(tagQuery.result)
+        .map(seq =>
+          seq.groupMap((id, _, _) => id)((_, inWork, maybeCanonical) =>
+            FreeformTag(inWork, maybeCanonical.map(_.canonicalName).getOrElse(inWork))
+          )
+        )
+    } yield workDocs.map(work =>
+      Ao3FicInfo(
+        id = work.id,
+        ficType = FicType.Work,
+        link = work.link,
+        title = work.title,
+        authors = work.authors.split(", ").toList,
+        rating = Rating.withName(work.rating),
+        categories = work.categories.split(", ").toSet,
+        warnings = if (work.warnings.isBlank) Set() else work.warnings.split(", ").toSet,
+        fandoms = fandomsByWork.getOrElse(work.id, Seq()).toSet,
+        characters = charactersByWork.getOrElse(work.id, Seq()).toSet,
+        relationships = shipsByWork.getOrElse(work.id, Seq()).toList.distinct,
+        freeformTags = freeformByWork.getOrElse(work.id, Seq()).toList.distinct,
+        words = work.words,
+        complete = work.complete,
+        partsWritten = work.partsWritten,
+        downloadLink = work.downloadLink
+      )
     )
-  )
+  }
 
   private def collectSeries(seriesDocs: Seq[SeriesDoc], allSeriesWorks: Seq[Ao3FicInfo]) = ZIO.collectAll(
     seriesDocs.map(seriesDoc =>
@@ -171,7 +182,7 @@ class FicsRepo(db: Lo3Db):
         fandoms = seriesWorks.flatMap(_.fandoms).toSet,
         characters = seriesWorks.flatMap(_.characters).toSet,
         relationships = seriesWorks.flatMap(_.relationships).distinct,
-        tags = seriesWorks.flatMap(_.tags).distinct,
+        freeformTags = seriesWorks.flatMap(_.freeformTags).distinct,
         words = seriesWorks.map(_.words).sum,
         complete = seriesDoc.complete,
         partsWritten = seriesWorks.length,

@@ -48,7 +48,7 @@ export function getImpressionIcon(impression: UserImpression) {
 }
 export const filterIcons: Record<FilterableField, typeof IconType> = {
     [TagField.relationships]: Heart,
-    [TagField.tags]: Hash,
+    [TagField.freeformTags]: Hash,
     [TagField.fandoms]: Earth,
     [TagField.characters]: User,
     [TagField.authors]: BookUser,

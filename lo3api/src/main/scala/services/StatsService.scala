@@ -71,5 +71,5 @@ object StatsService:
       if (firstOnly) info.relationships.headOption.map(List(_)).getOrElse(List()) else info.relationships
     case StatTagField.Fandom =>
       if (firstOnly) info.fandoms.headOption.map(List(_)).getOrElse(List()) else info.fandoms.toList
-    case StatTagField.Freeform => info.tags
+    case StatTagField.Freeform => info.freeformTags.map(_.canonicalName)
   ).map(t => (t, info.words))
