@@ -5,7 +5,7 @@ import sqlite.docs.ReadDatesDoc
 import sqlite.services.Lo3Db
 import sqlite.tables.ReadDatesTable
 
-import kapibarabanka.lo3.common.models.domain.{DbError, ReadDatesInfo, UserFicKey}
+import kapibarabanka.lo3.common.models.domain.{DbError, ReadDates, ReadDatesInfo, UserFicKey}
 import slick.jdbc.PostgresProfile.api.*
 import zio.{IO, ZIO}
 
@@ -39,6 +39,23 @@ class ReadDatesRepo(db: Lo3Db):
         case None =>
           db.run(readDates += ReadDatesDoc(None, key.userId, key.ficId, key.ficIsSeries, None, Some(endDate), isAbandoned))
     } yield ()
+
+  def setReadingHistory(key: UserFicKey, history: List[ReadDates]): IO[DbError, Unit] = for {
+    _ <- db.run(filterDates(key).delete)
+    _ <- db.run(
+      readDates ++= history.map(d =>
+        ReadDatesDoc(
+          None,
+          key.userId,
+          key.ficId,
+          key.ficIsSeries,
+          Some(d.startDate.toString),
+          d.finishDate.map(_.toString),
+          d.isAbandoned
+        )
+      )
+    )
+  } yield ()
 
   private def filterDates(key: UserFicKey) =
     readDates.filter(d => d.userId === key.userId && d.ficId === key.ficId && d.ficIsSeries === key.ficIsSeries)

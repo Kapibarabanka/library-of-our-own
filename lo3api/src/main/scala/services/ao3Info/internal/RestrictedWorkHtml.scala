@@ -11,7 +11,7 @@ class RestrictedWorkHtml(doc: Document, htmlLink: String) extends WorkDoc {
 
   override val title: String             = doc >> text("h1")
   override val authors: Iterable[String] = doc >> element("div.byline") >> texts("a")
-  override val mobiLink: Option[String]  = Some(htmlLink.replace("html", "mobi"))
+  override val mobiLink: Option[String]  = Some(htmlLink.replace(".html", ".mobi"))
 
   private val tagsEl  = doc >> element("dl.tags")
   private val labels  = tagsEl >> texts("dt")

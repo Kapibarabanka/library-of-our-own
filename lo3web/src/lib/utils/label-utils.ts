@@ -23,9 +23,9 @@ export function shortImpression(impression: UserImpression) {
 }
 
 export function formatDate(date: string) {
-    return moment(date).format('D MMM, YYYY');
+    return moment(date).format('D MMM YYYY');
 }
 
 export function formatDateTime(date: string) {
-    return moment(date).format('D MMM, YYYY, HH:mm');
+    return moment(date).format('D MMM YYYY, HH:mm');
 }

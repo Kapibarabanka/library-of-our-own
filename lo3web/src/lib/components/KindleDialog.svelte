@@ -78,8 +78,8 @@
             {/if}
             <Dialog.Footer>
                 {#if !confirmed}
-                    <Button onclick={() => confirm()}>Confirm</Button>
                     <Button variant="outline" onclick={() => close()}>Cancel</Button>
+                    <Button onclick={() => confirm()}>Confirm</Button>
                 {:else}
                     <Button onclick={() => close()}>Close</Button>
                 {/if}

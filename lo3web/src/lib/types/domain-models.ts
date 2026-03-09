@@ -95,11 +95,12 @@ export interface FicNote {
     text: string;
 }
 
-export interface ReadDates {
-    startDate: string;
-    finishDate?: string | undefined;
-    isAbandoned: boolean;
-}
+export const ReadDatesSchema = z.object({
+    startDate: z.string(),
+    finishDate: z.string().optional(),
+    isAbandoned: z.boolean(),
+});
+export type ReadDates = z.infer<typeof ReadDatesSchema>;
 
 export interface ReadDatesInfo {
     readDates: ReadDates[];

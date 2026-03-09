@@ -6,7 +6,6 @@
         filterableFields,
         FilterType,
         TagField,
-        tagFieldLabels,
         TagInclusion,
         userFields,
         type FilterableField,

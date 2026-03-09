@@ -1,7 +1,7 @@
 package kapibarabanka.lo3.common
 package lo3api
 
-import models.domain.{Ao3FicInfo, Fic, FicDetails, Lo3Error, Note}
+import models.domain.{Ao3FicInfo, Fic, FicDetails, Lo3Error, Note, ReadDates, ReadDatesInfo}
 
 import kapibarabanka.lo3.common.models.api.FinishInfo
 import scalaz.Scalaz.ToIdOps
@@ -33,10 +33,16 @@ object FicDetailsClient extends MyClient:
     .out[Unit]
     .outError[Lo3Error](Status.InternalServerError)
 
+  val setReadingHistory = (endpoint(POST, "set-reading-history")
+    .out[Unit]
+    .outError[Lo3Error](Status.InternalServerError)
+    |> withKey).in[List[ReadDates]]
+
   override val allEndpoints =
     List(
       patchDetails,
       addNote,
       startedToday,
-      finishFic
+      finishFic,
+      setReadingHistory
     )

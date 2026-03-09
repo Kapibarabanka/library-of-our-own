@@ -12,7 +12,7 @@
     const color = $derived(getRatingBackground(rating));
 </script>
 
-<Badge class={`px-1.5 ${color}`} variant="outline" {onclick}>
+<Badge class={`${color}`} variant="outline" {onclick}>
     {#if variant === 'letter'}
         {rating[0]}
     {:else if variant === 'short'}

@@ -5,7 +5,7 @@
     const { title, children }: { title: string; children: Snippet } = $props();
 </script>
 
-<Item.Root variant="muted" size="sm">
+<Item.Root variant="muted">
     <Item.Content>
         <Item.Title>
             {title}

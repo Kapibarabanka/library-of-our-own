@@ -6,6 +6,7 @@
     import { Button } from '$ui/button';
     import * as Card from '$ui/card';
     import { Textarea } from '$ui/textarea';
+    import { Plus } from '@lucide/svelte';
 
     let { fic = $bindable() }: { fic: Fic } = $props();
 
@@ -29,7 +30,7 @@
 
 <div class="flex flex-col gap-2">
     {#if !addingNote}
-        <Button class="md:w-fit" variant="outline" onclick={() => (addingNote = true)}>Add Note</Button>
+        <Button variant="outline" class="md:w-fit" onclick={() => (addingNote = true)}><Plus />Add Note</Button>
     {:else}
         <Card.Root>
             <Card.Header>
@@ -43,7 +44,7 @@
                     placeholder="write your note here"
                 />
             </Card.Content>
-            <Card.Footer class="flex-row justify-between">
+            <Card.Footer class="flex-row justify-end gap-3">
                 <Button variant="outline" onclick={() => finishAdding()}>Cancel</Button>
                 <Button variant="default" onclick={() => submit()} disabled={!newNote}>Save</Button>
             </Card.Footer>

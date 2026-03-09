@@ -9,7 +9,7 @@
     let withText = !!text;
 </script>
 
-<Badge class={`justify-around px-1 text-[15px] leading-4 ${withText ? 'w-[77px]' : ''}`} variant="outline" {onclick}>
+<Badge class={`justify-around text-[15px] leading-4 ${withText ? 'w-[77px]' : ''}`} variant="outline" {onclick}>
     <span class="flex gap-1">
         <span>{icon}</span>
         {#if withText}

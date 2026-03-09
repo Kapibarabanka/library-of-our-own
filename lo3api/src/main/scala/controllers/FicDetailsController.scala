@@ -33,10 +33,15 @@ protected[api] case class FicDetailsController() extends Controller:
     } yield ()
   }
 
-  override val routes: List[Route[Any, Response]] =
+  val setReadingHistory = FicDetailsClient.setReadingHistory.implement { (key, history) =>
+    Lo3Data.readDates.setReadingHistory(key, history)
+  }
+
+  override val routes: List[Route[Any, Response]] = 
     List(
       patchDetails,
       addNote,
       startedToday,
-      finishFic
+      finishFic,
+      setReadingHistory
     )
