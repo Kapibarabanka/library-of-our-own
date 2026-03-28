@@ -18,7 +18,7 @@ export const startedToday = command(UserFicKeySchema, async key => {
 export const setReadingHistory = command(
     z.object({ key: UserFicKeySchema, history: z.array(ReadDatesSchema) }),
     async ({ key, history }) => {
-        await post(base, 'fset-reading-history', key, history);
+        await post(base, 'set-reading-history', key, history);
     },
 );
 

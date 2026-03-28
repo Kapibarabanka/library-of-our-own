@@ -14,7 +14,7 @@
 
     let isLoading = $state(false);
 
-    let abandoned = $state(false);
+    let dropped = $state(false);
     let spicy = $state(details.spicy);
     let impression = $state<UserImpression | ''>(details.impression ?? '');
     let note = $state<string | undefined>(undefined);
@@ -23,7 +23,7 @@
         isLoading = true;
         const finishInfo: FinishInfo = {
             key,
-            abandoned,
+            abandoned: dropped,
             spicy,
             impression: !impression ? undefined : impression,
             note,
@@ -50,9 +50,9 @@
         </Sheet.Header>
         <div class="flex flex-col gap-3 py-4">
             <div class="flex items-center space-x-2">
-                <Checkbox id="abandoned" bind:checked={abandoned} />
-                <Label for="abandoned">
-                    <span class="text-sm font-medium leading-none">Abandoned</span>
+                <Checkbox id="dropped" bind:checked={dropped} />
+                <Label for="dropped">
+                    <span class="text-sm font-medium leading-none">Dropped</span>
                     <span class="text-muted-foreground text-xs">(fic won't be included in statistics)</span>
                 </Label>
             </div>

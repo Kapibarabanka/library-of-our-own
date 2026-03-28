@@ -1,3 +1,5 @@
+import type { ZonedDateTime } from '@internationalized/date';
+
 export interface UserCookie {
     id: string;
     first_name: string | null;
@@ -18,4 +20,13 @@ export interface User {
 export enum StatUnit {
     Fics = 'fic',
     Words = 'word',
+}
+
+export interface DateRecord {
+    id: string;
+    dropped: boolean;
+    startDate?: ZonedDateTime | undefined;
+    finishDate?: ZonedDateTime | undefined;
+    startOpened: boolean;
+    finishOpened: boolean;
 }

@@ -3,53 +3,47 @@
     import { formatDate } from '$lib/utils/label-utils';
     import * as Item from '$ui/item';
     import { Button } from '$ui/button';
-    import { Plus } from '@lucide/svelte';
+    import EditHistory from './EditHistory.svelte';
+    import { getUserFicKey } from '$lib/utils/fic-utils';
 
-    let { fic = $bindable() }: { fic: Fic } = $props();
+    let { fic = $bindable(), updateFic }: { fic: Fic; updateFic: () => Promise<void> } = $props();
+    let key = $derived(getUserFicKey(fic));
 
     let formattedDates = $derived(
         fic.readDatesInfo?.readDates?.map(rd =>
             rd.finishDate
                 ? {
                       date: `${formatDate(rd.startDate)} — ${formatDate(rd.finishDate)}`,
-                      status: rd.isAbandoned ? 'Abandoned' : 'Finished',
+                      status: rd.isAbandoned ? 'Dropped' : 'Finished',
                   }
                 : { date: `Started on ${formatDate(rd.startDate)}`, status: '' },
         ) ?? [],
     );
-    let editedDates = $state($state.snapshot(fic.readDatesInfo?.readDates));
 
     let editMode = $state(false);
 
     function startEditing() {
-        editedDates = $state.snapshot(fic.readDatesInfo?.readDates);
-
         editMode = true;
+    }
+
+    function onCancel() {
+        editMode = false;
+    }
+
+    async function onEditFinished() {
+        editMode = false;
+        await updateFic();
     }
 </script>
 
 <div class="flex flex-col gap-2">
     {#if editMode}
-        <div class="flex justify-between">
-            <Button class="md:w-fit" variant="outline" onclick={() => {}}><Plus />Add record</Button>
-            <div class="flex gap-4">
-                <Button class="md:w-fit" variant="outline" onclick={() => {}}>Cancel</Button>
-                <Button class="md:w-fit" onclick={() => {}}>Save</Button>
-            </div>
-        </div>
-        <Item.Group>
-            {#each editedDates as readDate, index}
-                <Item.Root size="sm">
-                    <Item.Content>
-                        <Item.Title>{readDate.startDate} - {readDate.finishDate}</Item.Title>
-                    </Item.Content>
-                    <Item.Actions></Item.Actions>
-                </Item.Root>
-                {#if index !== editedDates.length - 1}
-                    <Item.Separator />
-                {/if}
-            {/each}
-        </Item.Group>
+        <EditHistory
+            {key}
+            originalDates={fic.readDatesInfo?.readDates ?? []}
+            editFinished={onEditFinished}
+            cancel={onCancel}
+        />
     {:else}
         <Button class="md:w-fit" onclick={() => startEditing()}>Edit history</Button>
         {#if formattedDates?.length}

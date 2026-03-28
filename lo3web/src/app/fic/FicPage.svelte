@@ -49,7 +49,7 @@
                     <FicActions {fic} updateFic={async () => await updateFic()}></FicActions>
                 </Tabs.Content>
                 <Tabs.Content value="history">
-                    <FicReadingHistory bind:fic />
+                    <FicReadingHistory bind:fic updateFic={async () => await updateFic()} />
                 </Tabs.Content>
                 <Tabs.Content value="notes">
                     <FicNotes bind:fic />
