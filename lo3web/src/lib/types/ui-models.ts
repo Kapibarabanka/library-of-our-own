@@ -23,7 +23,7 @@ export enum StatUnit {
 }
 
 export interface DateRecord {
-    id: string;
+    id: number;
     dropped: boolean;
     startDate?: ZonedDateTime | undefined;
     finishDate?: ZonedDateTime | undefined;

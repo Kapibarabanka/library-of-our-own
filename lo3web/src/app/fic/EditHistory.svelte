@@ -34,9 +34,9 @@
 
     let records = $state(
         originalDates?.map(
-            d =>
+            (d, index) =>
                 ({
-                    id: crypto.randomUUID(),
+                    id: index,
                     dropped: d.isAbandoned,
                     startDate: parseAbsoluteToLocal(d.startDate + 'Z'),
                     finishDate: d.finishDate ? parseAbsoluteToLocal(d.finishDate + 'Z') : undefined,
@@ -45,6 +45,8 @@
                 }) as DateRecord,
         ) ?? [],
     );
+
+    let maxIndex = $state.snapshot(originalDates)?.length ?? 0;
 
     let hasErrors = $derived(records.some((r, idx) => getValidationError(r, idx) != null));
 
@@ -137,11 +139,12 @@
     }
     function addRecord() {
         const newRecord = {
-            id: crypto.randomUUID(),
+            id: maxIndex + 1,
             dropped: false,
             startOpened: false,
             finishOpened: false,
         };
+        maxIndex = maxIndex + 1;
         if (records?.length) {
             records.splice(0, 0, newRecord);
         } else {
