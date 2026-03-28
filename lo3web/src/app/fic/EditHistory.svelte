@@ -33,7 +33,7 @@
     }: { key: UserFicKey; originalDates: ReadDates[]; editFinished: () => void; cancel: () => void } = $props();
 
     let records = $state(
-        originalDates.map(
+        originalDates?.map(
             d =>
                 ({
                     id: crypto.randomUUID(),
@@ -43,7 +43,7 @@
                     startOpened: false,
                     finishOpened: false,
                 }) as DateRecord,
-        ),
+        ) ?? [],
     );
 
     let hasErrors = $derived(records.some((r, idx) => getValidationError(r, idx) != null));
@@ -136,12 +136,17 @@
         sortDates();
     }
     function addRecord() {
-        records.splice(0, 0, {
+        const newRecord = {
             id: crypto.randomUUID(),
             dropped: false,
             startOpened: false,
             finishOpened: false,
-        });
+        };
+        if (records?.length) {
+            records.splice(0, 0, newRecord);
+        } else {
+            records = [newRecord];
+        }
     }
 
     function deleteRecord(index: number) {
