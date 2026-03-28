@@ -22,7 +22,7 @@
     async function submit() {
         if (newNote) {
             const addedNote = await addNote({ key, text: newNote });
-            fic.notes = [addedNote, ...fic.notes];
+            fic = { ...fic, notes: [addedNote, ...fic.notes] };
         }
         finishAdding();
     }
