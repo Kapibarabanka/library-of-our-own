@@ -50,7 +50,11 @@ class HtmlService(ao3: Ao3HttpClient):
   def tagExists(tag: String): IO[Lo3Error, Boolean] =
     ao3
       .get(Ao3Url.tag(tag), PageType.Tag)
-      .map(_ => true)
+      .map(pageOrError =>
+        !pageOrError.contains(
+          "ERROR: no such element: Unable to locate element"
+        )
+      )
       .catchSome({ case NotFoundOnAo3(_) => ZIO.succeed(false) })
 
   private def getDoc[TDoc](url: String, entityName: String, pageType: PageType)(htmlToDoc: Document => TDoc) =
